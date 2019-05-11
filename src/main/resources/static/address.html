@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1.0, user-scalable=no, width=device-width"
+    />
+    <title>行政区分组</title>
+    <link rel="stylesheet" type="text/css" href="./css/address/area.css" />
+    <style>
+      #loadingTip {
+        position: absolute;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        padding: 3px 10px;
+        background: red;
+        color: #fff;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="outer-box">
+      <div class="toolbar">
+        <div class="search">search</div>
+        <div class="tools">Tools</div>
+      </div>
+      <div id="container" tabindex="0"></div>
+      <div id="panel" class="scrollbar1">
+        <ul id="area-tree"></ul>
+      </div>
+    </div>
+    <script
+      type="text/javascript"
+      src="http://webapi.amap.com/maps?v=1.4.14&key=f7afe9ac13d8d7afcfdd07b8e8e551fa"
+    ></script>
+    <!-- UI组件库 1.0 -->
+    <script src="http://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+    <script type="text/javascript">
+      //创建地图
+      var map = new AMap.Map("container", {
+        zoom: 4
+      });
+      //just some colors
+      var colors = [
+        "#3366cc",
+        "#dc3912",
+        "#ff9900",
+        "#109618",
+        "#990099",
+        "#0099c6",
+        "#dd4477",
+        "#66aa00",
+        "#b82e2e",
+        "#316395",
+        "#994499",
+        "#22aa99",
+        "#aaaa11",
+        "#6633cc",
+        "#e67300",
+        "#8b0707",
+        "#651067",
+        "#329262",
+        "#5574a6",
+        "#3b3eac"
+      ];
+
+      AMapUI.load(
+        ["ui/geo/DistrictExplorer", "lib/$", "ui/misc/PointSimplifier"],
+        function(DistrictExplorer, $, PointSimplifier) {
+          //创建一个实例
+          var districtExplorer = (window.districtExplorer = new DistrictExplorer(
+            {
+              map: map,
+              eventSupport: true, //打开事件支持
+              preload: [100000] //预加载全国
+            }
+          ));
+          //要聚合的点列表
+          var lngLatList;
+          //当前聚焦的区域
+          var currentAreaNode = null;
+          //鼠标hover提示内容
+          var $tipMarkerContent = $('<div class="tipMarker top"></div>');
+          var tipMarker = new AMap.Marker({
+            content: $tipMarkerContent.get(0),
+            offset: new AMap.Pixel(0, 0),
+            bubble: true
+          });
+
+          //根据Hover状态设置相关样式
+          function toggleHoverFeature(feature, isHover, position) {
+            tipMarker.setMap(isHover ? map : null);
+            if (!feature) {
+              return;
+            }
+            var props = feature.properties;
+            if (isHover) {
+              var points = groupedPointsCache[props.adcode] || [];
+              //更新提示内容
+              $tipMarkerContent.html(
+                props.adcode + ": " + props.name + "(" + points.length + ")"
+              );
+              //更新位置
+              tipMarker.setPosition(position || props.center);
+            }
+
+            $("#area-tree")
+              .find('h2[data-adcode="' + props.adcode + '"]')
+              .toggleClass("hover", isHover);
+
+            //更新相关多边形的样式
+            var polys = districtExplorer.findFeaturePolygonsByAdcode(
+              props.adcode
+            );
+            for (var i = 0, len = polys.length; i < len; i++) {
+              polys[i].setOptions({
+                fillOpacity: isHover ? 0.5 : 0.2
+              });
+            }
+          }
+
+          //监听feature的hover事件
+          districtExplorer.on("featureMouseout featureMouseover", function(
+            e,
+            feature
+          ) {
+            toggleHoverFeature(
+              feature,
+              e.type === "featureMouseover",
+              e.originalEvent ? e.originalEvent.lnglat : null
+            );
+          });
+
+          //监听鼠标在feature上滑动
+          districtExplorer.on("featureMousemove", function(e, feature) {
+            //更新提示位置
+            tipMarker.setPosition(e.originalEvent.lnglat);
+          });
+
+          //feature被点击
+          districtExplorer.on("featureClick", function(e, feature) {
+            var props = feature.properties;
+
+            //如果存在子节点
+            if (props.childrenNum > 0) {
+              //切换聚焦区域
+              switch2AreaNode(props.adcode);
+            }
+          });
+
+          //外部区域被点击
+          districtExplorer.on("outsideClick", function(e) {
+            districtExplorer.locatePosition(
+              e.originalEvent.lnglat,
+              function(error, routeFeatures) {
+                if (routeFeatures && routeFeatures.length > 1) {
+                  //切换到省级区域
+                  switch2AreaNode(routeFeatures[1].properties.adcode);
+                } else {
+                  //切换到全国
+                  switch2AreaNode(100000);
+                }
+              },
+              {
+                levelLimit: 2
+              }
+            );
+          });
+
+          //绘制区域面板的节点
+          function renderAreaPanelNode(ele, props, color) {
+            var $box = $("<li/>").addClass("lv_" + props.level);
+            var points = groupedPointsCache[props.adcode] || [];
+            var $h2 = $("<h2/>")
+              .addClass("lv_" + props.level)
+              .attr({
+                "data-adcode": props.adcode,
+                "data-level": props.level,
+                "data-children-num": props.childrenNum || void 0,
+                "data-center": props.center.join(",")
+              })
+              .html(props.name + "(" + points.length + ")")
+              .appendTo($box);
+
+            if (color) {
+              $h2.css("borderColor", color);
+            }
+            //如果存在子节点
+            if (props.childrenNum > 0) {
+              //显示隐藏
+              $('<div class="showHideBtn"></div>').appendTo($box);
+              //子区域列表
+              $("<ul/>")
+                .addClass("sublist lv_" + props.level)
+                .appendTo($box);
+              $('<div class="clear"></div>').appendTo($box);
+              if (props.level !== "country") {
+                $box.addClass("hide-sub");
+              }
+            }
+            $box.appendTo(ele);
+          }
+
+          //填充某个节点的子区域列表
+          function renderAreaPanel(areaNode) {
+            var props = areaNode.getProps();
+            var $subBox = $("#area-tree")
+              .find('h2[data-adcode="' + props.adcode + '"]')
+              .siblings("ul.sublist");
+
+            if (!$subBox.length) {
+              //父节点不存在，先创建
+              renderAreaPanelNode($("#area-tree"), props);
+              $subBox = $("#area-tree").find("ul.sublist");
+            }
+
+            if ($subBox.attr("data-loaded") === "rendered") {
+              return;
+            }
+
+            $subBox.attr("data-loaded", "rendered");
+            var subFeatures = areaNode.getSubFeatures();
+            subFeatures.sort(function(f1, f2) {
+              var props1 = areaNode.getPropsOfFeature(f1),
+                props2 = areaNode.getPropsOfFeature(f2);
+              var points1 = groupedPointsCache[props1.adcode] || [],
+                points2 = groupedPointsCache[props2.adcode] || [];
+              return points2.length - points1.length;
+            });
+
+            //填充子区域
+            for (var i = 0, len = subFeatures.length; i < len; i++) {
+              renderAreaPanelNode(
+                $subBox,
+                areaNode.getPropsOfFeature(subFeatures[i]),
+                colors[i % colors.length]
+              );
+            }
+
+            return $subBox;
+          }
+
+          //绘制某个区域的边界
+          function renderAreaPolygons(areaNode) {
+            //更新地图视野
+            map.setBounds(areaNode.getBounds(), null, null, true);
+            //清除已有的绘制内容
+            districtExplorer.clearFeaturePolygons();
+            //绘制子区域
+            districtExplorer.renderSubFeatures(areaNode, function(feature, i) {
+              var fillColor = colors[i % colors.length];
+              var strokeColor = colors[colors.length - 1 - (i % colors.length)];
+              return {
+                cursor: "default",
+                bubble: true,
+                strokeColor: strokeColor, //线颜色
+                strokeOpacity: 1, //线透明度
+                strokeWeight: 1, //线宽
+                fillColor: fillColor, //填充色
+                fillOpacity: 0.35 //填充透明度
+              };
+            });
+            //绘制父区域
+            districtExplorer.renderParentFeature(areaNode, {
+              cursor: "default",
+              bubble: true,
+              strokeColor: "black", //线颜色
+              strokeOpacity: 1, //线透明度
+              strokeWeight: 1, //线宽
+              fillColor: null, //填充色
+              fillOpacity: 0.35 //填充透明度
+            });
+          }
+
+          //切换区域后刷新显示内容
+          function refreshAreaNode(areaNode) {
+            districtExplorer.setHoverFeature(null);
+            renderAreaPolygons(areaNode);
+            //更新选中节点的class
+            var $nodeEles = $("#area-tree").find("h2");
+            $nodeEles.removeClass("selected");
+            var $selectedNode = $nodeEles
+              .filter("h2[data-adcode=" + areaNode.getAdcode() + "]")
+              .addClass("selected");
+            //展开下层节点
+            $selectedNode.closest("li").removeClass("hide-sub");
+
+            //折叠下层的子节点
+            $selectedNode
+              .siblings("ul.sublist")
+              .children()
+              .addClass("hide-sub");
+          }
+
+          //切换区域
+          function switch2AreaNode(adcode, callback) {
+            if (
+              currentAreaNode &&
+              "" + currentAreaNode.getAdcode() === "" + adcode
+            ) {
+              return;
+            }
+            loadAreaNode(adcode, function(error, areaNode) {
+              if (error) {
+                if (callback) {
+                  callback(error);
+                }
+                return;
+              }
+              currentAreaNode = window.currentAreaNode = areaNode;
+              //设置当前使用的定位用节点
+              districtExplorer.setAreaNodesForLocating([currentAreaNode]);
+              refreshAreaNode(areaNode);
+              if (callback) {
+                callback(null, areaNode);
+              }
+            });
+          }
+          var groupedPointsCache = {};
+          function getGroupedPoints(adcode) {
+            return groupedPointsCache[adcode] || lngLatList;
+          }
+
+          //保留中间聚合结果
+          function saveGroupedPoints(areaNode, groups) {
+            for (var i = 0, len = groups.length; i < len; i++) {
+              var subFeature = groups[i].subFeature; //所属子区域
+
+              if (!subFeature) {
+                groupedPointsCache["-out-" + areaNode.getAdcode()] =
+                  groups[i].points;
+                continue;
+              }
+              groupedPointsCache[subFeature.properties.adcode] =
+                groups[i].points;
+            }
+          }
+
+          //这里创建一个海量点组件
+          var pointSimplifierIns;
+
+          var questionContent = PointSimplifier.Render.Canvas.getImageContent(
+            "./img/address/question.png",
+            function onload() {
+              pointSimplifierIns.renderLater();
+            },
+            function onerror() {
+              alert("图片加载失败！");
+            }
+          );
+
+          pointSimplifierIns = new PointSimplifier({
+            zIndex: 115,
+            autoSetFitView: false,
+            map: map, //所属的地图实例
+            getPosition: function(item) {
+              return item.pos;
+            },
+            getHoverTitle: function(item, idx) {
+              if (item.gid === -1) {
+                return "区域外";
+              }
+            },
+            //使用GroupStyleRender
+            renderConstructor: PointSimplifier.Render.Canvas.GroupStyleRender,
+            renderOptions: {
+              //点的样式
+              pointStyle: {
+                fillStyle: "red",
+                width: 5,
+                height: 5
+              },
+              getGroupId: function(item) {
+                return item.gid;
+              },
+              groupStyleOptions: function(gid) {
+                //未知区域
+                if (gid === -1) {
+                  return {
+                    pointStyle: {
+                      content: questionContent,
+                      fillStyle: null,
+                      strokeStyle: null,
+                      lineWidth: 2,
+                      width: 16,
+                      height: 16
+                    }
+                  };
+                }
+                return {
+                  pointStyle: {
+                    fillStyle: colors[gid % colors.length],
+                    //strokeStyle: 'rgba(255,255,255,0.3)',
+                    lineWidth: 1
+                  }
+                };
+              }
+            }
+          });
+
+          function renderGroupedPoints(groups) {
+            var pointsData = [];
+            for (var i = 0, len = groups.length; i < len; i++) {
+              var gid = groups[i].subFeatureIndex;
+              for (var j = 0, jlen = groups[i].points.length; j < jlen; j++) {
+                pointsData.push({
+                  gid: gid,
+                  pos: groups[i].points[j]
+                });
+              }
+            }
+            pointSimplifierIns.setData(pointsData);
+          }
+
+          //加载区域
+          function loadAreaNode(adcode, callback) {
+            districtExplorer.loadAreaNode(adcode, function(error, areaNode) {
+              if (error) {
+                if (callback) {
+                  callback(error);
+                }
+                console.error(error);
+                return;
+              }
+              var points = getGroupedPoints(adcode);
+              //当前子区域聚合
+              var groups = areaNode.groupByPosition(points, function(item) {
+                return item;
+              });
+              saveGroupedPoints(areaNode, groups);
+              var $subBox = renderAreaPanel(areaNode);
+              if (groups.length && !groups[groups.length - 1].subFeature) {
+                renderAreaPanelNode(
+                  $subBox,
+                  {
+                    adcode: "-out-" + areaNode.getAdcode(),
+                    name: "区域外",
+                    center: groups[groups.length - 1].points[0]
+                  },
+                  "gray"
+                );
+              }
+              renderGroupedPoints(groups);
+              if (callback) {
+                callback(null, areaNode);
+              }
+            });
+          }
+
+          $("#area-tree").on(
+            "mouseenter mouseleave",
+            "h2[data-adcode]",
+            function(e) {
+              if (e.type === "mouseleave") {
+                districtExplorer.setHoverFeature(null);
+                return;
+              }
+              var adcode = $(this).attr("data-adcode");
+              districtExplorer.setHoverFeature(
+                currentAreaNode.getSubFeatureByAdcode(adcode)
+              );
+            }
+          );
+
+          $("#area-tree").on("click", "h2[data-children-num]", function() {
+            var adcode = $(this).attr("data-adcode");
+            switch2AreaNode(adcode);
+          });
+
+          $("#area-tree").on("click", ".showHideBtn", function() {
+            var $li = $(this).closest("li");
+            $li.toggleClass("hide-sub");
+            if (!$li.hasClass("hide-sub")) {
+              //子节点列表被展开
+              var $subList = $li.children("ul.sublist");
+              //尚未加载
+              if (!$subList.attr("data-loaded")) {
+                $subList.attr("data-loaded", "loading");
+                $li.addClass("loading");
+                //加载
+                loadAreaNode(
+                  $li.children("h2").attr("data-adcode"),
+                  function() {
+                    $li.removeClass("loading");
+                  }
+                );
+              }
+            }
+          });
+
+          $('<div id="loadingTip">加载数据，请稍候...</div>').appendTo(
+            document.body
+          );
+          //加载数据
+          $.get("https://a.amap.com/amap-ui/static/data/10w.txt", function(
+            csv
+          ) {
+            $("#loadingTip").remove();
+            var lines = csv.split("\n");
+            var lngLats = [];
+            for (var i = 0, len = lines.length; i < len; i++) {
+              if (!lines[i]) {
+                continue;
+              }
+              var parts = lines[i].split(",");
+              lngLats.push([parseFloat(parts[0]), parseFloat(parts[1])]);
+            }
+            lngLatList = lngLats;
+            groupedPointsCache["100000"] = lngLats; //全国
+            //加载全国
+            switch2AreaNode(100000);
+          });
+        }
+      );
+    </script>
+  </body>
+</html>

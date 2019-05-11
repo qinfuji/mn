@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1.0, user-scalable=no, width=device-width"
+    />
+    <title>选址</title>
+    <link rel="stylesheet" type="text/css" href="./css/address/area.css" />
+    <link rel="stylesheet" href="./css/address/main.css" />
+    <link
+      rel="stylesheet"
+      href="./css/plugins/hc-offcanvas-nav/hc-offcanvas-nav.css"
+    />
+    <script
+      type="text/javascript"
+      src="http://webapi.amap.com/maps?v=1.4.14&key=f7afe9ac13d8d7afcfdd07b8e8e551fa"
+    ></script>
+    <!-- UI组件库 1.0 -->
+    <script src="http://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+    <script src="./js/jquery-3.1.1.min.js"></script>
+    <script src="./js/plugins/hc-offcanvas-nav/hc-offcanvas-nav.js"></script>
+  </head>
+
+  <body>
+    <div id="outer-box">
+      <div class="toolsbar">
+        <div class="item search">
+          <div class="input-item">
+            <div class="input-item-prepend">
+              <span class="input-item-text">省市区</span>
+            </div>
+            <select
+              id="province"
+              style="width:100px"
+              onchange="areaChange(this)"
+            ></select>
+          </div>
+          <div class="input-item">
+            <div class="input-item-prepend">
+              <span class="input-item-text">地级市</span>
+            </div>
+            <select
+              id="city"
+              style="width:100px"
+              onchange="areaChange(this)"
+            ></select>
+          </div>
+          <div class="input-item">
+            <div class="input-item-prepend">
+              <span class="input-item-text">区县</span>
+            </div>
+            <select
+              id="district"
+              style="width:100px"
+              onchange="areaChange(this)"
+            ></select>
+          </div>
+          <div class="input-item">
+            <div class="input-item-prepend">
+              <span class="input-item-text">街道</span>
+            </div>
+            <select
+              id="street"
+              style="width:100px"
+              onchange="setCenter(this)"
+            ></select>
+          </div>
+        </div>
+        <div class="item tools">创建机会点</div>
+      </div>
+      <div id="chancelist" class="" style="display: none;">机会点列表</div>
+      <div id="chanceinfo" class="" style="display: none;">机会点信息</div>
+      <div id="container" tabindex="0"></div>
+    </div>
+    <!--区域查询-->
+
+    <script type="text/javascript">
+      //jquery 别名
+      //var $j = jQuery.noConflict();
+    </script>
+  </body>
+  <script src="./js/address/index.js"></script>
+</html>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mn.modules.api.dao.SyRawdataDao">
+
+	<!-- 可根据自己的需求，是否要使用
+    <resultMap type="com.mn.modules.device.entity.SyRawdataEntity" id="syRawdataMap">
+        <result property="id" column="id"/>
+        <result property="chipno" column="chipno"/>
+        <result property="mac" column="mac"/>
+        <result property="scene" column="scene"/>
+        <result property="dist" column="dist"/>
+        <result property="t" column="t"/>
+        <result property="bssidname" column="bssidName"/>
+        <result property="relateid" column="relateId"/>
+        <result property="lon" column="lon"/>
+        <result property="lat" column="lat"/>
+        <result property="rssi" column="rssi"/>
+        <result property="manu" column="manu"/>
+        <result property="ismobile" column="ismobile"/>
+        <result property="isRssibid" column="is_rssibid"/>
+        <result property="createtime" column="createtime"/>
+    </resultMap>
+-->
+
+</mapper>
