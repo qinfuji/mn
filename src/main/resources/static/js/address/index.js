@@ -1,5 +1,5 @@
 //just some colors
-var mapContainerId = "container";
+var mapContainerId = "mapcontainer";
 var map;
 var colors = [
   "#3366cc",

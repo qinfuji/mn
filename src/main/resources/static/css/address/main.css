@@ -482,3 +482,64 @@ input[type="date"]:focus::-ms-value {
   align-items: center;
   height: 3rem;
 }
+
+.container {
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.container .content {
+  flex-grow: 1;
+  display: flex;
+}
+
+.chancelist {
+  width: 20%;
+  height: 100%;
+  padding-top: 55px;
+}
+
+.chancelist .title {
+  height: 40px;
+
+  line-height: 40px;
+  padding-left: 20px;
+  background: #c5c9cc;
+  font-size: 16px;
+}
+
+.chanceinfo {
+  height: 100%;
+  width: 20%;
+  padding-top: 60px;
+}
+
+.mapcontainer {
+  height: 100%;
+  flex-grow: 1;
+  padding-top: 60px;
+}
+
+.chanceItem {
+  padding-left: 10px;
+  border-bottom: 1px solid #ced4da;
+  cursor: pointer;
+}
+
+.chanceItem .chance_name {
+  font-size: 16px;
+  color: #111213;
+  font-weight: 600;
+}
+
+.chanceItem .chance_address {
+  font-size: 14px;
+  color: #111213;
+  font-weight: 100;
+}
+
+.chanceItem:hover {
+  background: #80adff;
+}
