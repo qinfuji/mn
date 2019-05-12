@@ -29,11 +29,9 @@ $(document).ready(function() {
   loadEvn().then(function(env) {
     return new Promise(function(resolve, reject) {
       //初始化地图
-      initExplorerMap(env);
+      initMap(env);
     });
   });
-  //初始化机会点列表
-  initChanceList();
 });
 
 function loadEvn() {
@@ -67,7 +65,7 @@ function loadEvn() {
   });
 }
 
-function initExplorerMap(env) {
+function initMap(env) {
   map = new AMap.Map(mapContainerId, {
     zoom: 4,
     mapStyle: "amap://styles/ab2c0d8d125f8d8556e453149622a5a2"
@@ -82,14 +80,10 @@ function initExplorerMap(env) {
   }));
 
   var scale = new AMap.Scale({
-      visible: true
-    }),
-    toolBar = new AMap.ToolBar({
-      visible: true
-    });
+    visible: true
+  });
 
   map.addControl(scale);
-  map.addControl(toolBar);
   //当前聚焦的区域
   var currentAreaNode = null;
   //鼠标hover提示内容
@@ -152,7 +146,6 @@ function initExplorerMap(env) {
 
   //外部区域被点击
   districtExplorer.on("outsideClick", function(e) {
-    console.log("outsideClick");
     districtExplorer.locatePosition(
       e.originalEvent.lnglat,
       function(error, routeFeatures) {
@@ -167,7 +160,7 @@ function initExplorerMap(env) {
         }
       },
       {
-        levelLimit: 4
+        levelLimit: 3
       }
     );
   });
@@ -224,7 +217,6 @@ function initExplorerMap(env) {
         return;
       }
       currentAreaNode = window.currentAreaNode = areaNode;
-      console.log(areaNode);
       //设置当前使用的定位用节点
       districtExplorer.setAreaNodesForLocating([currentAreaNode]);
       refreshAreaNode(areaNode);
@@ -244,19 +236,121 @@ function initExplorerMap(env) {
         console.error(error);
         return;
       }
+      loadAreaData(areaNode);
       if (callback) {
         callback(null, areaNode);
       }
     });
   }
 
+  //行政区数
+  var areaTree = {};
   //全国
   switch2AreaNode(100000, function(err, areaNode) {
     console.log(areaNode);
   });
-}
 
-function initMyMap({ map, DistrictExplorer, $, PoiPicker, ajax }) {
+  $("#province,#city,#district").on("change", function(e) {
+    switch2AreaNode($(this).val());
+  });
+
+  function loadAreaData(areaNode) {
+    var adcode = areaNode.getAdcode();
+    var areaProps = areaNode.getProps();
+    var subFeatures = areaNode.getSubFeatures();
+    console.log("parent", areaProps);
+    console.log("subFeatures", subFeatures);
+    if (!areaTree[adcode]) {
+      areaTree[adcode] = areaProps;
+    }
+    var electEle;
+    if (areaProps.level === "country") {
+      electEle = $("#province").empty();
+      electEle.append("<option>请选择</option>");
+      $("#city").empty();
+      $("#district").empty();
+    } else if (areaProps.level === "province") {
+      electEle = $("#city").empty();
+      electEle.append("<option>请选择</option>");
+      $("#district").empty();
+    } else if (areaProps.level === "city") {
+      electEle = $("#district").empty();
+      electEle.append("<option>请选择</option>");
+    }
+    if (subFeatures && subFeatures.length) {
+      var childAdcodes = [];
+      for (var i = 0; i < subFeatures.length; i++) {
+        childAdcodes.push(subFeatures[i].properties.adcode);
+        var _childProps = subFeatures[i].properties;
+        if (!areaTree[_childProps.adcode]) {
+          areaTree[_childProps.adcode] = _childProps;
+        }
+        var option = $("<option>")
+          .text(_childProps.name)
+          .val(_childProps.adcode);
+        electEle.append(option);
+      }
+      areaTree[adcode].children = childAdcodes;
+    }
+    if (areaProps.level === "province") {
+      $("#province")
+        .find("option:selected")
+        .prop("selected", false);
+      $("#province option[value='" + areaProps.adcode + "']").prop(
+        "selected",
+        true
+      );
+    } else if (areaProps.level === "city") {
+      $("#city")
+        .find("option:selected")
+        .prop("selected", false);
+      $("#city option[value='" + areaProps.adcode + "']").prop(
+        "selected",
+        true
+      );
+    } else if (areaProps.level === "district") {
+      $("#district")
+        .find("option:selected")
+        .prop("selected", false);
+      $("#district option[value='" + areaProps.adcode + "']").prop(
+        "selected",
+        true
+      );
+    }
+  }
+
+  /**
+   * POI查询
+   * @param keywords 查询关键字
+   * @param currentAreaNode 当前区域节点
+   */
+  function keywordSearch(keywords, currentAreaNode, options = {}) {
+    var autoOptions = Object.assign(
+      {
+        pageSize: 20, //查询的分页
+        extensions: "all", //返回基本+详细信息
+        type:
+          "汽车服务|汽车销售|汽车维修|摩托车服务|餐饮服务|购物服务|生活服务|体育休闲服务|医疗保健服务|住宿服务|风景名胜|商务住宅|政府机构及社会团体|科教文化服务|交通设施服务|金融保险服务|公司企业|道路附属设施|地名地址信息|公共设施"
+      },
+      options
+    );
+    if (currentAreaNode) {
+      autoOptions.city = currentAreaNode.adcode;
+      autoOptions.citylimit = true;
+    }
+    var placeSearch = new AMap.PlaceSearch(autoOptions);
+    return new Promise(function(resolve, reject) {
+      placeSearch.search(keywords, function(status, result) {
+        if (status === "error") {
+          return reject(result);
+        } else if (status === "no_data") {
+          return resolve([]);
+        }
+        return resolve(result);
+      });
+    });
+  }
+
   /**
    * 初始化机会点列表
    * @return 返回机会点对象列表
@@ -275,6 +369,7 @@ function initMyMap({ map, DistrictExplorer, $, PoiPicker, ajax }) {
       ajax.get("", {});
     });
   }
+
   /**
    * 设置机会点
    * @param map 地图对象
@@ -326,41 +421,6 @@ function initMyMap({ map, DistrictExplorer, $, PoiPicker, ajax }) {
     map.addControl(geolocation);
     geolocation.getCurrentPosition();
   }
-
-  /**
-   * POI查询
-   * @param keywords 查询关键字
-   * @param currentAreaNode 当前区域节点
-   */
-  function keywordSearch(keywords, currentAreaNode, options = {}) {
-    var autoOptions = Object.assign(
-      {
-        pageSize: 20, //查询的分页
-        extensions: "all" //返回基本+详细信息
-      },
-      options
-    );
-    if (currentAreaNode) {
-      autoOptions.city = currentAreaNode.adcode;
-      autoOptions.citylimit = true;
-    }
-    var placeSearch = new AMap.PlaceSearch(autoOptions);
-    return new Promise(function(resolve, reject) {
-      placeSearch.search(keywords, function(status, result) {
-        if (status === "error") {
-          return reject(result);
-        } else if (status === "no_data") {
-          return resolve([]);
-        }
-        return resolve(result);
-      });
-    });
-  }
-
-  return {
-    keywordSearch,
-    locationSelf
-  };
 }
 
 /**

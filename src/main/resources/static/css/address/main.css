@@ -190,7 +190,6 @@ select {
   white-space: nowrap;
   background-color: #e9ecef;
   border: 1px solid #ced4da;
-  border-radius: 0.25rem;
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
 }
@@ -299,7 +298,6 @@ input[type="date"] {
     no-repeat right 0.75rem center;
   background-size: 8px 10px;
   border: 1px solid #ced4da;
-  border-radius: 0.25rem;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;

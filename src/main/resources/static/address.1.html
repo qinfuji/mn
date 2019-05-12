@@ -34,7 +34,6 @@
             <select
               id="province"
               style="width:100px"
-              onchange="areaChange(this)"
             ></select>
           </div>
           <div class="input-item">
@@ -44,7 +43,6 @@
             <select
               id="city"
               style="width:100px"
-              onchange="areaChange(this)"
             ></select>
           </div>
           <div class="input-item">
@@ -54,18 +52,17 @@
             <select
               id="district"
               style="width:100px"
-              onchange="areaChange(this)"
             ></select>
           </div>
           <div class="input-item">
-            <div class="input-item-prepend">
-              <span class="input-item-text">街道</span>
-            </div>
-            <select
+            <input
               id="street"
               style="width:100px"
               onchange="setCenter(this)"
             ></select>
+            <div class="input-item-prepend">
+              <span class="input-item-text">搜索</span>
+            </div>
           </div>
         </div>
         <div class="item tools">创建机会点</div>
