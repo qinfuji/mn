@@ -13,6 +13,8 @@
       rel="stylesheet"
       href="./css/plugins/hc-offcanvas-nav/hc-offcanvas-nav.css"
     />
+    <link rel="stylesheet" href="./font-awesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="./css/address/tabs.css"/>
     <script
       type="text/javascript"
       src="http://webapi.amap.com/maps?v=1.4.14&key=f7afe9ac13d8d7afcfdd07b8e8e551fa"
@@ -56,11 +58,10 @@
           </div>
           <div class="input-item">
             <input
-              id="street"
+              id="searchStr"
               style="width:100px"
-              onchange="setCenter(this)"
             ></select>
-            <div class="input-item-prepend">
+            <div class="input-item-prepend" id="search_btn">
               <span class="input-item-text">搜索</span>
             </div>
           </div>
@@ -72,14 +73,45 @@
             <div class="title">机会点列表</div>
             <div>
               <div class="chanceItem">
-                <div class="chance_name">ZXasdasdasd</div>
-                <div class="chance_address">ZXasdasdasd</div>
+                <div class="chance_name">肯德基潜江站</div>
+                <div class="chance_address">地址：潜江市高新区</div>
+                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
+              </div>
+              <div class="chanceItem">
+                <div class="chance_name">肯德基潜江站</div>
+                <div class="chance_address">地址：潜江市高新区</div>
+                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
+              </div>
+              <div class="chanceItem">
+                <div class="chance_name">肯德基潜江站</div>
+                <div class="chance_address">地址：潜江市高新区</div>
+                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
+              </div>
+              <div class="chanceItem">
+                <div class="chance_name">肯德基潜江站</div>
+                <div class="chance_address">地址：潜江市高新区</div>
+                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
               </div>
             </div>
           </div>
           <div class="content">
             <div class="mapcontainer" id="mapcontainer" tabindex="0"></div> 
-            <div id="chanceinfo" class="chanceinfo">机会点信息</div> 
+            <div  class="content_left">
+              <div class="tabs tabs-style-topline">
+                  <nav>
+                      <ul>
+                        <li class=""><a href="#"><span>机会点信息</span></a></li>
+                        <li class="tab-current"><a href="#"><span>搜索结果</span></a></li>
+                      </ul>
+                  </nav>
+              </div>
+              <div id="searchResultPanel" class="searchResultPanel">
+                <div class="searchList">
+                </div>
+                <div class="pagination">
+                </div>
+              </div>
+            </div> 
           </div>
       </div>
     </div>

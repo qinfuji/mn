@@ -251,8 +251,180 @@ function initMap(env) {
   });
 
   $("#province,#city,#district").on("change", function(e) {
-    switch2AreaNode($(this).val());
+    if ($(this).val()) {
+      switch2AreaNode($(this).val());
+    }
   });
+
+  $(".chanceItem").on("click", function() {
+    if ($(this).hasClass("selected")) {
+      $(this).removeClass("selected");
+    } else {
+      $(this).addClass("selected");
+    }
+  });
+
+  $("#search_btn").on("click", function() {
+    var adcode =
+      $("#district").val() || $("#city").val() || $("#province").val();
+    var searchStr = $("#searchStr").val();
+    if (!searchStr) {
+      alert("请填写搜索关键字");
+      return;
+    }
+    function search(adcode, searchStr, options) {
+      keywordSearch(adcode, searchStr, options).then(function(result) {
+        var searchList = $(".searchList").empty();
+        var elements = [];
+        if (
+          /ok/i.test(result.info) &&
+          result.poiList &&
+          result.poiList.pois.length
+        ) {
+          result.poiList.pois.forEach(function(item, index) {
+            var _ele = $(`<div class="resultItem" data-poi="${encodeURIComponent(
+              JSON.stringify(item)
+            )}">
+               <div class="resultItem_name">${item.name}</div>
+               <div class="resultItem_address">地址：${item.address ||
+                 item.adname ||
+                 item.cityname}</div>
+             </div>`);
+            elements.push(_ele);
+          });
+          //设置分页
+          var count = result.poiList.count;
+          var pageIndex = result.poiList.pageIndex;
+          var pageSize = result.poiList.pageSize;
+          var pagination = $(".pagination").empty();
+          pagination.hide();
+          if (count > pageSize) {
+            pagination.show();
+            var pre = $("<span>«</span>").on("click", function() {
+              if (pageIndex - 1 > 0) {
+                search(adcode, searchStr, {
+                  pageIndex: pageIndex - 1,
+                  pageSize: pageSize
+                });
+              }
+            });
+            pagination.append(pre);
+            var pageCount =
+              parseInt(count / pageSize) + (count % pageSize === 0 ? 0 : 1);
+            if (pageIndex <= 4) {
+              for (var i = 0; i < 4 && i < pageCount; i++) {
+                if (i + 1 === pageIndex) {
+                  pagination.append(
+                    `<span data-index="${i +
+                      1}" class="indicator selected">${i + 1}</span>`
+                  );
+                } else {
+                  pagination.append(
+                    `<span data-index="${i + 1}" class="indicator">${i +
+                      1}</span>`
+                  );
+                }
+              }
+            } else {
+              for (var i = pageIndex - 4; i < pageIndex; i++) {
+                if (i + 1 === pageIndex) {
+                  pagination.append(
+                    `<span data-index="${i +
+                      1}" class="indicator selected">${i + 1}</span>`
+                  );
+                } else {
+                  pagination.append(
+                    `<span data-index="${i + 1}" class="indicator">${i +
+                      1}</span>`
+                  );
+                }
+              }
+            }
+            var next = $("<span>»</span>").on("click", function() {
+              search(adcode, searchStr, {
+                pageIndex: pageIndex + 1,
+                pageSize: pageSize
+              });
+            });
+            pagination.append(next);
+          } else {
+            pagination.hide();
+          }
+        } else {
+          var _ele = $(
+            `<div class="resultItem"><div class="resultItem_address">没有匹配的数据</div></div>`
+          );
+          elements.push(_ele);
+        }
+        searchList.append(elements);
+        if (elements && elements.length) {
+          $(".resultItem").on("click", function() {
+            var poiData = JSON.parse(decodeURIComponent($(this).data("poi")));
+            $(".resultItem").removeClass("selected");
+            $(this).addClass("selected");
+            setLocationMarker(poiData);
+          });
+          $(".indicator").on("click", function() {
+            search(adcode, searchStr, {
+              pageIndex: $(this).data("index"),
+              pageSize: pageSize
+            });
+          });
+        }
+      });
+    }
+    search(adcode, searchStr, {});
+  });
+
+  function setLocationMarker(poiData) {
+    if (!poiData) return;
+    map.clearMap();
+    map.panTo(poiData.location);
+    map.setZoom(15);
+
+    var options = {
+      strokeColor: "#F33", //线颜色
+      strokeOpacity: 0.6, //线透明度
+      strokeWeight: 1, //线粗细度
+      fillColor: "#ee2200", //填充颜色
+      fillOpacity: 0.35 //填充透明度
+    };
+    //圆心
+    var circle1 = new AMap.Circle(
+      Object.assign(
+        {
+          center: new AMap.LngLat(poiData.location.lng, poiData.location.lat), // 圆心位置
+          radius: 20 //半径
+        },
+        options
+      )
+    );
+
+    //一公里
+    var circle2 = new AMap.Circle(
+      Object.assign(
+        {
+          center: new AMap.LngLat(poiData.location.lng, poiData.location.lat), // 圆心位置
+          radius: 500 //半径
+        },
+        options
+      )
+    );
+
+    //三公里
+    var circle3 = new AMap.Circle(
+      Object.assign(
+        {
+          center: new AMap.LngLat(poiData.location.lng, poiData.location.lat), // 圆心位置
+          radius: 1500 //半径
+        },
+        options
+      )
+    );
+    map.add(circle1);
+    map.add(circle2);
+    map.add(circle3);
+  }
 
   function loadAreaData(areaNode) {
     var adcode = areaNode.getAdcode();
@@ -266,16 +438,16 @@ function initMap(env) {
     var electEle;
     if (areaProps.level === "country") {
       electEle = $("#province").empty();
-      electEle.append("<option>请选择</option>");
+      electEle.append("<option value=''>请选择</option>");
       $("#city").empty();
       $("#district").empty();
     } else if (areaProps.level === "province") {
       electEle = $("#city").empty();
-      electEle.append("<option>请选择</option>");
+      electEle.append("<option value=''>请选择</option>");
       $("#district").empty();
     } else if (areaProps.level === "city") {
       electEle = $("#district").empty();
-      electEle.append("<option>请选择</option>");
+      electEle.append("<option value=''>请选择</option>");
     }
     if (subFeatures && subFeatures.length) {
       var childAdcodes = [];
@@ -322,9 +494,10 @@ function initMap(env) {
   /**
    * POI查询
    * @param keywords 查询关键字
-   * @param currentAreaNode 当前区域节点
+   * @param limitAdcode 当前区域节点
    */
-  function keywordSearch(keywords, currentAreaNode, options = {}) {
+  function keywordSearch(limitAdcode, keywords, options = {}) {
+    console.log(keywords);
     var autoOptions = Object.assign(
       {
         pageSize: 20, //查询的分页
@@ -334,8 +507,8 @@ function initMap(env) {
       },
       options
     );
-    if (currentAreaNode) {
-      autoOptions.city = currentAreaNode.adcode;
+    if (limitAdcode) {
+      autoOptions.city = limitAdcode;
       autoOptions.citylimit = true;
     }
     var placeSearch = new AMap.PlaceSearch(autoOptions);
@@ -343,8 +516,6 @@ function initMap(env) {
       placeSearch.search(keywords, function(status, result) {
         if (status === "error") {
           return reject(result);
-        } else if (status === "no_data") {
-          return resolve([]);
         }
         return resolve(result);
       });
