@@ -384,10 +384,10 @@ function initMap(env) {
 
     var options = {
       strokeColor: "#F33", //线颜色
-      strokeOpacity: 0.6, //线透明度
-      strokeWeight: 1, //线粗细度
+      strokeOpacity: 0.1, //线透明度
+      strokeWeight: 0.1, //线粗细度
       fillColor: "#ee2200", //填充颜色
-      fillOpacity: 0.35 //填充透明度
+      fillOpacity: 0.1 //填充透明度
     };
     //圆心
     var circle1 = new AMap.Circle(
