@@ -65,6 +65,128 @@ function loadEvn() {
   });
 }
 
+/**************redux************* */
+
+var ActionTypes = {
+  UPDATE_CHANCE: "updateChance", //设置机会点坐标
+  UPDATE_CHANGE_PROP: "updateChanceProp", //更新属性
+  DELETE_CHANCE: "deleteChance", //删除机会点
+  ADD_CHANCE: "addChance", //添加机会点
+  UPDATE_CHANCE_LIST: "updateChanceList" //更新机会点列表
+};
+
+/**
+ * 更新机会点
+ */
+function updateChance(chance) {
+  return function(dispatch) {
+    dispatch({
+      type: ActionTypes.UPDATE_CHANCE,
+      payload: chance
+    });
+  };
+}
+
+/**
+ * 更新属性
+ */
+function updateChanceProp(propName, propValue) {
+  return function(dispatch) {
+    dispatch({
+      type: ActionTypes.UPDATE_CHANGE_PROP,
+      payload: {
+        propName: propName,
+        propValue: propValue
+      }
+    });
+  };
+}
+
+/**
+ * 查询机会点列表
+ */
+function queryChanceList(adcodeLimit) {
+  return function(dispatch) {
+    return new Promise(function(resolve, reject) {
+      var test = [
+        {
+          name: "肯德基1",
+          chance_id: "ABC1",
+          id: 1,
+          fence: "", //围栏
+          province: "", //省
+          provinceName: "",
+          city: "",
+          cityName: "",
+          district: "",
+          districtName: "",
+          address: "湖北省潜江市园林街道县河街11号",
+          lnglat: "112.900765,30.41671"
+        },
+        {
+          name: "肯德基2",
+          chance_id: "ABC2",
+          id: 2,
+          fence: "", //围栏
+          province: "", //省
+          provinceName: "",
+          city: "",
+          cityName: "",
+          district: "",
+          districtName: "",
+          address:
+            "湖北省潜江市园林街道园林三小艺术幼儿园潜江市自然资源和规划局",
+          lnglat: "112.902101,30.415831"
+        },
+        {
+          name: "肯德基3",
+          chanceId: "ABC3",
+          id: 3,
+          fence: "", //围栏
+          province: "", //省
+          provinceName: "",
+          city: "",
+          cityName: "",
+          district: "",
+          districtName: "",
+          address: "湖北省潜江市泰丰街道健康巷121号",
+          lnglat: "112.900491,30.414823"
+        }
+      ];
+      resolve(test);
+    }).then(function(chanceList) {
+      dispatch({
+        type: ActionTypes.UPDATE_CHANCE_LIST,
+        payload: chanceList
+      });
+    });
+  };
+}
+
+function ChanceRedux(state = {}, action) {
+  if (action.type === ActionTypes.UPDATE_CHANCE) {
+    return {
+      chanceList: state.chanceList,
+      currentChance: action.payload
+    };
+  } else if (action.type === ActionTypes.UPDATE_CHANGE_PROP) {
+    return {
+      chanceList: state.chanceList,
+      currentChance: Object.assign(state.currentChance, {
+        [action.payload.propName]: action.payload.propValue
+      })
+    };
+  } else if (action.type === ActionTypes.UPDATE_CHANCE_LIST) {
+    return {
+      chanceList: action.payload,
+      currentChance: state.currentChance
+    };
+  }
+  return state;
+}
+
+/************************************************ */
+
 //当前模式，地图模式，编辑模式
 var ModeEnum = {
   MAP: "map", //地图模式
@@ -82,6 +204,26 @@ function initMap(env) {
 
   //当前的模式
   var currentMode = ModeEnum.MAP;
+  var currentChance; //当前操作的机会点
+  var chanceList; //当前左边的机会点列表
+  var searchList; //查询结果
+
+  var store = Redux.createStore(
+    ChanceRedux,
+    Redux.applyMiddleware(window.ReduxThunk.default)
+  );
+  var unsubscribe = store.subscribe(function() {
+    //console.log(store.getState());
+    if (
+      store.getState().chanceList &&
+      chanceList !== store.getState().chanceList
+    ) {
+      chanceList = store.getState().chanceList;
+      loadChanceList(store.getState().chanceList);
+    }
+  });
+
+  store.dispatch(queryChanceList());
 
   //创建一个实例
   var districtExplorer = (window.districtExplorer = new DistrictExplorer({
@@ -265,77 +407,26 @@ function initMap(env) {
   /**
    * 加载机会点列表
    */
-  function loadChanceList(adcodeLimit) {
-    return new Promise(function(resolve, reject) {
-      var test = [
-        {
-          name: "肯德基1",
-          chance_id: "ABC1",
-          id: 1,
-          fence: "", //围栏
-          province: "", //省
-          provinceName: "",
-          city: "",
-          cityName: "",
-          district: "",
-          districtName: "",
-          address: "湖北省潜江市园林街道县河街11号",
-          lnglat: "112.900765,30.41671"
-        },
-        {
-          name: "肯德基2",
-          chance_id: "ABC2",
-          id: 2,
-          fence: "", //围栏
-          province: "", //省
-          provinceName: "",
-          city: "",
-          cityName: "",
-          district: "",
-          districtName: "",
-          address:
-            "湖北省潜江市园林街道园林三小艺术幼儿园潜江市自然资源和规划局",
-          lnglat: "112.902101,30.415831"
-        },
-        {
-          name: "肯德基3",
-          chanceId: "ABC3",
-          id: 3,
-          fence: "", //围栏
-          province: "", //省
-          provinceName: "",
-          city: "",
-          cityName: "",
-          district: "",
-          districtName: "",
-          address: "湖北省潜江市泰丰街道健康巷121号",
-          lnglat: "112.900491,30.414823"
-        }
-      ];
-      resolve(test);
-    }).then(function(chanceList) {
-      var container = $("#chancelistContainer").empty();
-      var items = [];
-      if (chanceList && chanceList.length) {
-        console.log(chanceList);
-        chanceList.forEach(function(chance) {
-          var itemele = `<div class="chanceItem" data-json="${encodeURIComponent(
-            JSON.stringify(chance)
-          )}">
+  function loadChanceList(chanceList) {
+    var container = $("#chancelistContainer").empty();
+    var items = [];
+    if (chanceList && chanceList.length) {
+      console.log(chanceList);
+      chanceList.forEach(function(chance) {
+        var itemele = `<div class="chanceItem" data-json="${encodeURIComponent(
+          JSON.stringify(chance)
+        )}">
             <div class="chance_name">${chance.name}</div>
             <div class="chance_address">地址：${chance.address}</div>
           </div>`;
-          items.push(itemele);
-        });
-      } else {
-        var itemele = `<div class="chanceItem"><div class="chance_address">没有机会点数据</div></div>`;
         items.push(itemele);
-      }
-      container.append(items);
-    });
+      });
+    } else {
+      var itemele = `<div class="chanceItem"><div class="chance_address">没有机会点数据</div></div>`;
+      items.push(itemele);
+    }
+    container.append(items);
   }
-
-  loadChanceList();
 
   $("#province,#city,#district").on("change", function(e) {
     changeMode(ModeEnum.MAP);
