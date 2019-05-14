@@ -52,9 +52,9 @@ function loadEvn() {
         [
           "AMap.PlaceSearch",
           "AMap.Geolocation",
-          "AMap.PlaceSearch",
           "AMap.Scale",
-          "AMap.ToolBar"
+          "AMap.ToolBar",
+          "AMap.Geocoder"
         ],
         function() {
           //异步加载插件
@@ -65,6 +65,13 @@ function loadEvn() {
   });
 }
 
+//当前模式，地图模式，编辑模式
+var ModeEnum = {
+  MAP: "map", //地图模式
+  EDIT: "edit", //机会点编辑模式
+  CREATE: "create" //机会点创建模式
+};
+
 function initMap(env) {
   map = new AMap.Map(mapContainerId, {
     zoom: 4,
@@ -72,7 +79,10 @@ function initMap(env) {
   });
   var DistrictExplorer = env.DistrictExplorer;
   var $ = env.$;
-  var PoiPicker = env.PoiPicker;
+
+  //当前的模式
+  var currentMode = ModeEnum.MAP;
+
   //创建一个实例
   var districtExplorer = (window.districtExplorer = new DistrictExplorer({
     eventSupport: true, //打开事件支持
@@ -120,6 +130,7 @@ function initMap(env) {
 
   //监听feature的hover事件
   districtExplorer.on("featureMouseout featureMouseover", function(e, feature) {
+    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
     toggleHoverFeature(
       feature,
       e.type === "featureMouseover",
@@ -129,13 +140,15 @@ function initMap(env) {
 
   //监听鼠标在feature上滑动
   districtExplorer.on("featureMousemove", function(e, feature) {
+    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
     //更新提示位置
     tipMarker.setPosition(e.originalEvent.lnglat);
   });
 
   //feature被点击
   districtExplorer.on("featureClick", function(e, feature) {
-    console.log("featureClick");
+    console.log(currentMode);
+    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
     var props = feature.properties;
     //如果存在子节点
     //if (props.childrenNum > 0) {
@@ -146,6 +159,7 @@ function initMap(env) {
 
   //外部区域被点击
   districtExplorer.on("outsideClick", function(e) {
+    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
     districtExplorer.locatePosition(
       e.originalEvent.lnglat,
       function(error, routeFeatures) {
@@ -246,25 +260,171 @@ function initMap(env) {
   //行政区数
   var areaTree = {};
   //全国
-  switch2AreaNode(100000, function(err, areaNode) {
-    console.log(areaNode);
-  });
+  switch2AreaNode(100000, function(err, areaNode) {});
+
+  /**
+   * 加载机会点列表
+   */
+  function loadChanceList(adcodeLimit) {
+    return new Promise(function(resolve, reject) {
+      var test = [
+        {
+          name: "肯德基1",
+          chance_id: "ABC1",
+          id: 1,
+          fence: "", //围栏
+          province: "", //省
+          provinceName: "",
+          city: "",
+          cityName: "",
+          district: "",
+          districtName: "",
+          address: "湖北省潜江市园林街道县河街11号",
+          lnglat: "112.900765,30.41671"
+        },
+        {
+          name: "肯德基2",
+          chance_id: "ABC2",
+          id: 2,
+          fence: "", //围栏
+          province: "", //省
+          provinceName: "",
+          city: "",
+          cityName: "",
+          district: "",
+          districtName: "",
+          address:
+            "湖北省潜江市园林街道园林三小艺术幼儿园潜江市自然资源和规划局",
+          lnglat: "112.902101,30.415831"
+        },
+        {
+          name: "肯德基3",
+          chanceId: "ABC3",
+          id: 3,
+          fence: "", //围栏
+          province: "", //省
+          provinceName: "",
+          city: "",
+          cityName: "",
+          district: "",
+          districtName: "",
+          address: "湖北省潜江市泰丰街道健康巷121号",
+          lnglat: "112.900491,30.414823"
+        }
+      ];
+      resolve(test);
+    }).then(function(chanceList) {
+      var container = $("#chancelistContainer").empty();
+      var items = [];
+      if (chanceList && chanceList.length) {
+        console.log(chanceList);
+        chanceList.forEach(function(chance) {
+          var itemele = `<div class="chanceItem" data-json="${encodeURIComponent(
+            JSON.stringify(chance)
+          )}">
+            <div class="chance_name">${chance.name}</div>
+            <div class="chance_address">地址：${chance.address}</div>
+          </div>`;
+          items.push(itemele);
+        });
+      } else {
+        var itemele = `<div class="chanceItem"><div class="chance_address">没有机会点数据</div></div>`;
+        items.push(itemele);
+      }
+      container.append(items);
+    });
+  }
+
+  loadChanceList();
 
   $("#province,#city,#district").on("change", function(e) {
+    changeMode(ModeEnum.MAP);
     if ($(this).val()) {
       switch2AreaNode($(this).val());
     }
   });
 
-  $(".chanceItem").on("click", function() {
-    if ($(this).hasClass("selected")) {
-      $(this).removeClass("selected");
-    } else {
-      $(this).addClass("selected");
+  $("#createChanceBtn").on("click", function(e) {
+    changeMode(ModeEnum.CREATE);
+    showChanceInfo();
+    map.on("click", markChance);
+  });
+
+  $("#chance_save").on("click", function(e) {
+    console.log($("#chanceForm").serializeArray());
+  });
+
+  $("#chance_revoke").on("click", function(e) {});
+
+  $("#chance_location_btn").on("click", function(e) {
+    var lnglat = $("#chance_lnglat").val();
+    if (lnglat) {
+      var arrLngLat = lnglat.split(",");
+      if (isNaN(arrLngLat[0]) || isNaN(arrLngLat[1])) {
+        alert("经纬度错误");
+        return;
+      }
+      map.panTo([arrLngLat[0], arrLngLat[1]]);
     }
   });
 
+  /**
+   * 标记机会点
+   */
+  function markChance(e) {
+    var chance = {
+      name: "",
+      chanceId: "ABC3",
+      id: 3,
+      fence: "", //围栏
+      province: "", //省
+      provinceName: "",
+      city: "",
+      cityName: "",
+      district: "",
+      districtName: "",
+      address: "",
+      lnglat: e.lnglat.getLng() + "," + e.lnglat.getLat()
+    };
+
+    var lnglat = new AMap.LngLat(e.lnglat.getLng(), e.lnglat.getLat());
+
+    map.clearMap();
+    setChanceMarker(chance);
+    map.panTo(lnglat);
+    map.setZoom(15);
+    changeMode(ModeEnum.EDIT);
+  }
+
+  /**
+   * 切换模式
+   */
+  function changeMode(changeMode) {
+    currentMode = changeMode;
+    if (changeMode === ModeEnum.MAP) {
+      map.off("click", markChance);
+    } else if (changeMode === ModeEnum.EDIT) {
+      map.off("click", markChance);
+    } else if (changeMode == ModeEnum.CREATE) {
+      map.on("click", markChance);
+    }
+  }
+
+  $("#chancelistContainer").on("click", ".chanceItem", function() {
+    $(".chanceItem").removeClass("selected");
+    $(this).addClass("selected");
+    var json = JSON.parse(decodeURIComponent($(this).data("json")));
+    var arrLnglat = json.lnglat.split(",");
+    var lnglat = new AMap.LngLat(arrLnglat[0], arrLnglat[1]);
+    map.clearMap();
+    setLocationMarkerRange(lnglat);
+    setChanceMarker(json);
+    map.panTo(lnglat);
+    map.setZoom(15);
+  });
+
   $("#search_btn").on("click", function() {
+    changeMode(ModeEnum.MAP);
     var adcode =
       $("#district").val() || $("#city").val() || $("#province").val();
     var searchStr = $("#searchStr").val();
@@ -362,7 +522,10 @@ function initMap(env) {
             var poiData = JSON.parse(decodeURIComponent($(this).data("poi")));
             $(".resultItem").removeClass("selected");
             $(this).addClass("selected");
-            setLocationMarker(poiData);
+            map.clearMap();
+            setLocationMarkerRange(poiData.location);
+            map.panTo(poiData.location);
+            map.setZoom(15);
           });
           $(".indicator").on("click", function() {
             search(adcode, searchStr, {
@@ -371,29 +534,42 @@ function initMap(env) {
             });
           });
         }
+        showSearch();
       });
     }
     search(adcode, searchStr, {});
   });
 
-  function setLocationMarker(poiData) {
-    if (!poiData) return;
-    map.clearMap();
-    map.panTo(poiData.location);
-    map.setZoom(15);
+  function showSearch() {
+    $(".content_left").show();
+    $(".searchResultPanel").show();
+    $(".chanceInfoPanel").hide();
+  }
 
+  function showChanceInfo() {
+    $(".content_left").show();
+    $(".searchResultPanel").hide();
+    $(".chanceInfoPanel").show();
+  }
+
+  /**
+   * 设置经纬度的范围
+   */
+  function setLocationMarkerRange(location) {
+    if (!location) return;
     var options = {
       strokeColor: "#F33", //线颜色
-      strokeOpacity: 0.1, //线透明度
-      strokeWeight: 0.1, //线粗细度
+      strokeOpacity: 0.05, //线透明度
+      strokeWeight: 0.05, //线粗细度
       fillColor: "#ee2200", //填充颜色
-      fillOpacity: 0.1 //填充透明度
+      fillOpacity: 0.05, //填充透明度
+      bubble: true
     };
     //圆心
     var circle1 = new AMap.Circle(
       Object.assign(
         {
-          center: new AMap.LngLat(poiData.location.lng, poiData.location.lat), // 圆心位置
+          center: new AMap.LngLat(location.lng, location.lat), // 圆心位置
           radius: 20 //半径
         },
         options
@@ -404,7 +580,7 @@ function initMap(env) {
     var circle2 = new AMap.Circle(
       Object.assign(
         {
-          center: new AMap.LngLat(poiData.location.lng, poiData.location.lat), // 圆心位置
+          center: new AMap.LngLat(location.lng, location.lat), // 圆心位置
           radius: 500 //半径
         },
         options
@@ -415,7 +591,7 @@ function initMap(env) {
     var circle3 = new AMap.Circle(
       Object.assign(
         {
-          center: new AMap.LngLat(poiData.location.lng, poiData.location.lat), // 圆心位置
+          center: new AMap.LngLat(location.lng, location.lat), // 圆心位置
           radius: 1500 //半径
         },
         options
@@ -426,12 +602,63 @@ function initMap(env) {
     map.add(circle3);
   }
 
+  /**
+   *  设置机会点marker
+   */
+  function setChanceMarker(chance) {
+    var lnglatStr = chance.lnglat;
+    var arrLnglat = lnglatStr.split(",");
+    var marker = new AMap.Marker({
+      position: arrLnglat,
+      offset: new AMap.Pixel(-13, -30),
+      draggable: true,
+      cursor: "move"
+    });
+    marker.setMap(map);
+    marker.on("dragstart", function() {
+      console.log("dragstart");
+    });
+
+    function setForm(marker) {
+      var adcode =
+        $("#district").val() || $("#city").val() || $("#province").val();
+      var geocoder = new AMap.Geocoder({
+        city: adcode
+      });
+      var lng = marker.getPosition().lng;
+      var lat = marker.getPosition().lat;
+      $("#chance_lnglat").val(lng + "," + lat);
+      geocoder.getAddress([lng, lat], function(status, result) {
+        if (status === "complete" && result.info === "OK") {
+          var address = result.regeocode.formattedAddress; //返回地址描述
+          $("#chance_refaddress").html("参考地址：" + address);
+        }
+      });
+    }
+    marker.on("dragging", function() {
+      console.log("dragging");
+    });
+
+    marker.on("dragend", function(e) {
+      setForm(marker);
+      var lng = marker.getPosition().lng;
+      var lat = marker.getPosition().lat;
+      var lnglat = new AMap.LngLat(lng, lat);
+      map.clearMap();
+      marker.setMap(map);
+      setLocationMarkerRange(lnglat);
+    });
+    var lng = marker.getPosition().lng;
+    var lat = marker.getPosition().lat;
+    var lnglat = new AMap.LngLat(lng, lat);
+    setLocationMarkerRange(lnglat);
+    setForm(marker);
+  }
+
   function loadAreaData(areaNode) {
     var adcode = areaNode.getAdcode();
     var areaProps = areaNode.getProps();
     var subFeatures = areaNode.getSubFeatures();
-    console.log("parent", areaProps);
-    console.log("subFeatures", subFeatures);
     if (!areaTree[adcode]) {
       areaTree[adcode] = areaProps;
     }

@@ -7,14 +7,12 @@
       content="initial-scale=1.0, user-scalable=no, width=device-width"
     />
     <title>选址</title>
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css"/>
     <link rel="stylesheet" type="text/css" href="./css/address/area.css" />
     <link rel="stylesheet" href="./css/address/main.css" />
-    <link
-      rel="stylesheet"
-      href="./css/plugins/hc-offcanvas-nav/hc-offcanvas-nav.css"
-    />
     <link rel="stylesheet" href="./font-awesome/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="./css/address/tabs.css"/>
+    
     <script
       type="text/javascript"
       src="http://webapi.amap.com/maps?v=1.4.14&key=f7afe9ac13d8d7afcfdd07b8e8e551fa"
@@ -22,7 +20,7 @@
     <!-- UI组件库 1.0 -->
     <script src="http://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
     <script src="./js/jquery-3.1.1.min.js"></script>
-    <script src="./js/plugins/hc-offcanvas-nav/hc-offcanvas-nav.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
   </head>
 
   <body>
@@ -66,38 +64,20 @@
             </div>
           </div>
         </div>
-        <div class="item tools">创建机会点</div>
+        <div class="item tools">
+          <button type="button" class="btn btn-success" id="createChanceBtn">创建机会点</button>
+        </div>
       </div>
       <div class="container">
           <div id="chancelist" class="chancelist">
             <div class="title">机会点列表</div>
-            <div>
-              <div class="chanceItem">
-                <div class="chance_name">肯德基潜江站</div>
-                <div class="chance_address">地址：潜江市高新区</div>
-                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
-              </div>
-              <div class="chanceItem">
-                <div class="chance_name">肯德基潜江站</div>
-                <div class="chance_address">地址：潜江市高新区</div>
-                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
-              </div>
-              <div class="chanceItem">
-                <div class="chance_name">肯德基潜江站</div>
-                <div class="chance_address">地址：潜江市高新区</div>
-                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
-              </div>
-              <div class="chanceItem">
-                <div class="chance_name">肯德基潜江站</div>
-                <div class="chance_address">地址：潜江市高新区</div>
-                <div class="eye"><i class="fa fa-eye" aria-hidden="true"></i></div>
-              </div>
+            <div id="chancelistContainer">
             </div>
           </div>
           <div class="content">
             <div class="mapcontainer" id="mapcontainer" tabindex="0"></div> 
             <div  class="content_left">
-              <div class="tabs tabs-style-topline">
+              <div class="tabs tabs-style-topline" style="display:none">
                   <nav>
                       <ul>
                         <li class=""><a href="#"><span>机会点信息</span></a></li>
@@ -109,6 +89,42 @@
                 <div class="searchList">
                 </div>
                 <div class="pagination">
+                </div>
+              </div>
+              <div id="chanceInfoPanel" class="chanceInfoPanel">
+                <div class="chanceInfo">
+                    <form id="chanceForm">
+                      <input name="chanceId" id="chance_chanceId" value="" type="hidden"/>
+                      <input name="id" value="" id="chance_id" type="hidden"/>
+                      <input name="fence" value="" id="chance_fence" type="hidden"/>
+                      <input name="province" value=""  id="chance_province" type="hidden"/>
+                      <input name="provinceName" value=""  id="chance_provinceName" type="hidden"/>
+                      <input name="city" value="" id="chance_city" type="hidden"/>
+                      <input name="cityName" value="" id="chance_cityName" type="hidden"/>
+                      <input name="district" value="" id="chance_district" type="hidden"/>
+                      <input name="districtName" value="" id="chance_districtName" type="hidden"/>
+                      <div class="form-group">
+                        <label for="chance_name">名称</label>
+                        <input type="text" class="form-control" id="chance_name" name="name" aria-describedby="name" placeholder="机会点名称">
+                      </div>
+                      <div class="form-group">
+                        <label for="chance_address">地址</label>
+                        <input type="text" class="form-control" id="chance_address" name="address" placeholder="机会点详细地址">
+                        <small id="chance_refaddress" class="form-text text-muted"></small>
+                      </div>
+                      <div class="form-group">
+                        <label for="chance_lnglat">经纬度</label>
+                        <div class="input-group" style="width:100%">
+                          <input type="text" class="form-control" id="chance_lnglat" name="lnglat" placeholder="">
+                          <div id="chance_location_btn" class="input-group-append" style="text-align: right;width: 18px;display: table-cell;vertical-align: middle;">
+                            <span><i class="fa fa-lg fa-dot-circle-o"></i></span>
+                          </div>
+                        </div>
+                      </div>
+                      <button type="button" id="chance_save" class="btn btn-primary">保存</button>
+                      <button type="button" id="chance_revoke" class="btn btn-primary">撤销</button>
+                      <button type="button" id="chance_update" class="btn btn-primary">设置围栏</button>
+                    </form>
                 </div>
               </div>
             </div> 

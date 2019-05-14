@@ -1,0 +1,30 @@
+amap_lib_placeSearch {
+  font-family: "Microsoft Yahei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #565656;
+  font-size: 12px;
+  line-height: 22px;
+  word-wrap: break-word;
+  background-color: #fff;
+  border: 1px solid silver;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+.amap_lib_placeSearch_list {
+  background: #fff;
+}
+
+.amap_lib_placeSearch ol,
+.amap_lib_placeSearch ul {
+  list-style: none none;
+  margin: 0;
+  padding: 0;
+}
+
+.amap_lib_placeSearch .poibox {
+  border-bottom: 1px solid #eaeaea;
+  cursor: pointer;
+  padding: 5px 0 5px 10px;
+  position: relative;
+  min-height: 35px;
+}
