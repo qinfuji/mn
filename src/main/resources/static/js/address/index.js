@@ -242,7 +242,7 @@ function initMap(env) {
 
   //当前的模式
   var currentMode = ModeEnum.MAP;
-  var currentChance = {}; //当前操作的机会点
+  var currentChance = null; //当前操作的机会点
   var chanceList = []; //当前左边的机会点列表
   var searchList; //查询结果
   var lnglat; //当前位置
@@ -259,6 +259,13 @@ function initMap(env) {
       chanceList = store.getState().chanceList;
     }
 
+    if (!store.getState().currentChance) {
+      updateMapChance(store.getState().currentChance); //更新地图路的机会点
+      updateForm(store.getState().currentChance); //更新表单
+      currentChance = store.getState().currentChance;
+      return;
+    }
+
     if (
       store.getState().currentChance &&
       currentChance !== store.getState().currentChance
@@ -267,8 +274,10 @@ function initMap(env) {
       updateForm(store.getState().currentChance); //更新表单
       //如果对象没有改变则不刷新
       if (
-        store.getState().currentChance.estimateResult !==
-        currentChance.estimateResult
+        (store.getState().currentChance.estimateResult && !currentChance) ||
+        (store.getState().currentChance.estimateResult &&
+          store.getState().currentChance.estimateResult !==
+            currentChance.estimateResult)
       ) {
         updateeStimateResultLoaded(store.getState().currentChance); //更新评估数据
       }
@@ -502,7 +511,9 @@ function initMap(env) {
     console.log($("#chanceForm").serializeArray());
   });
 
-  $("#chance_revoke").on("click", function(e) {});
+  $("#chance_revoke").on("click", function(e) {
+    store.dispatch(updateChance(null));
+  });
 
   $("#chance_location_btn").on("click", function(e) {
     var lnglat = $("#chance_lnglat").val();
@@ -691,14 +702,22 @@ function initMap(env) {
     $(".chanceInfoPanel").show();
   }
 
+  function hideAll() {
+    $(".content_left").hide();
+    $(".searchResultPanel").hide();
+    $(".chanceInfoPanel").hide();
+  }
+
   /**
    * 更新地图上的机会点
    */
   function updateMapChance(chance) {
+    map.clearMap();
+    if (!chance) return;
     var strLnglat = chance.lnglat;
     var arrLnglat = strLnglat.split(",");
     var lnglat = new AMap.LngLat(arrLnglat[0], arrLnglat[1]);
-    map.clearMap();
+
     setLocationMarkerRange(lnglat);
     setChanceMarker(chance);
     map.panTo(lnglat);
@@ -788,6 +807,10 @@ function initMap(env) {
    * 更新form表单
    */
   function updateForm(chance) {
+    if (!chance) {
+      hideAll();
+      return;
+    }
     showChanceInfo();
     var lnglatStr = chance.lnglat;
     var arrLnglat = lnglatStr.split(",");
@@ -912,23 +935,24 @@ function initMap(env) {
     //增加备注
     datapanel.append("<div class='remark'>" + data.remark + "</div>");
     //增加具体指标数据
-    var datatable = $("<table></table>");
+    var datatable = $(
+      "<table class='table table-hover table-sm table-bordered'></table>"
+    );
+    var tbody = $("<tbody></tbody>");
     if (data.values && data.values.length) {
       data.values.forEach(function(d, index) {
-        datatable.append(
-          "<tr><td>" +
-            d.label +
-            "</td><td><input value='" +
-            d.value +
-            "'/></td></tr>"
+        tbody.append(
+          "<tr><td>" + d.label + "</td><td>" + d.value + "</td></tr>"
         );
       });
     }
+    datatable.append(tbody);
     datapanel.append(datatable);
+    /*
     datapanel.append(
       "<div class='operation'><button class='btn btn-primary'>修改</button></div>"
     );
-
+    */
     estimateResultDataEle.append(vtabs);
     estimateResultDataEle.append(datapanel);
     estimateResultEle.append(nav);

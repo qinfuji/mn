@@ -757,7 +757,8 @@ span.selected {
 }
 
 .datapanel table td {
-  height: 46px;
+  height: 38px;
+  width: 50%;
 }
 
 .datapanel table td input,
@@ -766,7 +767,7 @@ select {
 }
 
 .datapanel .remark {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   font-size: 9px;
 }
 
