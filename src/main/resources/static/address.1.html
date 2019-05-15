@@ -98,15 +98,6 @@
               <div id="chanceInfoPanel" class="chanceInfoPanel">
                 <div class="chanceInfo">
                     <form id="chanceForm">
-                      <input name="chanceId" id="chance_chanceId" value="" type="hidden"/>
-                      <input name="id" value="" id="chance_id" type="hidden"/>
-                      <input name="fence" value="" id="chance_fence" type="hidden"/>
-                      <input name="province" value=""  id="chance_province" type="hidden"/>
-                      <input name="provinceName" value=""  id="chance_provinceName" type="hidden"/>
-                      <input name="city" value="" id="chance_city" type="hidden"/>
-                      <input name="cityName" value="" id="chance_cityName" type="hidden"/>
-                      <input name="district" value="" id="chance_district" type="hidden"/>
-                      <input name="districtName" value="" id="chance_districtName" type="hidden"/>
                       <div class="form-group">
                         <label for="chance_name">名称</label>
                         <input type="text" class="form-control" id="chance_name" name="name" aria-describedby="name" placeholder="机会点名称">
@@ -116,6 +107,11 @@
                         <input type="text" class="form-control" id="chance_address" name="address" placeholder="机会点详细地址">
                         <small id="chance_refaddress" class="form-text text-muted"></small>
                       </div>
+                      <div class="form-group">
+                          <label for="chance_address">类别</label>
+                          <input type="text" class="form-control" id="chance_type" name="type" placeholder="类别">
+                          <small id="chance_refaddress" class="form-text text-muted"></small>
+                        </div>
                       <div class="form-group">
                         <label for="chance_lnglat">经纬度</label>
                         <div class="input-group" style="width:100%">
@@ -131,8 +127,8 @@
                       <button type="button" id="chance_fence" class="btn btn-primary">设置围栏</button>
                     </form>
                 </div>
-                <!-- <div class="estimateResult">
-                    <div class="nav">
+                <div class="estimateResult">
+                    <!-- <div class="nav">
                        <span >商圈评估</span>  
                        <span class="selected">商区评估</span>
                        <span>街道评估</span>
@@ -161,9 +157,9 @@
                           <div class="operation">
                             <button class="btn btn-primary">修改</button>
                           </div>
-                       </div>
+                       </div> -->
                     </div>
-                </div> -->
+                </div> 
               </div>
             </div> 
           </div>

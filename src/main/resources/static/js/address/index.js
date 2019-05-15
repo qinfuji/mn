@@ -69,7 +69,7 @@ function loadEvn() {
 
 var ActionTypes = {
   UPDATE_CHANCE: "updateChance", //设置机会点坐标
-  UPDATE_CHANGE_PROP: "updateChanceProp", //更新属性
+  UPDATE_CHANGE_PROPS: "updateChanceProps", //更新属性
   DELETE_CHANCE: "deleteChance", //删除机会点
   ADD_CHANCE: "addChance", //添加机会点
   UPDATE_CHANCE_LIST: "updateChanceList", //更新机会点列表
@@ -128,14 +128,11 @@ function updateMapLocation(lng, lat) {
 /**
  * 更新属性
  */
-function updateChanceProp(propName, propValue) {
+function updateChanceProps(props) {
   return function(dispatch) {
     dispatch({
-      type: ActionTypes.UPDATE_CHANGE_PROP,
-      payload: {
-        propName: propName,
-        propValue: propValue
-      }
+      type: ActionTypes.UPDATE_CHANGE_PROPS,
+      payload: props
     });
   };
 }
@@ -207,11 +204,9 @@ function ChanceRedux(state, action) {
     return Object.assign(state, {
       currentChance: action.payload
     });
-  } else if (action.type === ActionTypes.UPDATE_CHANGE_PROP) {
+  } else if (action.type === ActionTypes.UPDATE_CHANGE_PROPS) {
     return Object.assign(state, {
-      currentChance: Object.assign({}, state.currentChance, {
-        [action.payload.propName]: action.payload.propValue
-      })
+      currentChance: Object.assign({}, state.currentChance, action.payload)
     });
   } else if (action.type === ActionTypes.UPDATE_CHANCE_LIST) {
     return Object.assign(state, {
@@ -273,6 +268,7 @@ function initMap(env) {
       updateMapChance(store.getState().currentChance); //更新地图路的机会点
       updateForm(store.getState().currentChance); //更新表单
       //如果对象没有改变则不刷新
+
       if (
         (store.getState().currentChance.estimateResult && !currentChance) ||
         (store.getState().currentChance.estimateResult &&
@@ -337,56 +333,56 @@ function initMap(env) {
     }
   }
 
-  //监听feature的hover事件
-  districtExplorer.on("featureMouseout featureMouseover", function(e, feature) {
-    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-    toggleHoverFeature(
-      feature,
-      e.type === "featureMouseover",
-      e.originalEvent ? e.originalEvent.lnglat : null
-    );
-  });
+  // //监听feature的hover事件
+  // districtExplorer.on("featureMouseout featureMouseover", function(e, feature) {
+  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
+  //   toggleHoverFeature(
+  //     feature,
+  //     e.type === "featureMouseover",
+  //     e.originalEvent ? e.originalEvent.lnglat : null
+  //   );
+  // });
 
-  //监听鼠标在feature上滑动
-  districtExplorer.on("featureMousemove", function(e, feature) {
-    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-    //更新提示位置
-    tipMarker.setPosition(e.originalEvent.lnglat);
-  });
+  // //监听鼠标在feature上滑动
+  // districtExplorer.on("featureMousemove", function(e, feature) {
+  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
+  //   //更新提示位置
+  //   tipMarker.setPosition(e.originalEvent.lnglat);
+  // });
 
-  //feature被点击
-  districtExplorer.on("featureClick", function(e, feature) {
-    console.log(currentMode);
-    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-    var props = feature.properties;
-    //如果存在子节点
-    //if (props.childrenNum > 0) {
-    //切换聚焦区域
-    switch2AreaNode(props.adcode);
-    //}
-  });
+  // //feature被点击
+  // districtExplorer.on("featureClick", function(e, feature) {
+  //   console.log(currentMode);
+  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
+  //   var props = feature.properties;
+  //   //如果存在子节点
+  //   //if (props.childrenNum > 0) {
+  //   //切换聚焦区域
+  //   switch2AreaNode(props.adcode);
+  //   //}
+  // });
 
-  //外部区域被点击
-  districtExplorer.on("outsideClick", function(e) {
-    if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-    districtExplorer.locatePosition(
-      e.originalEvent.lnglat,
-      function(error, routeFeatures) {
-        if (routeFeatures && routeFeatures.length > 1) {
-          //切换到省级区域
-          switch2AreaNode(
-            routeFeatures[routeFeatures.length - 2].properties.adcode
-          );
-        } else {
-          //切换到全国
-          switch2AreaNode(100000);
-        }
-      },
-      {
-        levelLimit: 3
-      }
-    );
-  });
+  // //外部区域被点击
+  // districtExplorer.on("outsideClick", function(e) {
+  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
+  //   districtExplorer.locatePosition(
+  //     e.originalEvent.lnglat,
+  //     function(error, routeFeatures) {
+  //       if (routeFeatures && routeFeatures.length > 1) {
+  //         //切换到省级区域
+  //         switch2AreaNode(
+  //           routeFeatures[routeFeatures.length - 2].properties.adcode
+  //         );
+  //       } else {
+  //         //切换到全国
+  //         switch2AreaNode(100000);
+  //       }
+  //     },
+  //     {
+  //       levelLimit: 3
+  //     }
+  //   );
+  // });
 
   //绘制某个区域的边界
   function renderAreaPolygons(areaNode) {
@@ -498,8 +494,13 @@ function initMap(env) {
   $("#province,#city,#district").on("change", function(e) {
     changeMode(ModeEnum.MAP);
     if ($(this).val()) {
-      switch2AreaNode($(this).val());
+      switch2AreaNode($(this).val(), function() {
+        //限制地图显示
+        // var bounds = map.getBounds();
+        // map.setLimitBounds(bounds);
+      });
     }
+    hideAll();
   });
 
   $("#createChanceBtn").on("click", function(e) {
@@ -507,8 +508,13 @@ function initMap(env) {
     map.on("click", markChance);
   });
 
+  $("#chance_update").on("click", function() {
+    console.log(currentChance);
+  });
+
   $("#chance_save").on("click", function(e) {
-    console.log($("#chanceForm").serializeArray());
+    //console.log($("#chanceForm").serializeArray());
+    console.log(currentChance);
   });
 
   $("#chance_revoke").on("click", function(e) {
@@ -527,26 +533,57 @@ function initMap(env) {
     }
   });
 
+  $("#chance_name").on("change", function() {
+    store.dispatch(
+      updateChanceProps({
+        name: $(this).val()
+      })
+    );
+  });
+
+  $("#chance_type").on("change", function() {
+    store.dispatch(
+      updateChanceProps({
+        type: $(this).val()
+      })
+    );
+  });
+
+  $("#chance_address").on("change", function() {
+    store.dispatch(
+      updateChanceProps({
+        address: $(this).val()
+      })
+    );
+  });
+
   /**
    * 标记机会点
    */
   function markChance(e) {
-    var chance = {
-      name: "",
-      chanceId: "",
-      id: null,
-      fence: "", //围栏
-      province: "", //省
-      provinceName: "",
-      city: "",
-      cityName: "",
-      district: "",
-      districtName: "",
-      address: "",
-      lnglat: e.lnglat.getLng() + "," + e.lnglat.getLat()
-    };
-    store.dispatch(updateChance(chance));
-    changeMode(ModeEnum.EDIT);
+    var lnglat = new AMap.LngLat(e.lnglat.getLng(), e.lnglat.getLat());
+    locatePosition(lnglat).then(function(features) {
+      var chance = Object.assign(
+        {
+          name: "",
+          chanceId: "",
+          id: null,
+          fence: "", //围栏
+          province: "", //省
+          provinceName: "",
+          city: "",
+          cityName: "",
+          district: "",
+          districtName: "",
+          address: "",
+          lnglat: e.lnglat.getLng() + "," + e.lnglat.getLat()
+        },
+        features
+      );
+      console.log(chance);
+      store.dispatch(updateChance(chance));
+      changeMode(ModeEnum.EDIT);
+    });
   }
 
   /**
@@ -706,6 +743,7 @@ function initMap(env) {
     $(".content_left").hide();
     $(".searchResultPanel").hide();
     $(".chanceInfoPanel").hide();
+    map.setZoom(12);
   }
 
   /**
@@ -723,6 +761,40 @@ function initMap(env) {
     map.panTo(lnglat);
     map.setZoom(15);
   }
+
+  function locatePosition(lnglat) {
+    return new Promise(function(resolve, reject) {
+      districtExplorer.locatePosition(
+        lnglat,
+        function(err, features) {
+          isLocating = false;
+          if (err) {
+            reject(err);
+            return;
+          }
+          var ret = {};
+          for (var i = 0; i < features.length; i++) {
+            var p = features[i].properties;
+            if (p.level === "province") {
+              ret.province = p.adcode;
+              ret.provinceName = p.name;
+            } else if (p.level === "city") {
+              ret.city = p.adcode;
+              ret.cityName = p.name;
+            } else if (p.level === "district") {
+              ret.district = p.adcode;
+              ret.districtName = p.name;
+            }
+          }
+          resolve(ret);
+        },
+        {
+          levelLimit: 4
+        }
+      );
+    });
+  }
+
   /**
    * 设置经纬度的范围
    */
@@ -736,11 +808,12 @@ function initMap(env) {
       fillOpacity: 0.05, //填充透明度
       bubble: true
     };
+    var center = new AMap.LngLat(location.lng, location.lat);
     //圆心
     var circle1 = new AMap.Circle(
       Object.assign(
         {
-          center: new AMap.LngLat(location.lng, location.lat), // 圆心位置
+          center: center, // 圆心位置
           radius: 20 //半径
         },
         options
@@ -788,17 +861,19 @@ function initMap(env) {
     marker.setMap(map);
     if (!chance.id) {
       //如果已经创建，则不能修改位置信息
-      marker.on("dragstart", function() {
-        console.log("dragstart");
-      });
-      marker.on("dragging", function() {
-        console.log("dragging");
-      });
+      marker.on("dragstart", function() {});
+      marker.on("dragging", function() {});
       marker.on("dragend", function(e) {
         //setForm(marker);
         var lng = marker.getPosition().lng;
         var lat = marker.getPosition().lat;
-        store.dispatch(updateChanceProp("lnglat", lng + "," + lat));
+        locatePosition(marker.getPosition()).then(function(result) {
+          store.dispatch(
+            updateChanceProps(
+              Object.assign(result, { lnglat: lng + "," + lat })
+            )
+          );
+        });
       });
     }
   }
