@@ -177,7 +177,8 @@ function queryChanceList(adcodeLimit) {
   };
 }
 
-function ChanceRedux(state = {}, action) {
+function ChanceRedux(state, action) {
+  state = state || {};
   if (action.type === ActionTypes.UPDATE_CHANCE) {
     return Object.assign(state, {
       currentChance: action.payload
@@ -463,7 +464,6 @@ function initMap(env) {
 
   $("#createChanceBtn").on("click", function(e) {
     changeMode(ModeEnum.CREATE);
-    showChanceInfo();
     map.on("click", markChance);
   });
 
@@ -492,7 +492,7 @@ function initMap(env) {
     var chance = {
       name: "",
       chanceId: "",
-      id: 3,
+      id: null,
       fence: "", //围栏
       province: "", //省
       provinceName: "",
@@ -732,30 +732,32 @@ function initMap(env) {
     var marker = new AMap.Marker({
       position: arrLnglat,
       offset: new AMap.Pixel(-13, -30),
-      draggable: true,
-      cursor: "move"
+      draggable: chance.id ? false : true,
+      cursor: chance.id ? "pointer" : "move"
     });
     marker.setMap(map);
-    marker.on("dragstart", function() {
-      console.log("dragstart");
-    });
-
-    marker.on("dragging", function() {
-      console.log("dragging");
-    });
-
-    marker.on("dragend", function(e) {
-      //setForm(marker);
-      var lng = marker.getPosition().lng;
-      var lat = marker.getPosition().lat;
-      store.dispatch(updateChanceProp("lnglat", lng + "," + lat));
-    });
+    if (!chance.id) {
+      //如果已经创建，则不能修改位置信息
+      marker.on("dragstart", function() {
+        console.log("dragstart");
+      });
+      marker.on("dragging", function() {
+        console.log("dragging");
+      });
+      marker.on("dragend", function(e) {
+        //setForm(marker);
+        var lng = marker.getPosition().lng;
+        var lat = marker.getPosition().lat;
+        store.dispatch(updateChanceProp("lnglat", lng + "," + lat));
+      });
+    }
   }
 
   /**
    * 更新form表单
    */
   function updateForm(chance) {
+    showChanceInfo();
     var lnglatStr = chance.lnglat;
     var arrLnglat = lnglatStr.split(",");
     var adcode =
@@ -766,12 +768,30 @@ function initMap(env) {
     var lng = arrLnglat[0];
     var lat = arrLnglat[1];
     $("#chance_lnglat").val(lng + "," + lat);
+    if (chance.id) {
+      $("#chance_lnglat").attr("readonly", true);
+    }
+    $("#chance_id").val(chance.id);
+    $("#chance_name").val(chance.name);
+    $("#chance_address").val(chance.address);
+    $("#chance_fence").val(chance.fence);
     geocoder.getAddress([lng, lat], function(status, result) {
       if (status === "complete" && result.info === "OK") {
         var address = result.regeocode.formattedAddress; //返回地址描述
         $("#chance_refaddress").html("参考地址：" + address);
       }
     });
+    if (chance.id) {
+      $("#chance_revoke").hide();
+      $("#chance_save").hide();
+      $("#chance_update").show();
+      $("#chance_fence").hide();
+    } else {
+      $("#chance_revoke").show();
+      $("#chance_save").show();
+      $("#chance_update").hide();
+      $("#chance_fence").show();
+    }
   }
 
   function loadAreaData(areaNode) {

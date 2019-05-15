@@ -514,7 +514,7 @@ input[type="date"]:focus::-ms-value {
 
 .content_left {
   height: 100%;
-  width: 25%;
+  width: 30%;
   padding-top: 60px;
   display: none;
   flex-direction: column;
@@ -658,4 +658,114 @@ span.selected {
 
 #chance_location_btn:hover span {
   color: rgba(0, 0, 0, 0.8);
+}
+
+.estimateResult {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.estimateResult .nav {
+  height: 35px;
+  line-height: 35px;
+  font-size: 15px;
+  font-weight: 400;
+  display: flex;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.075);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.estimateResult .nav span {
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+}
+
+.estimateResult .nav span.selected {
+  width: 100%;
+  text-align: center;
+  border-top: 3px solid #337ab7;
+  background: #e7f9df;
+}
+
+.estimateResult .nav span:hover {
+  width: 100%;
+  text-align: center;
+  border-top: 3px solid #337ab7;
+}
+
+.shanquanResultData {
+  display: flex;
+  margin-top: 20px;
+}
+
+.shanquanResultData .vtabs {
+  width: 35px;
+  display: flex;
+  flex-direction: column;
+  align-content: space-between;
+  background: rgba(0, 0, 0, 0.075);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.shanquanResultData .vtabs span {
+  height: 100%;
+  text-align: center;
+  font-size: 15px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  cursor: pointer;
+}
+
+.shanquanResultData .vtabs span:hover {
+  width: 100%;
+  text-align: center;
+  border-left: 3px solid #337ab7;
+}
+
+.shanquanResultData .vtabs span.selected {
+  width: 100%;
+  text-align: center;
+  border-left: 3px solid #337ab7;
+  background: #e7f9df;
+}
+
+.datapanel {
+  margin: 2px 5px 0 10px;
+  width: 100%;
+}
+
+.datapanel table {
+  width: 100%;
+}
+
+.datapanel table td {
+  height: 46px;
+}
+
+.datapanel table td input,
+select {
+  width: 100%;
+}
+
+.datapanel .remark {
+  margin-bottom: 10px;
+  font-size: 9px;
+}
+
+.datapanel .remark::before {
+  content: "*";
+}
+
+.datapanel .operation {
+  margin-top: 15px;
+  text-align: right;
 }
