@@ -74,19 +74,43 @@ var ActionTypes = {
   ADD_CHANCE: "addChance", //添加机会点
   UPDATE_CHANCE_LIST: "updateChanceList", //更新机会点列表
   UPDATE_SEARCH_LIST: "updateSearchList", //查询结果
-  UPDATE_MAP_LOCATION: "updateLocation" //更新地图的位置
+  UPDATE_MAP_LOCATION: "updateLocation", //更新地图的位置
+  UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResult" //更新评估结果
 };
 
 /**
- * 更新机会点
+ * 更新机会点 ， 当机会点没有评估数据， 并且没有初始化时
+ *
  */
 function updateChance(chance) {
-  return function(dispatch) {
-    dispatch({
-      type: ActionTypes.UPDATE_CHANCE,
-      payload: chance
-    });
-  };
+  if (
+    chance &&
+    chance.id &&
+    !chance.estimateResultLoaded &&
+    !chance.estimateResult
+  ) {
+    return function(dispatch) {
+      return new Promise(function(resolve, reject) {
+        getChanceEstimateResult(chance.id).then(function(result) {
+          resolve(result);
+        });
+      }).then(function(result) {
+        chance.estimateResult = result;
+        chance.estimateLoaded = true;
+        dispatch({
+          type: ActionTypes.UPDATE_CHANCE,
+          payload: chance
+        });
+      });
+    };
+  } else {
+    return function(dispatch) {
+      dispatch({
+        type: ActionTypes.UPDATE_CHANCE,
+        payload: chance
+      });
+    };
+  }
 }
 
 /**
@@ -218,8 +242,8 @@ function initMap(env) {
 
   //当前的模式
   var currentMode = ModeEnum.MAP;
-  var currentChance; //当前操作的机会点
-  var chanceList; //当前左边的机会点列表
+  var currentChance = {}; //当前操作的机会点
+  var chanceList = []; //当前左边的机会点列表
   var searchList; //查询结果
   var lnglat; //当前位置
   var store = Redux.createStore(
@@ -231,17 +255,24 @@ function initMap(env) {
       store.getState().chanceList &&
       chanceList !== store.getState().chanceList
     ) {
-      chanceList = store.getState().chanceList;
       loadChanceList(store.getState().chanceList);
+      chanceList = store.getState().chanceList;
     }
 
     if (
       store.getState().currentChance &&
       currentChance !== store.getState().currentChance
     ) {
+      updateMapChance(store.getState().currentChance); //更新地图路的机会点
+      updateForm(store.getState().currentChance); //更新表单
+      //如果对象没有改变则不刷新
+      if (
+        store.getState().currentChance.estimateResult !==
+        currentChance.estimateResult
+      ) {
+        updateeStimateResultLoaded(store.getState().currentChance); //更新评估数据
+      }
       currentChance = store.getState().currentChance;
-      updateMapChance(currentChance);
-      updateForm(currentChance);
     }
 
     if (store.getState().lnglat && lnglat !== store.getState().lnglat) {
@@ -792,6 +823,116 @@ function initMap(env) {
       $("#chance_update").hide();
       $("#chance_fence").show();
     }
+  }
+
+  /**
+   * 更新机会点的评估信息
+   * @paran chance  对象
+   */
+  function updateeStimateResultLoaded(chance, topNavIndex, childIndex) {
+    if (!chance.estimateResult) {
+      $(".estimateResult").empty();
+      return;
+    }
+    var navIndex = topNavIndex || 0;
+    var vtabsIndex = childIndex || 0;
+    var estimateResultEle = $(".estimateResult").empty();
+    var nav = $('<div class="nav"></div>');
+    var estimateResult = chance.estimateResult;
+    //受限建立导航
+
+    if (estimateResult && estimateResult.length) {
+      estimateResult.forEach(function(estimate, index) {
+        if (index === navIndex) {
+          nav.append(
+            "<span class='selected' data-index='" +
+              index +
+              "'>" +
+              estimate.label +
+              "</span>"
+          );
+        } else {
+          nav.append(
+            "<span data-index='" + index + "'>" + estimate.label + "</span>"
+          );
+        }
+      });
+    }
+
+    nav.on("click", "span", function() {
+      var i = $(this).data("index");
+      updateeStimateResultLoaded(chance, i, 0);
+    });
+
+    var estimateResultDataEle = $("<div class='estimateResultData'></div>");
+    var estimatequotaDatas = estimateResult[navIndex].quotas;
+    //构造左边tab
+
+    var vtabs = $('<div class="vtabs"></div>');
+    var preIndex = 1;
+    var currentIndex = 50;
+    var nextInde = 49;
+    estimatequotaDatas.forEach(function(estimatequota, index) {
+      var _zindex = 1;
+      if (vtabsIndex > index) {
+        _zindex = preIndex++;
+      } else if (vtabsIndex < index) {
+        _zindex = nextInde--;
+      } else {
+        _zindex = currentIndex;
+      }
+
+      var _tab = $(
+        "<div title='" +
+          estimatequota.label +
+          "' style='z-index:" +
+          _zindex +
+          ";top:" +
+          index * 30 +
+          "px' class='" +
+          (vtabsIndex === index ? "selected" : "") +
+          "' data-index='" +
+          index +
+          "'>" +
+          estimatequota.label +
+          "</div>"
+      );
+
+      vtabs.append(_tab);
+    });
+
+    vtabs.on("click", "div", function() {
+      var i = $(this).data("index");
+      updateeStimateResultLoaded(chance, navIndex, i);
+    });
+
+    var data = estimatequotaDatas[vtabsIndex];
+    //构造form
+    var datapanel = $("<div class='datapanel'></div>");
+    //增加备注
+    datapanel.append("<div class='remark'>" + data.remark + "</div>");
+    //增加具体指标数据
+    var datatable = $("<table></table>");
+    if (data.values && data.values.length) {
+      data.values.forEach(function(d, index) {
+        datatable.append(
+          "<tr><td>" +
+            d.label +
+            "</td><td><input value='" +
+            d.value +
+            "'/></td></tr>"
+        );
+      });
+    }
+    datapanel.append(datatable);
+    datapanel.append(
+      "<div class='operation'><button class='btn btn-primary'>修改</button></div>"
+    );
+
+    estimateResultDataEle.append(vtabs);
+    estimateResultDataEle.append(datapanel);
+    estimateResultEle.append(nav);
+    estimateResultEle.append(estimateResultDataEle);
   }
 
   function loadAreaData(areaNode) {
