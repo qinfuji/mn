@@ -4,7 +4,7 @@ package com.mn.modules.app.controller;
 import com.mn.common.utils.R;
 import com.mn.modules.app.annotation.Login;
 import com.mn.modules.app.annotation.LoginUser;
-import com.mn.modules.app.entity.UserEntity;
+import com.mn.modules.app.entity.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +27,7 @@ public class AppTestController {
     @Login
     @GetMapping("userInfo")
     @ApiOperation("获取用户信息")
-    public R userInfo(@LoginUser UserEntity user){
+    public R userInfo(@LoginUser User user){
         return R.ok().put("user", user);
     }
 

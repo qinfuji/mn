@@ -1,8 +1,7 @@
 package com.mn.modules.app.resolver;
 
 import com.mn.modules.app.annotation.LoginUser;
-import com.mn.modules.app.annotation.LoginUser;
-import com.mn.modules.app.entity.UserEntity;
+import com.mn.modules.app.entity.User;
 import com.mn.modules.app.interceptor.AuthorizationInterceptor;
 import com.mn.modules.app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,7 @@ public class LoginUserHandlerMethodArgumentResolver implements HandlerMethodArgu
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterType().isAssignableFrom(UserEntity.class) && parameter.hasParameterAnnotation(LoginUser.class);
+        return parameter.getParameterType().isAssignableFrom(User.class) && parameter.hasParameterAnnotation(LoginUser.class);
     }
 
     @Override
@@ -40,7 +39,7 @@ public class LoginUserHandlerMethodArgumentResolver implements HandlerMethodArgu
         }
 
         //获取用户信息
-        UserEntity user = userService.selectById((Long)object);
+        User user = userService.selectById((Long)object);
 
         return user;
     }

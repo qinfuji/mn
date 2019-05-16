@@ -2,7 +2,7 @@ package com.mn.modules.app.service;
 
 
 import com.baomidou.mybatisplus.service.IService;
-import com.mn.modules.app.entity.UserEntity;
+import com.mn.modules.app.entity.User;
 import com.mn.modules.app.form.LoginForm;
 
 /**
@@ -12,9 +12,9 @@ import com.mn.modules.app.form.LoginForm;
  * @email duxb@mippoint.com
  * @date 2017-03-23 15:22:06
  */
-public interface UserService extends IService<UserEntity> {
+public interface UserService extends IService<User> {
 
-	UserEntity queryByMobile(String mobile);
+	User queryByMobile(String mobile);
 
 	/**
 	 * 用户登录

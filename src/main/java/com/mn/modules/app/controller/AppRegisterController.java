@@ -1,13 +1,11 @@
 package com.mn.modules.app.controller;
 
 
-import com.mn.modules.app.entity.UserEntity;
+import com.mn.modules.app.entity.User;
 import com.mn.modules.app.service.UserService;
 import com.mn.common.utils.R;
 import com.mn.common.validator.ValidatorUtils;
-import com.mn.modules.app.entity.UserEntity;
 import com.mn.modules.app.form.RegisterForm;
-import com.mn.modules.app.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -38,7 +36,7 @@ public class AppRegisterController {
         //表单校验
         ValidatorUtils.validateEntity(form);
 
-        UserEntity user = new UserEntity();
+        User user = new User();
         user.setMobile(form.getMobile());
         user.setUsername(form.getMobile());
         user.setPassword(DigestUtils.sha256Hex(form.getPassword()));
