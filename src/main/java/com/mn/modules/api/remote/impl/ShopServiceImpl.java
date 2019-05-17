@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ShopServiceImpl implements ShopService {
 
-    private Logger LOG = LoggerFactory.getLogger(ShopService.class);
+    private Logger LOG = LoggerFactory.getLogger(ShopServiceImpl.class);
 
     private static final String APPID = "topdata20190001";
     private static final String TOKEN = "ahxop4yvqar1gbizumx2rpy98kp2ev";
