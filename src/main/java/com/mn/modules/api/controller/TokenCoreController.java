@@ -2,7 +2,7 @@ package com.mn.modules.api.controller;
 
 import com.mn.common.utils.R;
 import com.mn.modules.api.utils.Tools;
-import com.mn.modules.app.utils.JwtUtils;
+import com.mn.modules.api.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

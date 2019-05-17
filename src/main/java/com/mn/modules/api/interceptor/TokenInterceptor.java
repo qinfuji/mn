@@ -2,7 +2,7 @@ package com.mn.modules.api.interceptor;
 
 import com.mn.common.exception.RRException;
 import com.mn.modules.api.annotation.CheckToken;
-import com.mn.modules.app.utils.JwtUtils;
+import com.mn.modules.api.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

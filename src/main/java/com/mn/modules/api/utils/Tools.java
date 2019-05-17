@@ -182,6 +182,19 @@ public class Tools {
     }
 
 
+    public static Map<String, String> sign(Map<String, String> sParaTemp , String secretKey) {
+        //时间戳加入签名参数组中
+        sParaTemp.put("timestamp", String.valueOf(System.currentTimeMillis()));
+        //除去数组中的空值和签名参数
+        Map<String, String> sPara = paraFilter(sParaTemp);
+        //把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+        String prestr = createLinkString(sPara);
+        //生成签名结果
+        String mysign = DigestUtils.md5Hex(prestr + secretKey);
+        //签名结果加入请求提交参数组中
+        sPara.put("sign", mysign);
+        return sPara;
+    }
 
     /**
      * 生成要请求的签名参数字符串“参数=参数值”&链接
