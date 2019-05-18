@@ -84,12 +84,14 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
 
     @Override
     public Quota getBusinessCirclePopulation(String userAccount, ChancePoint chancePoint, Date date) {
+        Quota ret = new Quota();
+        ret.setLabel("商圈人口体量");
+        ret.setType("business_circle_population");
+        ret.setRemark("商圈内获取人口总量、固定人口、流动人口");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_circle_population", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商圈人口体量");
-                ret.setType("business_circle_population");
+
                 JSONObject jo = (JSONObject) jsonobject;
                 String uv = jo.getString("uv"); //人口总量
                 QuotaItem<String> uvItem = new QuotaItem();
@@ -116,18 +118,20 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessCircleActive(String userAccount, ChancePoint chancePoint, Date date) {
+        Quota ret = new Quota();
+        ret.setLabel("商圈活跃度");
+        ret.setType("business_circle_active");
+        ret.setRemark("商圈内商业主体、商务楼、社区数量");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_circle_active", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商圈活跃度");
-                ret.setType("business_circle_active");
+
                 JSONObject jo = (JSONObject) jsonobject;
                 String businessEnty = jo.getString("business_enty"); //人口总量
                 QuotaItem item = new QuotaItem();
@@ -154,19 +158,20 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessCircleActiveTop(String userAccount, ChancePoint chancePoint, Date date) {
+        Quota ret = new Quota();
+        ret.setLabel("商圈活跃度Top榜");
+        ret.setType("get_business_circle_active_top");
+        ret.setRemark("商圈内商业主体、商务楼、社区距离top榜");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_circle_active_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商圈活跃度Top榜");
-                ret.setType("get_business_circle_active_top");
-                ret.setRemark("商圈内商业主体、商务楼、社区距离top榜");
+
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject data = ja.getJSONObject(i);
@@ -189,19 +194,21 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictPopulation(String userAccount, ChancePoint chancePoint, Date date) {
-
+        Quota ret = new Quota();
+        ret.setLabel("商区人口体量");
+        ret.setType("business_district_population");
+        ret.setRemark("商区内人口总量、固定人口、流动人口");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_population", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区人口体量");
-                ret.setType("business_district_population");
+
                 JSONObject jo = (JSONObject) jsonobject;
                 String uv = jo.getString("uv"); //人口总量
                 QuotaItem<String> uvItem = new QuotaItem();
@@ -228,19 +235,21 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictCustomerActive(String userAccount, ChancePoint chancePoint, Date date) {
+        Quota ret = new Quota();
+        ret.setLabel("商区消费者活跃度");
+        ret.setType("business_district_customer_active");
+        ret.setRemark("商区内年龄段占比");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_customer_active", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区消费者活跃度");
-                ret.setType("business_district_customer_active");
-                ret.setRemark("商区内年龄段占比");
+
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject v = ja.getJSONObject(i);
@@ -254,19 +263,21 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictCustomerChildrenProportion(String userAccount, ChancePoint chancePoint, Date date) {
+        Quota ret = new Quota();
+        ret.setLabel("商区消费者有子女占比");
+        ret.setType("business_district_customer_children_proportion");
+        ret.setRemark("商区内有无子女占比");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_customer_children_proportion", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区消费者有子女占比");
-                ret.setType("business_district_customer_children_proportion");
-                ret.setRemark("商区内有无子女占比");
+
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject v = ja.getJSONObject(i);
@@ -280,19 +291,21 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictActive(String userAccount, ChancePoint chancePoint, Date date) {
-
+        Quota ret = new Quota();
+        ret.setLabel("商区活跃度");
+        ret.setType("business_district_active");
+        ret.setRemark("商区内商业主体、商务楼、社区数量");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_active", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区活跃度");
-                ret.setType("business_district_active");
+
                 JSONObject jo = (JSONObject) jsonobject;
                 String businessEnty = jo.getString("business_enty"); //人口总量
                 QuotaItem item = new QuotaItem();
@@ -319,20 +332,21 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictMating(String userAccount, ChancePoint chancePoint, Date date) {
 
+        Quota ret = new Quota();
+        ret.setLabel("商区关键配套");
+        ret.setType("business_district_mating");
+        ret.setRemark("商区内银行、房产中介、超市、便利店、高校、医院数量");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_mating", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区关键配套");
-                ret.setType("business_district_mating");
-                ret.setRemark("商区内银行、房产中介、超市、便利店、高校、医院数量");
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject v = ja.getJSONObject(i);
@@ -346,18 +360,20 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictBusNum(String userAccount, ChancePoint chancePoint, Date date) {
+        Quota ret = new Quota();
+        ret.setLabel("商区公交路线数量、公交站点数");
+        ret.setType("business_district_bus_num");
+        ret.setRemark("商区内公交路线数量、公交站点数");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_bus_num", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区公交路线数量、公交站点数");
-                ret.setType("business_district_bus_num");
+
                 JSONObject jo = (JSONObject) jsonobject;
                 String busRoutes = jo.getString("bus_routes");
                 QuotaItem item = new QuotaItem();
@@ -377,20 +393,19 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictActiveTop(String userAccount, ChancePoint chancePoint, Date date) {
-
+        Quota ret = new Quota();
+        ret.setLabel("商区活跃度Top榜");
+        ret.setType("get_business_district_active_top");
+        ret.setRemark("商区内商业主体、商务楼、社区距离top榜");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_district_active_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区活跃度Top榜");
-                ret.setType("get_business_district_active_top");
-                ret.setRemark("商区内商业主体、商务楼、社区距离top榜");
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject data = ja.getJSONObject(i);
@@ -409,24 +424,22 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                     item.setValue(_datas);
                     ret.add(item);
                 }
-
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictMatingTop(String userAccount, ChancePoint chancePoint, Date date) {
-
+        Quota ret = new Quota();
+        ret.setLabel("商区关键配套Top榜");
+        ret.setType("get_business_district_mating_top");
+        ret.setRemark("商区内银行、房产中介、超市、便利店、高校、医院top榜");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_district_mating_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区关键配套Top榜");
-                ret.setType("get_business_district_mating_top");
-                ret.setRemark("商区内银行、房产中介、超市、便利店、高校、医院top榜");
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject data = ja.getJSONObject(i);
@@ -445,24 +458,22 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                     item.setValue(_datas);
                     ret.add(item);
                 }
-
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getBusinessDistrictBusTop(String userAccount, ChancePoint chancePoint, Date date) {
-
+        Quota ret = new Quota();
+        ret.setLabel("商区关键配套Top榜");
+        ret.setType("get_business_district_bus_top");
+        ret.setRemark("商区内公交路线数量、公交站点距离 top榜");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_district_bus_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("商区关键配套Top榜");
-                ret.setType("get_business_district_bus_top");
-                ret.setRemark("商区内公交路线数量、公交站点距离 top榜");
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject data = ja.getJSONObject(i);
@@ -481,24 +492,23 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                     item.setValue(_datas);
                     ret.add(item);
                 }
-
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getStreetMating(String userAccount, ChancePoint chancePoint, Date date) {
+        Quota ret = new Quota();
+        ret.setLabel("街道关键配套");
+        ret.setType("street_mating");
+        ret.setRemark("主要街道内银行、房产中介、超市、便利店、高校、医院数量");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
-            reqMap.put("street" , chancePoint.getAddress());
+            reqMap.put("street", chancePoint.getAddress());
             return request(userAccount, "/street_mating", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("街道关键配套");
-                ret.setType("street_mating");
-                ret.setRemark("主要街道内银行、房产中介、超市、便利店、高校、医院数量");
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject data = ja.getJSONObject(i);
@@ -517,25 +527,23 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                     item.setValue(_datas);
                     ret.add(item);
                 }
-
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 
     @Override
     public Quota getStreetTop(String userAccount, ChancePoint chancePoint, Date date) {
-
+        Quota ret = new Quota();
+        ret.setLabel("街道关键配套Top榜");
+        ret.setType("get_street_top");
+        ret.setRemark("街道内银行、房产中介、超市、便利店、高校、医院距离top榜");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
-            reqMap.put("street" , chancePoint.getAddress());
+            reqMap.put("street", chancePoint.getAddress());
             return request(userAccount, "/get_street_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
-                Quota ret = new Quota();
-                ret.setLabel("街道关键配套Top榜");
-                ret.setType("get_street_top");
-                ret.setRemark("街道内银行、房产中介、超市、便利店、高校、医院距离top榜");
                 JSONArray ja = (JSONArray) jsonobject;
                 for (int i = 0; i < ja.size(); i++) {
                     JSONObject data = ja.getJSONObject(i);
@@ -554,11 +562,10 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                     item.setValue(_datas);
                     ret.add(item);
                 }
-
                 return ret;
             });
         } catch (Exception e) {
-            return null;
+            return ret;
         }
     }
 }

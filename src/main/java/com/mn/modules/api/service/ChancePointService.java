@@ -13,7 +13,7 @@ import java.util.List;
 public interface ChancePointService {
 
     String AREA_SCOPE_PROVINCE = "province";
-    String AREA_SCOPE_CITY = "province";
+    String AREA_SCOPE_CITY = "city";
     String AREA_SCOPE_DISTRICT = "district";
 
 

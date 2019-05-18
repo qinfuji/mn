@@ -113,9 +113,16 @@ public class ChancePointServiceImpl implements ChancePointService {
             Quota circleActive = chancePointEstimateService.getBusinessCircleActive(userAccount, chancePoint, new Date());
             //商圈活跃度Top榜
             Quota circleActiveTop = chancePointEstimateService.getBusinessCircleActiveTop(userAccount, chancePoint, new Date());
-            circleEstimateResult.add(circlePopulation);
-            circleEstimateResult.add(circleActive);
-            circleEstimateResult.add(circleActiveTop);
+            if(circlePopulation != null){
+                circleEstimateResult.add(circlePopulation);
+            }
+            if(circleActive != null){
+                circleEstimateResult.add(circleActive);
+            }
+            if(circleActiveTop != null){
+                circleEstimateResult.add(circleActiveTop);
+            }
+
             result.add(circleEstimateResult);
             //商区评估
             EstimateResult districtEstimateResult = new EstimateResult();
@@ -138,15 +145,34 @@ public class ChancePointServiceImpl implements ChancePointService {
             Quota districtMatingTop = chancePointEstimateService.getBusinessDistrictMatingTop(userAccount, chancePoint, new Date());
             // 商区交路线数量、公交站点Top榜
             Quota districtBusTop = chancePointEstimateService.getBusinessDistrictBusTop(userAccount, chancePoint, new Date());
-            districtEstimateResult.add(districtPopulation);
-            districtEstimateResult.add(districtActive);
-            districtEstimateResult.add(districtActiveTop);
-            districtEstimateResult.add(districtBusNum);
-            districtEstimateResult.add(districtBusTop);
-            districtEstimateResult.add(districtCustomerActive);
-            districtEstimateResult.add(districtCustomerChildrenProportion);
-            districtEstimateResult.add(districtMating);
-            districtEstimateResult.add(districtMatingTop);
+            if(districtPopulation != null){
+                districtEstimateResult.add(districtPopulation);
+            }
+            if(districtActive !=null){
+                districtEstimateResult.add(districtActive);
+            }
+            if(districtActiveTop != null){
+                districtEstimateResult.add(districtActiveTop);
+            }
+
+            if(districtBusNum != null){
+                districtEstimateResult.add(districtBusNum);
+            }
+            if(districtBusTop != null){
+                districtEstimateResult.add(districtBusTop);
+            }
+            if(districtCustomerActive != null){
+                districtEstimateResult.add(districtCustomerActive);
+            }
+            if(districtCustomerChildrenProportion!=null){
+                districtEstimateResult.add(districtCustomerChildrenProportion);
+            }
+            if(districtMating!=null){
+                districtEstimateResult.add(districtMating);
+            }
+            if(districtMatingTop !=null){
+                districtEstimateResult.add(districtMatingTop);
+            }
             result.add(districtEstimateResult);
             //街道评估
             EstimateResult streeEstimateResult = new EstimateResult();
@@ -154,8 +180,12 @@ public class ChancePointServiceImpl implements ChancePointService {
             //街道关键配套
             Quota streetMating = chancePointEstimateService.getStreetMating(userAccount, chancePoint, new Date());
             Quota streetTop = chancePointEstimateService.getStreetTop(userAccount, chancePoint, new Date());
-            streeEstimateResult.add(streetMating);
-            streeEstimateResult.add(streetTop);
+            if(streetMating!=null){
+                streeEstimateResult.add(streetMating);
+            }
+            if(streetTop != null){
+                streeEstimateResult.add(streetTop);
+            }
             result.add(streeEstimateResult);
             return result;
         }
