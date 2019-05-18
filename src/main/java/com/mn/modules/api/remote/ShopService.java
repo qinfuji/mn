@@ -43,9 +43,9 @@ public interface ShopService {
 
     /**
      * 查询机会点相对应的商铺id
-     * @param chancePoint 机会点
-     * @param shopList    商铺列表
+     * @param userAccount
+     * @param chancePoint
      * @return
      */
-     String  getChancePointShopId(ChancePoint chancePoint, List<ChancePoint> shopList);
+    String getChancePointShopId(String userAccount, ChancePoint chancePoint);
 }

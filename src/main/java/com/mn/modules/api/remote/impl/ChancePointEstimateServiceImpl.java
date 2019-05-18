@@ -85,7 +85,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     @Override
     public Quota getBusinessCirclePopulation(String userAccount, ChancePoint chancePoint, Date date) {
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_circle_population", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商圈人口体量");
@@ -123,7 +123,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     @Override
     public Quota getBusinessCircleActive(String userAccount, ChancePoint chancePoint, Date date) {
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_circle_active", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商圈活跃度");
@@ -161,7 +161,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     @Override
     public Quota getBusinessCircleActiveTop(String userAccount, ChancePoint chancePoint, Date date) {
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_circle_active_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商圈活跃度Top榜");
@@ -197,7 +197,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     public Quota getBusinessDistrictPopulation(String userAccount, ChancePoint chancePoint, Date date) {
 
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_population", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区人口体量");
@@ -235,7 +235,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     @Override
     public Quota getBusinessDistrictCustomerActive(String userAccount, ChancePoint chancePoint, Date date) {
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_customer_active", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区消费者活跃度");
@@ -261,7 +261,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     @Override
     public Quota getBusinessDistrictCustomerChildrenProportion(String userAccount, ChancePoint chancePoint, Date date) {
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_customer_children_proportion", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区消费者有子女占比");
@@ -288,7 +288,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     public Quota getBusinessDistrictActive(String userAccount, ChancePoint chancePoint, Date date) {
 
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_active", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区活跃度");
@@ -327,7 +327,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     public Quota getBusinessDistrictMating(String userAccount, ChancePoint chancePoint, Date date) {
 
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_mating", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区关键配套");
@@ -353,7 +353,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     @Override
     public Quota getBusinessDistrictBusNum(String userAccount, ChancePoint chancePoint, Date date) {
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_bus_num", reqMap, JSON_DATA_TYPE_OBJECT, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区公交路线数量、公交站点数");
@@ -385,7 +385,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     public Quota getBusinessDistrictActiveTop(String userAccount, ChancePoint chancePoint, Date date) {
 
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_district_active_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区活跃度Top榜");
@@ -421,7 +421,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     public Quota getBusinessDistrictMatingTop(String userAccount, ChancePoint chancePoint, Date date) {
 
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_district_mating_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区关键配套Top榜");
@@ -457,7 +457,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     public Quota getBusinessDistrictBusTop(String userAccount, ChancePoint chancePoint, Date date) {
 
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/get_business_district_bus_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
                 ret.setLabel("商区关键配套Top榜");
@@ -492,7 +492,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     @Override
     public Quota getStreetMating(String userAccount, ChancePoint chancePoint, Date date) {
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             reqMap.put("street" , chancePoint.getAddress());
             return request(userAccount, "/street_mating", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();
@@ -529,7 +529,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     public Quota getStreetTop(String userAccount, ChancePoint chancePoint, Date date) {
 
         try {
-            Map reqMap = getRequestMap(userAccount, chancePoint.getChanceId());
+            Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             reqMap.put("street" , chancePoint.getAddress());
             return request(userAccount, "/get_street_top", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
                 Quota ret = new Quota();

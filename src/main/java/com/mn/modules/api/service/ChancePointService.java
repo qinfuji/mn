@@ -1,9 +1,9 @@
 package com.mn.modules.api.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.mn.modules.api.entity.ChancePoint;
 import com.mn.modules.api.vo.EstimateResult;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -11,6 +11,11 @@ import java.util.List;
  * 机会点
  */
 public interface ChancePointService {
+
+    String AREA_SCOPE_PROVINCE = "province";
+    String AREA_SCOPE_CITY = "province";
+    String AREA_SCOPE_DISTRICT = "district";
+
 
     /**
      * 创建机会点
@@ -32,20 +37,10 @@ public interface ChancePointService {
      * @param scope   范围  province | city | district
      * @param adCode  行政区域编码
      * @param appId
-     * @return 机会点列表
+     * @return 机会点分页列表
      */
-    List<ChancePoint> getChancePoint(String scope , String adCode , String appId);
+    IPage<ChancePoint> getChancePointList(String scope , String adCode , String appId , IPage pageParam);
 
-
-    /**
-     * 通过经纬度范围查询机会点
-     * @param lng  经度
-     * @param lat  纬度
-     * @param radius 查询半径
-     * @param appId
-     * @return 机会点列表
-     */
-    List<ChancePoint> getChancePointByLnglat(BigDecimal lng , BigDecimal lat , int radius , String appId);
 
     /**
      * 返回机会点评估报告

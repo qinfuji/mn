@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BaseTest {
 
     protected final MockConfig CHANCE_MOCK_CONFIG = new MockConfig()
-            .globalConfig().excludes("id");
+            .globalConfig().excludes("id","estimateResults");
 
 
 

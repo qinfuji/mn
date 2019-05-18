@@ -1,6 +1,6 @@
 CREATE TABLE `chance_point_t` (
   `id` VARCHAR(36) NOT NULL,
-  `chance_id` VARCHAR(30) NULL,
+  `shop_id` VARCHAR(30) NULL,
   `appId` VARCHAR(30) NULL,
   `status` VARCHAR(10) NULL,
   `name` VARCHAR(45) NOT NULL,

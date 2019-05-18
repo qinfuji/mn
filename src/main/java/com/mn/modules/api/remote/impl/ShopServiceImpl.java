@@ -200,14 +200,15 @@ public class ShopServiceImpl implements ShopService {
             cp.setName(shop.getString("name"));
             cp.setLat(shop.getDouble("lat")); //纬度
             cp.setLng(shop.getDouble("lng")); //经度
-            cp.setChanceId(shop.getString("id"));
+            cp.setShopId(shop.getString("id"));
             chanceList.add(cp);
         }
         return chanceList;
     }
 
     @Override
-    public String getChancePointShopId(ChancePoint chancePoint, List<ChancePoint> shopList) {
+    public String getChancePointShopId(String userAccount, ChancePoint chancePoint) {
+        List<ChancePoint> shopList =  getChancePointList(userAccount , chancePoint.getProvinceName() , chancePoint.getCityName());
         if(shopList == null || shopList.size()==0){
             return null;
         }
