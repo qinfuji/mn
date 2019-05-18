@@ -23,6 +23,7 @@ public interface ShopService {
 
     /**
      * 获取所有城市
+     * @param userAccount
      * @param  provinceKeys 省份列表
      * @return
      */
@@ -33,7 +34,18 @@ public interface ShopService {
      *
      * 获取省市下的机会点（商铺）列表
      * @param userAccount
+     * @param province 省中文名称
+     * @param city  城市中文名称
      * @return
      */
      List<ChancePoint> getChancePointList(String userAccount , String province , String city );
+
+
+    /**
+     * 查询机会点相对应的商铺id
+     * @param chancePoint 机会点
+     * @param shopList    商铺列表
+     * @return
+     */
+     String  getChancePointShopId(ChancePoint chancePoint, List<ChancePoint> shopList);
 }

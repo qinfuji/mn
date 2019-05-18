@@ -205,4 +205,18 @@ public class ShopServiceImpl implements ShopService {
         }
         return chanceList;
     }
+
+    @Override
+    public String getChancePointShopId(ChancePoint chancePoint, List<ChancePoint> shopList) {
+        if(shopList == null || shopList.size()==0){
+            return null;
+        }
+        for (int i = 0; i < shopList.size(); i++) {
+            ChancePoint shop = shopList.get(i);
+            if(chancePoint.getLat() == shop.getLat() && chancePoint.getLng() == shop.getLng()){
+                return shop.getId();
+            }
+        }
+        return null;
+    }
 }

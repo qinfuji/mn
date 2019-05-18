@@ -4,9 +4,6 @@ import com.mn.modules.api.BaseTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class TestShopServiceImpl extends BaseTest {
 
     @Autowired

@@ -2,13 +2,17 @@ package com.mn.modules.api.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * 指标项
  */
 @Data
 @AllArgsConstructor
-public class QuotaItem {
+@NoArgsConstructor
+public class QuotaItem<T> {
 
     /**
      * item 类型
@@ -23,5 +27,6 @@ public class QuotaItem {
     /**
      * 值
      */
-    String value;
+    T value;
+
 }

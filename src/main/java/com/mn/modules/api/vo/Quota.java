@@ -3,6 +3,9 @@ package com.mn.modules.api.vo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class Quota {
 
@@ -17,6 +20,11 @@ public class Quota {
     String label;
 
     /**
+     * 备注
+     */
+    String remark;
+
+    /**
      * 指标权重
      */
     double weight;
@@ -24,5 +32,10 @@ public class Quota {
     /**
      * 指标项
      */
-    QuotaItem[] quotaItems;
+    List<QuotaItem> quotaItems = new ArrayList<>();
+
+
+    public void add(QuotaItem quotaItem){
+        quotaItems.add(quotaItem);
+    }
 }
