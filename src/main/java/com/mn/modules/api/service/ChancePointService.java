@@ -1,6 +1,7 @@
 package com.mn.modules.api.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.mn.modules.api.entity.AnalysisResult;
 import com.mn.modules.api.entity.ChancePoint;
 import com.mn.modules.api.vo.EstimateResult;
 
@@ -68,5 +69,5 @@ public interface ChancePointService {
      * @param chancePoint
      * @return
      */
-    List<?> analysisHistory(ChancePoint chancePoint);
+    List<AnalysisResult> analysisHistory(ChancePoint chancePoint);
 }

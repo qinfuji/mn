@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @TableName("analysis_result_t")
 public class AnalysisResult {
@@ -27,4 +29,10 @@ public class AnalysisResult {
      */
     @TableField
     String result;
+
+    /**
+     * 分析时间
+     */
+    @TableField("created_time")
+    Date  createTime;
 }
