@@ -52,6 +52,9 @@ public class TokenInterceptor extends HandlerInterceptorAdapter {
         if (!claims.getSubject().equals(AppId)){
             throw new RRException("appId错误", HttpStatus.UNAUTHORIZED.value());
         }
+
+        request.setAttribute("appId" , claims.getSubject());
+
         return true;
     }
 }

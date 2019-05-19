@@ -32,10 +32,10 @@ public class Quota {
     /**
      * 指标项
      */
-    List<QuotaItem> quotaItems = new ArrayList<>();
+    List<QuotaItem> values = new ArrayList<>();
 
 
     public void add(QuotaItem quotaItem){
-        quotaItems.add(quotaItem);
+        values.add(quotaItem);
     }
 }

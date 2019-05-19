@@ -24,7 +24,12 @@ public interface ChancePointService {
      */
     ChancePoint createChancePoint(ChancePoint chancePoint);
 
-
+    /**
+     * 查询机会点
+     * @param id 机会点id
+     * @return
+     */
+    ChancePoint queryChance(String id);
     /**
      * 更新机会点
      * @param chancePoint

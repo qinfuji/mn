@@ -194,6 +194,11 @@ public class ChancePointServiceImpl implements ChancePointService {
 
 
     @Override
+    public ChancePoint queryChance(String id) {
+         return chancePointDao.selectById(id);
+    }
+
+    @Override
     public void analysis(ChancePoint chancePoint, List<EstimateResult> estimateResultList) {
 
     }

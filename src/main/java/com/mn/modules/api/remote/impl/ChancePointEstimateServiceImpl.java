@@ -51,7 +51,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
             JSONObject jsonObject = JSON.parseObject(responseString);
             Integer code = jsonObject.getInteger("code");
             if (code != 0) {
-                LOG.error("获取用户省编码失败 ， account:%s , reason: %s", account, jsonObject.getString("msg"));
+                LOG.error("获取评估数据失败 ， account:{} , reason: {}", account, jsonObject.getString("msg"));
                 throw new RuntimeException("请求错误");
             } else {
                 if (JSON_DATA_TYPE_ARRAY.equals(dataType)) {

@@ -190,7 +190,7 @@ public class Tools {
         //把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
         String prestr = createLinkString(sPara);
         //生成签名结果
-        String mysign = DigestUtils.md5Hex(prestr + secretKey);
+        String mysign = DigestUtils.md5Hex(getContentBytes(prestr + secretKey, INPUT_CHARSET));
         //签名结果加入请求提交参数组中
         sPara.put("sign", mysign);
         return sPara;
@@ -260,7 +260,6 @@ public class Tools {
             //是否超时
             long curr = System.currentTimeMillis();
             if ((curr - Long.valueOf(timestamp)) > TIME_OUT){
-
                 return false;
             }
             return true;
