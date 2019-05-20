@@ -64,7 +64,7 @@ public class ChancePointServiceImpl implements ChancePointService {
     }
 
     @Override
-    public IPage<ChancePoint> getChancePointList(String scope, String adCode, String appId, IPage pageParam , String userAccount) {
+    public IPage<ChancePoint> getChancePointList(String scope, String adCode, String appId, IPage pageParam, String userAccount) {
         QueryWrapper<ChancePoint> queryWrapper = new QueryWrapper<>();
 
         queryWrapper.eq("appId", appId);
@@ -75,22 +75,23 @@ public class ChancePointServiceImpl implements ChancePointService {
         } else if (AREA_SCOPE_DISTRICT.equals(scope)) {
             queryWrapper.eq("district", adCode);
         }
-        IPage page =  chancePointDao.selectPage(pageParam, queryWrapper);
+        IPage page = chancePointDao.selectPage(pageParam, queryWrapper);
+
         List<ChancePoint> records = page.getRecords();
-        if(records.size()==0){
-             return page;
+        if (records.size() == 0) {
+            return page;
         }
 
-        List<ChancePoint> newrecords =  new ArrayList<>();
-        records.forEach((record)->{
-             if(record.getShopId() ==null){
-                 String shopId =  shopService.getChancePointShopId(userAccount , record);
-                 if(shopId != null){
-                     record.setShopId(shopId);
-                     chancePointDao.updateById(record);
-                 }
-             }
-             newrecords.add(record);
+        List<ChancePoint> newrecords = new ArrayList<>();
+        records.forEach((record) -> {
+            if (record.getShopId() == null) {
+                String shopId = shopService.getChancePointShopId(userAccount, record);
+                if (shopId != null) {
+                    record.setShopId(shopId);
+                    chancePointDao.updateById(record);
+                }
+            }
+            newrecords.add(record);
         });
 
         page.setRecords(newrecords);
@@ -133,10 +134,10 @@ public class ChancePointServiceImpl implements ChancePointService {
             Quota circleActive = chancePointEstimateService.getBusinessCircleActive(userAccount, chancePoint, new Date());
             //商圈活跃度Top榜
             //Quota circleActiveTop = chancePointEstimateService.getBusinessCircleActiveTop(userAccount, chancePoint, new Date());
-            if(circlePopulation != null){
+            if (circlePopulation != null) {
                 circleEstimateResult.add(circlePopulation);
             }
-            if(circleActive != null){
+            if (circleActive != null) {
                 circleEstimateResult.add(circleActive);
             }
 //            if(circleActiveTop != null){
@@ -165,29 +166,29 @@ public class ChancePointServiceImpl implements ChancePointService {
             //Quota districtMatingTop = chancePointEstimateService.getBusinessDistrictMatingTop(userAccount, chancePoint, new Date());
             // 商区交路线数量、公交站点Top榜
             //Quota districtBusTop = chancePointEstimateService.getBusinessDistrictBusTop(userAccount, chancePoint, new Date());
-            if(districtPopulation != null){
+            if (districtPopulation != null) {
                 districtEstimateResult.add(districtPopulation);
             }
-            if(districtActive !=null){
+            if (districtActive != null) {
                 districtEstimateResult.add(districtActive);
             }
 //            if(districtActiveTop != null){
 //                districtEstimateResult.add(districtActiveTop);
 //            }
 
-            if(districtBusNum != null){
+            if (districtBusNum != null) {
                 districtEstimateResult.add(districtBusNum);
             }
 //            if(districtBusTop != null){
 //                districtEstimateResult.add(districtBusTop);
 //            }
-            if(districtCustomerActive != null){
+            if (districtCustomerActive != null) {
                 districtEstimateResult.add(districtCustomerActive);
             }
-            if(districtCustomerChildrenProportion!=null){
+            if (districtCustomerChildrenProportion != null) {
                 districtEstimateResult.add(districtCustomerChildrenProportion);
             }
-            if(districtMating!=null){
+            if (districtMating != null) {
                 districtEstimateResult.add(districtMating);
             }
 //            if(districtMatingTop !=null){
@@ -200,7 +201,7 @@ public class ChancePointServiceImpl implements ChancePointService {
             //街道关键配套
             Quota streetMating = chancePointEstimateService.getStreetMating(userAccount, chancePoint, new Date());
 //            Quota streetTop = chancePointEstimateService.getStreetTop(userAccount, chancePoint, new Date());
-            if(streetMating!=null){
+            if (streetMating != null) {
                 streeEstimateResult.add(streetMating);
             }
 //            if(streetTop != null){
@@ -215,7 +216,7 @@ public class ChancePointServiceImpl implements ChancePointService {
 
     @Override
     public ChancePoint queryChance(String id) {
-         return chancePointDao.selectById(id);
+        return chancePointDao.selectById(id);
     }
 
     @Override

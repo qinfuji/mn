@@ -314,57 +314,6 @@ function initMap(env) {
     }
   }
 
-  // //监听feature的hover事件
-  // districtExplorer.on("featureMouseout featureMouseover", function(e, feature) {
-  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-  //   toggleHoverFeature(
-  //     feature,
-  //     e.type === "featureMouseover",
-  //     e.originalEvent ? e.originalEvent.lnglat : null
-  //   );
-  // });
-
-  // //监听鼠标在feature上滑动
-  // districtExplorer.on("featureMousemove", function(e, feature) {
-  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-  //   //更新提示位置
-  //   tipMarker.setPosition(e.originalEvent.lnglat);
-  // });
-
-  // //feature被点击
-  // districtExplorer.on("featureClick", function(e, feature) {
-  //   console.log(currentMode);
-  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-  //   var props = feature.properties;
-  //   //如果存在子节点
-  //   //if (props.childrenNum > 0) {
-  //   //切换聚焦区域
-  //   switch2AreaNode(props.adcode);
-  //   //}
-  // });
-
-  // //外部区域被点击
-  // districtExplorer.on("outsideClick", function(e) {
-  //   if (currentMode !== ModeEnum.MAP) return; //编辑模式，不响应
-  //   districtExplorer.locatePosition(
-  //     e.originalEvent.lnglat,
-  //     function(error, routeFeatures) {
-  //       if (routeFeatures && routeFeatures.length > 1) {
-  //         //切换到省级区域
-  //         switch2AreaNode(
-  //           routeFeatures[routeFeatures.length - 2].properties.adcode
-  //         );
-  //       } else {
-  //         //切换到全国
-  //         switch2AreaNode(100000);
-  //       }
-  //     },
-  //     {
-  //       levelLimit: 3
-  //     }
-  //   );
-  // });
-
   //绘制某个区域的边界
   function renderAreaPolygons(areaNode) {
     //更新地图视野
@@ -474,6 +423,7 @@ function initMap(env) {
   $("#province,#city,#district").on("change", function(e) {
     changeMode(ModeEnum.MAP);
     if ($(this).val()) {
+      store.dispatch(queryChanceList($(this).attr("id"), $(this).val()));
       switch2AreaNode($(this).val(), function() {
         //限制地图显示
         // var bounds = map.getBounds();
@@ -546,25 +496,23 @@ function initMap(env) {
   function markChance(e) {
     var lnglat = new AMap.LngLat(e.lnglat.getLng(), e.lnglat.getLat());
     locatePosition(lnglat).then(function(features) {
-      var chance = Object.assign(
-        {
-          name: "",
-          chanceId: "",
-          id: null,
-          fence: "", //围栏
-          province: "", //省
-          provinceName: "",
-          city: "",
-          cityName: "",
-          district: "",
-          districtName: "",
-          address: "",
-          lnglat: e.lnglat.getLng() + "," + e.lnglat.getLat(),
-          lng: e.lnglat.getLng(),
-          lat: e.lnglat.getLat()
-        },
-        features
-      );
+      var chance = {
+        name: "",
+        chanceId: "",
+        id: null,
+        fence: "", //围栏
+        province: features.province,
+        provinceName: features.provinceName,
+        city: features.city || features.district, //直辖市没有城市，使用地区占位
+        cityName: features.cityName || features.districtName,
+        district: features.district,
+        districtName: features.districtName,
+        address: "",
+        lnglat: e.lnglat.getLng() + "," + e.lnglat.getLat(),
+        lng: e.lnglat.getLng(),
+        lat: e.lnglat.getLat()
+      };
+
       console.log(chance);
       store.dispatch(updateChance(chance));
       changeMode(ModeEnum.EDIT);
@@ -912,15 +860,17 @@ function initMap(env) {
    * @paran chance  对象
    */
   function updateeStimateResultLoaded(chance, topNavIndex, childIndex) {
+    if (!chance.id) {
+      $(".estimateResult").empty();
+      return;
+    }
     if (!chance.shopId) {
-      $(".estimateResult").html(
-        "<span class='invalid-status'>机会点审核中！</span>"
-      );
+      $(".estimateResult").html("<span class='message'>机会点审核中！</span>");
       return;
     }
     if (!chance.estimateResult) {
       $(".estimateResult").html(
-        "<span class='loding'>评估数据加载中...</span>"
+        "<span class='message'>评估数据加载中...</span>"
       );
       return;
     }
@@ -1136,44 +1086,6 @@ function initMap(env) {
     });
   }
 
-  /**
-   * 初始化机会点列表
-   * @return 返回机会点对象列表
-   */
-  function initChanceList() {}
-
-  /**
-   * 绘制区域内的机会点
-   */
-  function renderAreaChances(areaNode) {}
-  /**
-   * 查询某个区域内的所有机会点
-   */
-  function searchChanceList(areaNode) {
-    return new Promise(function(resolve, reject) {
-      ajax.get("", {});
-    });
-  }
-
-  /**
-   * 设置机会点
-   * @param map 地图对象
-   * @param position  机会点坐标
-   * @param params  相关参数
-   * @return 返回相关对象
-   */
-  function setChancePoint(position, params) {}
-
-  /**
-   * 更新机会点数据
-   */
-  function updateChancePointInfo() {}
-
-  /**
-   * 创建机会点
-   * @param chancePointInfo
-   */
-  function createChancePoint(chancePointInfo) {}
   /**
    * 获取当前用户的位置信息
    */
