@@ -81,8 +81,8 @@ mnbi:
   jwt:
     # 加密秘钥
     secret: KXRaOrSwee2PePWEJiSJu0fK8Zta3O31
-    # token有效时长，单位秒
-    expire: 1800
+    # token有效时长，单位秒 , 4小时
+    expire: 14400
     header: token
   app:
     appid: hcr000001

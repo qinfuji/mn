@@ -150,17 +150,58 @@ public class TestChancePointController extends BaseTest {
     }
 
 
+    /**
+     * 直辖市测试
+     * @throws Exception
+     */
     @Test
     public void testQueryEstimateResults() throws  Exception{
         ChancePoint chancePoint = getTempChancePoint();
         chancePoint.setAppId(appId);
-        chancePoint.setShopId("123");
+        chancePoint.setShopId(null);
         chancePoint.setProvince("10000001");
+        chancePoint.setLng(116.4795723047);
+        chancePoint.setLat(39.8450571607);
+        chancePoint.setProvinceName("北京市");
+        chancePoint.setCityName("朝阳区");
         dao.insert(chancePoint);
         String token = getToken();
         MvcResult result = mockMvc.perform(get("/api/chance/"+chancePoint.getId()+"/estimates")
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("userAccount" , "1")
+                .param("userAccount" , "hcrf0380")
+                .header("token" , token))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn();
+
+        JSONObject jo = JSONObject.parseObject(result.getResponse().getContentAsString());
+        int code = jo.getInteger("code");
+        Assert.assertEquals(0 , code);
+        List<EstimateResult> ret = jo.getObject("data" , new TypeReference<List<EstimateResult>>(){});
+        Assert.assertEquals(3 ,ret.size());
+
+    }
+
+
+    /**
+     * 非直辖市测试
+     * @throws Exception
+     */
+    @Test
+    public void testQueryEstimateResults1() throws  Exception{
+        ChancePoint chancePoint = getTempChancePoint();
+        chancePoint.setAppId(appId);
+        chancePoint.setShopId(null);
+        chancePoint.setProvince("10000001");
+        chancePoint.setLng(114.2690740918);
+        chancePoint.setLat(30.6297346021);
+        chancePoint.setProvinceName("湖北省");
+        chancePoint.setCityName("武汉市");
+        dao.insert(chancePoint);
+        String token = getToken();
+        MvcResult result = mockMvc.perform(get("/api/chance/"+chancePoint.getId()+"/estimates")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("userAccount" , "hcrf0366")
                 .header("token" , token))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))

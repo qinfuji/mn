@@ -101,8 +101,103 @@ var _a = [
   }
 ];
 
-function getChanceEstimateResult(id) {
-  return new Promise(function(resolve, reject) {
-    resolve(_a);
-  });
+function _getAuthInfo() {
+  return {
+    //userAccount: jQuery.param("userAccount"),
+    //token: jQuery.param("token")
+    userAccount: "hcrf0380",
+    token:
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTgzNDExNzksImV4cCI6MTU1ODM1NTU3OX0.AfjS2LTfIqwlNFzKhiJc8sEbTmtPC61ceVLxUzdL6fl9rpRecDoQic3FidFhxgysXAmR97vi12BN0cshIjOy4g"
+  };
 }
+
+var serviceApi = {
+  getChanceEstimateResult: function(id) {
+    return new Promise(function(resolve, reject) {
+      resolve(_a);
+    });
+  },
+
+  createChance: function(chance) {
+    var authInfo = _getAuthInfo();
+    return new Promise(function(resolve, reject) {
+      $.ajax({
+        url:
+          "http:/localhost:8086/api/chance/create?userAccount=" +
+          authInfo.userAccount,
+        type: "post",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=utf8",
+          token: authInfo.token
+        },
+        data: JSON.stringify(chance),
+        success: function(data) {
+          if (data.code === 0) {
+            resolve(data.data);
+          } else {
+            alert(data.msg);
+            reject();
+          }
+        }
+      });
+    });
+  },
+
+  queryChanceList: function(scope, adcode) {
+    var authInfo = _getAuthInfo();
+    return new Promise(function(resolve, reject) {
+      $.ajax({
+        url:
+          "http:/localhost:8086/api/chance//list/" +
+          scope +
+          "/" +
+          adcode +
+          "?userAccount=" +
+          authInfo.userAccount,
+        type: "get",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=utf8",
+          token: authInfo.token
+        },
+        success: function(data) {
+          if (data.code === 0) {
+            resolve(data.data.records);
+          } else {
+            alert(data.msg);
+            reject();
+          }
+        }
+      });
+    });
+  },
+
+  updateChance: function(chance) {
+    var authInfo = _getAuthInfo();
+    return new Promise(function(resolve, reject) {
+      $.ajax({
+        url:
+          "http:/localhost:8086/api/chance/update/" +
+          chance.id +
+          "?userAccount=" +
+          authInfo.userAccount,
+        type: "put",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=utf8",
+          token: authInfo.token
+        },
+        data: JSON.stringify(chance),
+        success: function(data) {
+          if (data.code === 0) {
+            resolve(data.data);
+          } else {
+            alert(data.msg);
+            reject();
+          }
+        }
+      });
+    });
+  }
+};

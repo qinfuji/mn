@@ -50,6 +50,7 @@ public class TestTokenCoreController extends BaseTest {
 
             String responseString = result.getResponse().getContentAsString();
             JSONObject json = JSONObject.parseObject(responseString);
+            System.out.println("---->"+responseString );
             Assert.assertEquals(json.getInteger("code").intValue(), 0);
             Assert.assertNotEquals(json.getString("token"), null);
 

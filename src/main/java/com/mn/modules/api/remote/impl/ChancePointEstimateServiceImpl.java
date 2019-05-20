@@ -51,7 +51,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
             JSONObject jsonObject = JSON.parseObject(responseString);
             Integer code = jsonObject.getInteger("code");
             if (code != 0) {
-                LOG.error("获取评估数据失败 ， account:{} , reason: {}", account, jsonObject.getString("msg"));
+                LOG.error("获取评估数据失败 ， path:{} , params:{} , account:{} , reason: {}",path , requestMap, account, jsonObject.getString("msg"));
                 throw new RuntimeException("请求错误");
             } else {
                 if (JSON_DATA_TYPE_ARRAY.equals(dataType)) {
@@ -71,8 +71,8 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
     private Map<String, String> getRequestMap(String userAccount, String shopId) {
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
-        c.add(Calendar.YEAR, -1);  //上一年
-        c.set(Calendar.MONTH, 1);
+        //c.add(Calendar.YEAR, -1);  //上一年
+        c.set(Calendar.MONTH, 2);
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("user_account", userAccount);
         reqMap.put("shop_id", shopId);
@@ -194,7 +194,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
                 return ret;
             });
         } catch (Exception e) {
-
+            LOG.error("/get_business_circle_active_top error" ,e);
             return ret;
         }
     }

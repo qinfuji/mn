@@ -15,6 +15,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,6 +32,7 @@ public class ShopServiceImpl implements ShopService {
     private static final String GET_SHOP = "/get_shop";
 
     private Map<String, Map<String, String>> userAccountProvinceMap = new ConcurrentHashMap(new HashMap<>());
+    //key是userAccount_provincecode
     private Map<String, Map<String, String>> userAccountCityMap = new ConcurrentHashMap(new HashMap<>());
 
     private Map<String, Boolean> accountLoadedMap = new HashMap();
@@ -38,6 +40,7 @@ public class ShopServiceImpl implements ShopService {
     @Autowired
     RestTemplate restTemplate;
 
+    @Override
     public void init(String userAccount) {
         try {
             Map<String, String> p = getProvince(userAccount);
@@ -45,9 +48,9 @@ public class ShopServiceImpl implements ShopService {
                 accountLoadedMap.put(userAccount, new Boolean(true));
             }
             userAccountProvinceMap.put(userAccount, p);
-            Map citys = getCitys(userAccount, new ArrayList<>(p.keySet()));
+            Map citys = getCitys(userAccount, new ArrayList<>(p.values()));
             if (citys != null) {
-                userAccountCityMap.put(userAccount, citys);
+                userAccountCityMap.putAll(citys);
             }
             accountLoadedMap.put(userAccount, new Boolean(true));
         } catch (Exception e) {
@@ -70,7 +73,7 @@ public class ShopServiceImpl implements ShopService {
         ResponseEntity<String> responseBody = restTemplate.postForEntity(HOST + PROVINCE_PATH, requestMap, String.class);
         String responseString = responseBody.getBody();
         try {
-            Map _ret = getResultMap(account, responseString, "");
+            Map _ret = getResultMap(account, responseString);
 
             return _ret;
         } catch (Exception err) {
@@ -80,12 +83,12 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public Map<String, String> getCitys(String userAccount, List<String> provinceKeys) {
+    public Map<String, Map<String,String>> getCitys(String userAccount, List<String> provinceKeys) {
         Map<String, String> map = new HashMap<>();
         map.put("user_account", userAccount);
         map.put("appid", APPID);
 
-        Map<String, String> result = new HashMap<>();
+        Map<String, Map<String , String>> result = new HashMap<>();
         provinceKeys.forEach((provinceKey) -> {
             map.put("province", provinceKey);
             Map signParamMap = Tools.sign(map, TOKEN);
@@ -96,9 +99,9 @@ public class ShopServiceImpl implements ShopService {
             });
             ResponseEntity<String> responseBody = restTemplate.postForEntity(HOST + CITY_PATH, requestMap, String.class);
             try {
-                Map _ret = getResultMap(userAccount, responseBody.getBody(), provinceKey + "_");
+                Map _ret = getResultMap(userAccount, responseBody.getBody());
                 if (_ret != null) {
-                    result.putAll(_ret);
+                    result.put(userAccount+"_"+provinceKey , _ret);
                 }
             } catch (Exception err) {
                 throw new RuntimeException("");
@@ -107,7 +110,7 @@ public class ShopServiceImpl implements ShopService {
         return result;
     }
 
-    private Map<String, String> getResultMap(String account, String responseString, String prefix) {
+    private Map<String, String> getResultMap(String account, String responseString) {
         JSONObject jsonObject = JSON.parseObject(responseString);
         Integer code = jsonObject.getInteger("code");
 
@@ -119,7 +122,7 @@ public class ShopServiceImpl implements ShopService {
             Map provinceNameMap = new HashMap<>();
             for (int i = 0; i < datas.size(); i++) {
                 JSONObject item = datas.getJSONObject(i);
-                String key = item.getString(prefix + "key");
+                String key = item.getString("key");
                 String name = item.getString("name");
                 provinceNameMap.put(name, key);
 
@@ -130,11 +133,11 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public List<ChancePoint> getChancePointList(String userAccount, String province, String city) {
-        if (accountLoadedMap.get(userAccount)) {
+        if (accountLoadedMap.get(userAccount) == null) {
             //初始化呢账号区域
             init(userAccount);
         }
-        if (userAccountProvinceMap.get(userAccount) == null || userAccountCityMap.get(userAccount) == null) {
+        if (userAccountProvinceMap.get(userAccount) == null) {
             return new ArrayList<>();
         }
         //转换省
@@ -152,10 +155,13 @@ public class ShopServiceImpl implements ShopService {
         }
 
         String cityCode ="";
-        Map<String, String> citys = userAccountCityMap.get(userAccount);
+        Map<String, String> citys = userAccountCityMap.get(userAccount+"_"+provinceCode);
+        if(citys == null || citys.size()==0){
+            return new ArrayList<>();
+        }
         for (Map.Entry<String, String> entry : citys.entrySet()) {
             String name =  entry.getKey();
-            if(province.indexOf(name)!= -1 || name.indexOf(province)!=-1){
+            if(city.indexOf(name)!= -1 || name.indexOf(city)!=-1){
                 cityCode = entry.getValue();
                 break;
             }
@@ -214,8 +220,10 @@ public class ShopServiceImpl implements ShopService {
         }
         for (int i = 0; i < shopList.size(); i++) {
             ChancePoint shop = shopList.get(i);
-            if(chancePoint.getLat() == shop.getLat() && chancePoint.getLng() == shop.getLng()){
-                return shop.getId();
+            DecimalFormat df = new DecimalFormat("#.000000");
+            if( df.format(chancePoint.getLat()).equals(df.format(shop.getLat()))
+                    && df.format(chancePoint.getLng()).equals(df.format(shop.getLng()))){
+                return shop.getShopId();
             }
         }
         return null;

@@ -73,6 +73,7 @@ var ActionTypes = {
   DELETE_CHANCE: "deleteChance", //删除机会点
   ADD_CHANCE: "addChance", //添加机会点
   UPDATE_CHANCE_LIST: "updateChanceList", //更新机会点列表
+  ADD_CHANCE_TO_LIST: "addChanceToList", //添加新
   UPDATE_SEARCH_LIST: "updateSearchList", //查询结果
   UPDATE_MAP_LOCATION: "updateLocation", //更新地图的位置
   UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResult" //更新评估结果
@@ -91,7 +92,7 @@ function updateChance(chance) {
   ) {
     return function(dispatch) {
       return new Promise(function(resolve, reject) {
-        getChanceEstimateResult(chance.id).then(function(result) {
+        serviceApi.getChanceEstimateResult(chance.id).then(function(result) {
           resolve(result);
         });
       }).then(function(result) {
@@ -111,6 +112,15 @@ function updateChance(chance) {
       });
     };
   }
+}
+
+function addChancePointToList(chancePoint) {
+  return function(dispatch) {
+    dispatch({
+      type: ActionTypes.ADD_CHANCE_TO_LIST,
+      payload: chancePoint
+    });
+  };
 }
 
 /**
@@ -140,56 +150,12 @@ function updateChanceProps(props) {
 /**
  * 查询机会点列表
  */
-function queryChanceList(adcodeLimit) {
+function queryChanceList(scope, adcode) {
+  scope = scope ? scope : "cuntry";
+  adcode = adcode ? adcode : "100000";
+
   return function(dispatch) {
-    return new Promise(function(resolve, reject) {
-      var test = [
-        {
-          name: "肯德基1",
-          chance_id: "ABC1",
-          id: 1,
-          fence: "", //围栏
-          province: "", //省
-          provinceName: "",
-          city: "",
-          cityName: "",
-          district: "",
-          districtName: "",
-          address: "湖北省潜江市园林街道县河街11号",
-          lnglat: "112.900765,30.41671"
-        },
-        {
-          name: "肯德基2",
-          chance_id: "ABC2",
-          id: 2,
-          fence: "", //围栏
-          province: "", //省
-          provinceName: "",
-          city: "",
-          cityName: "",
-          district: "",
-          districtName: "",
-          address:
-            "湖北省潜江市园林街道园林三小艺术幼儿园潜江市自然资源和规划局",
-          lnglat: "112.902101,30.415831"
-        },
-        {
-          name: "肯德基3",
-          chanceId: "ABC3",
-          id: 3,
-          fence: "", //围栏
-          province: "", //省
-          provinceName: "",
-          city: "",
-          cityName: "",
-          district: "",
-          districtName: "",
-          address: "湖北省潜江市泰丰街道健康巷121号",
-          lnglat: "112.900491,30.414823"
-        }
-      ];
-      resolve(test);
-    }).then(function(chanceList) {
+    return serviceApi.queryChanceList(scope, adcode).then(function(chanceList) {
       dispatch({
         type: ActionTypes.UPDATE_CHANCE_LIST,
         payload: chanceList
@@ -201,7 +167,17 @@ function queryChanceList(adcodeLimit) {
 function ChanceRedux(state, action) {
   state = state || {};
   if (action.type === ActionTypes.UPDATE_CHANCE) {
+    var listUpdated = false;
+    var chanceList = state.chanceList || [];
+    var updatedChance = action.payload;
+    for (var i = 0; i < chanceList.length; i++) {
+      if (chanceList[i].id === updatedChance.id) {
+        listUpdated = true;
+        chanceList[i] = updatedChance;
+      }
+    }
     return Object.assign(state, {
+      chanceList: !listUpdated ? state.chanceList : [].concat(chanceList),
       currentChance: action.payload
     });
   } else if (action.type === ActionTypes.UPDATE_CHANGE_PROPS) {
@@ -211,6 +187,10 @@ function ChanceRedux(state, action) {
   } else if (action.type === ActionTypes.UPDATE_CHANCE_LIST) {
     return Object.assign(state, {
       chanceList: action.payload
+    });
+  } else if (action.type === ActionTypes.ADD_CHANCE_TO_LIST) {
+    return Object.assign(state, {
+      chanceList: [].concat(action.payload, state.chanceList)
     });
   } else if (action.type === ActionTypes.UPDATE_MAP_LOCATION) {
     return Object.assign(state, { lnglat: action.payload });
@@ -474,7 +454,6 @@ function initMap(env) {
     var container = $("#chancelistContainer").empty();
     var items = [];
     if (chanceList && chanceList.length) {
-      console.log(chanceList);
       chanceList.forEach(function(chance) {
         var itemele = `<div class="chanceItem" data-json="${encodeURIComponent(
           JSON.stringify(chance)
@@ -509,12 +488,15 @@ function initMap(env) {
   });
 
   $("#chance_update").on("click", function() {
-    console.log(currentChance);
+    serviceApi.updateChance(currentChance).then(function(data) {
+      store.dispatch(updateChance(data));
+    });
   });
 
   $("#chance_save").on("click", function(e) {
-    //console.log($("#chanceForm").serializeArray());
-    console.log(currentChance);
+    serviceApi.createChance(currentChance).then(function(data) {
+      store.dispatch(addChancePointToList(data));
+    });
   });
 
   $("#chance_revoke").on("click", function(e) {
@@ -576,7 +558,9 @@ function initMap(env) {
           district: "",
           districtName: "",
           address: "",
-          lnglat: e.lnglat.getLng() + "," + e.lnglat.getLat()
+          lnglat: e.lnglat.getLng() + "," + e.lnglat.getLat(),
+          lng: e.lnglat.getLng(),
+          lat: e.lnglat.getLat()
         },
         features
       );
@@ -752,9 +736,8 @@ function initMap(env) {
   function updateMapChance(chance) {
     map.clearMap();
     if (!chance) return;
-    var strLnglat = chance.lnglat;
-    var arrLnglat = strLnglat.split(",");
-    var lnglat = new AMap.LngLat(arrLnglat[0], arrLnglat[1]);
+
+    var lnglat = new AMap.LngLat(chance.lng, chance.lat);
 
     setLocationMarkerRange(lnglat);
     setChanceMarker(chance);
@@ -850,10 +833,8 @@ function initMap(env) {
    *  设置机会点marker
    */
   function setChanceMarker(chance) {
-    var lnglatStr = chance.lnglat;
-    var arrLnglat = lnglatStr.split(",");
     var marker = new AMap.Marker({
-      position: arrLnglat,
+      position: [chance.lng, chance.lat],
       offset: new AMap.Pixel(-13, -30),
       draggable: chance.id ? false : true,
       cursor: chance.id ? "pointer" : "move"
@@ -887,16 +868,17 @@ function initMap(env) {
       return;
     }
     showChanceInfo();
-    var lnglatStr = chance.lnglat;
-    var arrLnglat = lnglatStr.split(",");
+
     var adcode =
       $("#district").val() || $("#city").val() || $("#province").val();
     var geocoder = new AMap.Geocoder({
       city: adcode
     });
-    var lng = arrLnglat[0];
-    var lat = arrLnglat[1];
+    var lng = chance.lng;
+    var lat = chance.lat;
     $("#chance_lnglat").val(lng + "," + lat);
+    $("#chance_lng").val(lng);
+    $("#chance_lat").val(lat);
     if (chance.id) {
       $("#chance_lnglat").attr("readonly", true);
     }
@@ -904,6 +886,7 @@ function initMap(env) {
     $("#chance_name").val(chance.name);
     $("#chance_address").val(chance.address);
     $("#chance_fence").val(chance.fence);
+    $("#chance_type").val(chance.type);
     geocoder.getAddress([lng, lat], function(status, result) {
       if (status === "complete" && result.info === "OK") {
         var address = result.regeocode.formattedAddress; //返回地址描述

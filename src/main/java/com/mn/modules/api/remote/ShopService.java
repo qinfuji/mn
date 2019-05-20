@@ -13,6 +13,10 @@ import java.util.Map;
 public interface ShopService {
 
 
+    /**
+     * 初始化省市
+     * @param userAccount
+     */
     void init(String userAccount);
     /**
      * 获取账户的所有省
@@ -25,9 +29,9 @@ public interface ShopService {
      * 获取所有城市
      * @param userAccount
      * @param  provinceKeys 省份列表
-     * @return
+     * @return 返回账户与省为key的城市列表
      */
-    Map<String , String> getCitys(String userAccount , List<String> provinceKeys);
+    Map<String, Map<String,String>> getCitys(String userAccount , List<String> provinceKeys);
 
 
     /**

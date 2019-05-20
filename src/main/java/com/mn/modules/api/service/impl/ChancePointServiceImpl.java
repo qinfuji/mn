@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.mn.modules.api.dao.ChancePointDao;
 import com.mn.modules.api.dao.EstimateResultDataDao;
+import com.mn.modules.api.entity.AnalysisResult;
 import com.mn.modules.api.entity.ChancePoint;
 import com.mn.modules.api.remote.ChancePointEstimateService;
 import com.mn.modules.api.remote.ShopService;
@@ -204,7 +205,7 @@ public class ChancePointServiceImpl implements ChancePointService {
     }
 
     @Override
-    public List<?> analysisHistory(ChancePoint chancePoint) {
+    public List<AnalysisResult> analysisHistory(ChancePoint chancePoint) {
         return null;
     }
 }

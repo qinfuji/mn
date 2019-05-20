@@ -10,7 +10,7 @@ public class TestShopServiceImpl extends BaseTest {
     ShopService shopService;
 
     @Test
-    public void testInit(){
+    public void testInit() {
         shopService.init("hcrf0380");
     }
 }

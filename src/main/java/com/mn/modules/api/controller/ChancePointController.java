@@ -99,7 +99,7 @@ public class ChancePointController {
         return null;
     }
 
-    @PostMapping("/{id}/analysis")
+    @PostMapping("/{id}/analysisHistory")
     @CheckToken
     public RestResult<List<AnalysisResult>> analysisHistory(@PathVariable String id,
                                                             @RequestAttribute String appId) {
