@@ -46,7 +46,7 @@ public interface ChancePointService {
      * @param appId
      * @return 机会点分页列表
      */
-    IPage<ChancePoint> getChancePointList(String scope , String adCode , String appId , IPage pageParam);
+    IPage<ChancePoint> getChancePointList(String scope , String adCode , String appId , IPage pageParam , String userAccount);
 
 
     /**

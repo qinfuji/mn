@@ -91,23 +91,23 @@ class ChancePointServiceImplTest extends BaseTest {
             chancePointDao.insert(cp);
         }
         IPage<ChancePoint> page = new Page(1,10);
-        IPage result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_DISTRICT , "100001" , "1"  , page);
+        IPage result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_DISTRICT , "100001" , "1"  , page ,"hcrf0380");
         assertEquals(result.getTotal() , 0);
         assertEquals(result.getRecords().size() , 0);
 
         page = new Page(1,10);
-        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE , "100001" , "1"  , page);
+        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE , "100001" , "1"  , page,"hcrf0380");
         assertEquals(result.getTotal() , 50);
         assertEquals(result.getRecords().size() , 10);
 
         page = new Page(1,10);
-        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_CITY , "100001" , "1"  , page);
+        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_CITY , "100001" , "1"  , page ,"hcrf0380");
         assertEquals(result.getTotal() , 0);
         assertEquals(result.getRecords().size() , 0);
 
 
         page = new Page(1,10);
-        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE , "100001" , "10"  , page);
+        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE , "100001" , "10"  , page ,"hcrf0380");
         assertEquals(result.getTotal() , 0);
         assertEquals(result.getRecords().size() , 0);
     }

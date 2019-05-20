@@ -76,7 +76,8 @@ var ActionTypes = {
   ADD_CHANCE_TO_LIST: "addChanceToList", //添加新
   UPDATE_SEARCH_LIST: "updateSearchList", //查询结果
   UPDATE_MAP_LOCATION: "updateLocation", //更新地图的位置
-  UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResult" //更新评估结果
+  UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResult", //更新评估结果
+  SELECTED_CHANCE: "selectedChance" //选择机会点
 };
 
 /**
@@ -84,24 +85,34 @@ var ActionTypes = {
  *
  */
 function updateChance(chance) {
-  if (
-    chance &&
-    chance.id &&
-    !chance.estimateResultLoaded &&
-    !chance.estimateResult
-  ) {
+  if (chance && chance.id && !chance.estimateResult) {
     return function(dispatch) {
       return new Promise(function(resolve, reject) {
-        serviceApi.getChanceEstimateResult(chance.id).then(function(result) {
-          resolve(result);
-        });
-      }).then(function(result) {
-        chance.estimateResult = result;
-        chance.estimateLoaded = true;
         dispatch({
           type: ActionTypes.UPDATE_CHANCE,
           payload: chance
         });
+        resolve();
+      }).then(function() {
+        //如果存在商铺id,则加载评估数据
+        if (chance.shopId) {
+          return new Promise(function(resolve, reject) {
+            serviceApi
+              .getChanceEstimateResult(chance.id)
+              .then(function(result) {
+                resolve(result);
+              });
+          })
+            .then(function(result) {
+              dispatch({
+                type: ActionTypes.UPDATE_CHANCE_ESTIMATE_RESULT,
+                payload: result
+              });
+            })
+            .catch(function(err) {
+              console.log(err);
+            });
+        }
       });
     };
   } else {
@@ -167,17 +178,7 @@ function queryChanceList(scope, adcode) {
 function ChanceRedux(state, action) {
   state = state || {};
   if (action.type === ActionTypes.UPDATE_CHANCE) {
-    var listUpdated = false;
-    var chanceList = state.chanceList || [];
-    var updatedChance = action.payload;
-    for (var i = 0; i < chanceList.length; i++) {
-      if (chanceList[i].id === updatedChance.id) {
-        listUpdated = true;
-        chanceList[i] = updatedChance;
-      }
-    }
     return Object.assign(state, {
-      chanceList: !listUpdated ? state.chanceList : [].concat(chanceList),
       currentChance: action.payload
     });
   } else if (action.type === ActionTypes.UPDATE_CHANGE_PROPS) {
@@ -194,6 +195,12 @@ function ChanceRedux(state, action) {
     });
   } else if (action.type === ActionTypes.UPDATE_MAP_LOCATION) {
     return Object.assign(state, { lnglat: action.payload });
+  } else if (action.type === ActionTypes.UPDATE_CHANCE_ESTIMATE_RESULT) {
+    return Object.assign(state, {
+      currentChance: Object.assign({}, state.currentChance, {
+        estimateResult: action.payload
+      })
+    });
   }
   return state;
 }
@@ -230,36 +237,30 @@ function initMap(env) {
       store.getState().chanceList &&
       chanceList !== store.getState().chanceList
     ) {
+      //加载机会点列表
       loadChanceList(store.getState().chanceList);
       chanceList = store.getState().chanceList;
     }
 
-    if (!store.getState().currentChance) {
-      updateMapChance(store.getState().currentChance); //更新地图路的机会点
-      updateForm(store.getState().currentChance); //更新表单
-      currentChance = store.getState().currentChance;
-      return;
-    }
+    // if (!store.getState().currentChance) {
+    //   updateMapChance(store.getState().currentChance); //更新地图路的机会点
+    //   updateForm(store.getState().currentChance); //更新表单
+    //   currentChance = store.getState().currentChance;
+    //   return;
+    // }
 
+    //机会点发生变化
     if (
       store.getState().currentChance &&
       currentChance !== store.getState().currentChance
     ) {
       updateMapChance(store.getState().currentChance); //更新地图路的机会点
       updateForm(store.getState().currentChance); //更新表单
-      //如果对象没有改变则不刷新
-
-      if (
-        (store.getState().currentChance.estimateResult && !currentChance) ||
-        (store.getState().currentChance.estimateResult &&
-          store.getState().currentChance.estimateResult !==
-            currentChance.estimateResult)
-      ) {
-        updateeStimateResultLoaded(store.getState().currentChance); //更新评估数据
-      }
+      updateeStimateResultLoaded(store.getState().currentChance); //更新评估数据
       currentChance = store.getState().currentChance;
     }
 
+    //更新位置
     if (store.getState().lnglat && lnglat !== store.getState().lnglat) {
       var lnglat = store.getState().lnglat;
       setLocationMarkerRange(new AMap.LngLat(lnglat[0], lnglat[1]));
@@ -911,8 +912,16 @@ function initMap(env) {
    * @paran chance  对象
    */
   function updateeStimateResultLoaded(chance, topNavIndex, childIndex) {
+    if (!chance.shopId) {
+      $(".estimateResult").html(
+        "<span class='invalid-status'>机会点审核中！</span>"
+      );
+      return;
+    }
     if (!chance.estimateResult) {
-      $(".estimateResult").empty();
+      $(".estimateResult").html(
+        "<span class='loding'>评估数据加载中...</span>"
+      );
       return;
     }
     var navIndex = topNavIndex || 0;
@@ -991,7 +1000,7 @@ function initMap(env) {
     //构造form
     var datapanel = $("<div class='datapanel'></div>");
     //增加备注
-    datapanel.append("<div class='remark'>" + data.remark + "</div>");
+    datapanel.append("<div class='remark'>" + (data.remark || "") + "</div>");
     //增加具体指标数据
     var datatable = $(
       "<table class='table table-hover table-sm table-bordered'></table>"
@@ -1000,7 +1009,11 @@ function initMap(env) {
     if (data.values && data.values.length) {
       data.values.forEach(function(d, index) {
         tbody.append(
-          "<tr><td>" + d.label + "</td><td>" + d.value + "</td></tr>"
+          "<tr><td>" +
+            (d.label || "") +
+            "</td><td>" +
+            (renderValue(d.value) || "") +
+            "</td></tr>"
         );
       });
     }
@@ -1015,6 +1028,18 @@ function initMap(env) {
     estimateResultDataEle.append(datapanel);
     estimateResultEle.append(nav);
     estimateResultEle.append(estimateResultDataEle);
+  }
+
+  function renderValue(value) {
+    if (Array.isArray(value)) {
+      var ret = "";
+      value.forEach(function(v) {
+        ret += "<div><span>" + v.label + ":" + v.value + "</span><div>";
+      });
+      return ret;
+    } else {
+      return value || "";
+    }
   }
 
   function loadAreaData(areaNode) {

@@ -771,9 +771,9 @@ select {
   font-size: 9px;
 }
 
-.datapanel .remark::before {
+/* .datapanel .remark::before {
   content: "*";
-}
+} */
 
 .datapanel .operation {
   margin-top: 15px;

@@ -105,16 +105,37 @@ function _getAuthInfo() {
   return {
     //userAccount: jQuery.param("userAccount"),
     //token: jQuery.param("token")
-    userAccount: "hcrf0380",
+    userAccount: "hcrf0366",
     token:
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTgzNDExNzksImV4cCI6MTU1ODM1NTU3OX0.AfjS2LTfIqwlNFzKhiJc8sEbTmtPC61ceVLxUzdL6fl9rpRecDoQic3FidFhxgysXAmR97vi12BN0cshIjOy4g"
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTgzNTYxMDksImV4cCI6MTU1ODM3MDUwOX0._bj1CKYzlQ3IwHEL3vQi8EaVcaxPulmc2PaMdOCjkgZ8WzxY7p7EOPJEtZhmJ2pwcKHQ6iHcGA0XE5Yx7Ikg8w"
   };
 }
 
 var serviceApi = {
   getChanceEstimateResult: function(id) {
+    var authInfo = _getAuthInfo();
     return new Promise(function(resolve, reject) {
-      resolve(_a);
+      $.ajax({
+        url:
+          "http:/localhost:8086/api/chance/" +
+          id +
+          "/estimates?userAccount=" +
+          authInfo.userAccount,
+        type: "get",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=utf8",
+          token: authInfo.token
+        },
+        success: function(data) {
+          if (data.code === 0) {
+            resolve(data.data);
+          } else {
+            alert(data.msg);
+            reject();
+          }
+        }
+      });
     });
   },
 
