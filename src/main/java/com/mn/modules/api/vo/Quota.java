@@ -38,6 +38,11 @@ public class Quota {
      */
     String roleName;
 
+    /**
+     * 指标顺序
+     */
+    int order;
+
     public void add(QuotaItem quotaItem){
         values.add(quotaItem);
     }
