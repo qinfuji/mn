@@ -18,6 +18,11 @@ public interface ChancePointService {
     String AREA_SCOPE_CITY = "city";
     String AREA_SCOPE_DISTRICT = "district";
 
+    /**
+     * 无效状态
+     */
+    String CHANCE_STATUS_INVALID = "-1";
+
 
     /**
      * 创建机会点
@@ -38,6 +43,14 @@ public interface ChancePointService {
      * @return 更新后的机会点
      */
     ChancePoint updateChancePoint(ChancePoint chancePoint);
+
+
+    /**
+     * 使机会点无效
+     * @param id
+     * @return
+     */
+    boolean invalidChancePoint(String id);
 
     /**
      * 按行政区域查询用户的机会点

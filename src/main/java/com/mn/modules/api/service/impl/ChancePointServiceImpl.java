@@ -68,6 +68,8 @@ public class ChancePointServiceImpl implements ChancePointService {
         QueryWrapper<ChancePoint> queryWrapper = new QueryWrapper<>();
 
         queryWrapper.eq("appId", appId);
+        //无效状态的不显示
+        queryWrapper.ne("status" , CHANCE_STATUS_INVALID);
         if (AREA_SCOPE_PROVINCE.equals(scope)) {
             queryWrapper.eq("province", adCode);
         } else if (AREA_SCOPE_CITY.equals(scope)) {
@@ -76,26 +78,26 @@ public class ChancePointServiceImpl implements ChancePointService {
             queryWrapper.eq("district", adCode);
         }
         IPage page = chancePointDao.selectPage(pageParam, queryWrapper);
-
-        List<ChancePoint> records = page.getRecords();
-        if (records.size() == 0) {
-            return page;
-        }
-
-        List<ChancePoint> newrecords = new ArrayList<>();
-        records.forEach((record) -> {
-            if (record.getShopId() == null) {
-                String shopId = shopService.getChancePointShopId(userAccount, record);
-                if (shopId != null) {
-                    record.setShopId(shopId);
-                    chancePointDao.updateById(record);
-                }
-            }
-            newrecords.add(record);
-        });
-
-        page.setRecords(newrecords);
         return page;
+//        List<ChancePoint> records = page.getRecords();
+//        if (records.size() == 0) {
+//            return page;
+//        }
+//
+//        List<ChancePoint> newrecords = new ArrayList<>();
+//        records.forEach((record) -> {
+//            if (record.getShopId() == null) {
+//                String shopId = shopService.getChancePointShopId(userAccount, record);
+//                if (shopId != null) {
+//                    record.setShopId(shopId);
+//                    chancePointDao.updateById(record);
+//                }
+//            }
+//            newrecords.add(record);
+//        });
+//
+//        page.setRecords(newrecords);
+//        return page;
     }
 
 
@@ -227,6 +229,15 @@ public class ChancePointServiceImpl implements ChancePointService {
     @Override
     public List<AnalysisResult> analysisHistory(ChancePoint chancePoint) {
         return null;
+    }
+
+    @Override
+    public boolean invalidChancePoint(String id) {
+        ChancePoint cp =  new ChancePoint();
+        cp.setStatus(CHANCE_STATUS_INVALID);
+        cp.setId(id);
+        chancePointDao.updateById(cp);
+        return true;
     }
 }
 

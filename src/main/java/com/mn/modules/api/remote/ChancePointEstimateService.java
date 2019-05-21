@@ -27,7 +27,7 @@ public interface ChancePointEstimateService {
 
     /**
      * 商圈活跃度
-     * POST /business_circle_active
+     * POST /business_circ.le_active
      * 用户可获取商圈内商业主体、商务楼、社区数量.
      *
      * @param userAccount 账户信息

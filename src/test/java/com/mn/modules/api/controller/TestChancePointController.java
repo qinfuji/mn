@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mn.modules.api.BaseTest;
 import com.mn.modules.api.dao.ChancePointDao;
 import com.mn.modules.api.entity.ChancePoint;
+import com.mn.modules.api.service.ChancePointService;
 import com.mn.modules.api.utils.Tools;
 import com.mn.modules.api.vo.EstimateResult;
 import org.junit.Assert;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -212,6 +214,36 @@ public class TestChancePointController extends BaseTest {
         Assert.assertEquals(0 , code);
         List<EstimateResult> ret = jo.getObject("data" , new TypeReference<List<EstimateResult>>(){});
         Assert.assertEquals(3 ,ret.size());
+
+    }
+
+
+    @Test
+    public void testDelete() throws  Exception{
+        ChancePoint chancePoint = getTempChancePoint();
+        chancePoint.setAppId(appId);
+        chancePoint.setShopId(null);
+        chancePoint.setProvince("10000001");
+        chancePoint.setLng(114.2690740918);
+        chancePoint.setLat(30.6297346021);
+        chancePoint.setProvinceName("湖北省");
+        chancePoint.setCityName("武汉市");
+        dao.insert(chancePoint);
+        String token = getToken();
+        MvcResult result = mockMvc.perform(delete("/api/chance/delete/"+chancePoint.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("userAccount" , "hcrf0366")
+                .header("token" , token))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn();
+
+        JSONObject jo = JSONObject.parseObject(result.getResponse().getContentAsString());
+        int code = jo.getInteger("code");
+        Assert.assertEquals(0 , code);
+
+        ChancePoint dbcp = dao.selectById(chancePoint.getId());
+        Assert.assertEquals(ChancePointService.CHANCE_STATUS_INVALID , dbcp.getStatus());
 
     }
 }

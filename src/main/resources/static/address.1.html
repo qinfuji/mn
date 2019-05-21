@@ -11,7 +11,6 @@
     <link rel="stylesheet" type="text/css" href="./css/address/area.css" />
     <link rel="stylesheet" href="./css/address/main.css" />
     <link rel="stylesheet" href="./font-awesome/css/font-awesome.min.css"/>
-    <link rel="stylesheet" href="./css/address/tabs.css"/>
     
     <script
       type="text/javascript"
@@ -58,17 +57,15 @@
               style="width:100px"
             ></select>
           </div>
-          <div class="input-item">
-            <input
-              id="searchStr"
-              style="width:100px"
-            ></select>
-            <div class="input-item-prepend" id="search_btn">
-              <span class="input-item-text">搜索</span>
-            </div>
-          </div>
+          
         </div>
         <div class="item tools">
+          <div class="input-item" style="margin-right: 20px;">
+                <span>地址搜索：</span><input id="searchStr" style="width:200px" ></select>
+                <div class="input-item-prepend" id="search_btn">
+                  <span class="input-item-text">搜索</span>
+                </div>
+          </div>
           <button type="button" class="btn btn-success" id="createChanceBtn">创建机会点</button>
         </div>
       </div>
@@ -81,14 +78,6 @@
           <div class="content">
             <div class="mapcontainer" id="mapcontainer" tabindex="0"></div> 
             <div  class="content_left">
-              <div class="tabs tabs-style-topline" style="display:none">
-                  <nav>
-                      <ul>
-                        <li class=""><a href="#"><span>机会点信息</span></a></li>
-                        <li class="tab-current"><a href="#"><span>搜索结果</span></a></li>
-                      </ul>
-                  </nav>
-              </div>
               <div id="searchResultPanel" class="searchResultPanel">
                 <div class="searchList">
                 </div>
@@ -101,17 +90,25 @@
                       <div class="form-group">
                         <label for="chance_name">名称</label>
                         <input type="text" class="form-control" id="chance_name" name="name" aria-describedby="name" placeholder="机会点名称">
+                        <div  id="name_msg" style="display: none" class="invalid-feedback">
+                          请填写机会点名称
+                        </div>
                       </div>
                       <div class="form-group">
                         <label for="chance_address">地址</label>
                         <input type="text" class="form-control" id="chance_address" name="address" placeholder="机会点详细地址">
                         <small id="chance_refaddress" class="form-text text-muted"></small>
+                        <div  id="address_msg" class="invalid-feedback" style="display: none">
+                            请填写机会点地址
+                        </div>
                       </div>
                       <div class="form-group">
                           <label for="chance_address">类别</label>
                           <input type="text" class="form-control" id="chance_type" name="type" placeholder="类别">
-                          <small id="chance_refaddress" class="form-text text-muted"></small>
-                        </div>
+                          <div  id="type_msg" class="invalid-feedback" style="display: none">
+                              请选择机会点类型
+                          </div>
+                      </div>
                       <div class="form-group">
                         <label for="chance_lnglat">经纬度</label>
                         <div class="input-group" style="width:100%">
@@ -125,6 +122,7 @@
                       </div>
                       <button type="button" id="chance_update" class="btn btn-primary">更新</button>
                       <button type="button" id="chance_save" class="btn btn-primary">保存</button>
+                      <button type="button" id="chance_delete" class="btn btn-primary">保存</button>
                       <button type="button" id="chance_revoke" class="btn btn-primary">撤销</button>
                       <!-- <button type="button" id="chance_fence" class="btn btn-primary">设置围栏</button> -->
                     </form>

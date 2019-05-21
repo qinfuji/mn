@@ -77,7 +77,8 @@ var ActionTypes = {
   UPDATE_SEARCH_LIST: "updateSearchList", //查询结果
   UPDATE_MAP_LOCATION: "updateLocation", //更新地图的位置
   UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResult", //更新评估结果
-  SELECTED_CHANCE: "selectedChance" //选择机会点
+  SELECTED_CHANCE: "selectedChance", //选择机会点
+  REMOVE_CHANCE_FROM_LIST: "removeFromList" //移除机会点列表
 };
 
 /**
@@ -129,6 +130,15 @@ function addChancePointToList(chancePoint) {
   return function(dispatch) {
     dispatch({
       type: ActionTypes.ADD_CHANCE_TO_LIST,
+      payload: chancePoint
+    });
+  };
+}
+
+function removeChancePointFromList(chance) {
+  return function(dispatch) {
+    dispatch({
+      type: ActionTypes.REMOVE_CHANCE_FROM_LIST,
       payload: chancePoint
     });
   };
@@ -201,6 +211,17 @@ function ChanceRedux(state, action) {
         estimateResult: action.payload
       })
     });
+  } else if (action.type === ActionTypes.REMOVE_CHANCE_FROM_LIST) {
+    var list = [];
+    if (state.chanceList.length) {
+      var list = state.chanceList.filter(function(chance) {
+        return chance.id === action.payload.id;
+      });
+    }
+    return Object.assign(state, {
+      chanceList: list,
+      currentChance: null
+    });
   }
   return state;
 }
@@ -242,12 +263,13 @@ function initMap(env) {
       chanceList = store.getState().chanceList;
     }
 
-    // if (!store.getState().currentChance) {
-    //   updateMapChance(store.getState().currentChance); //更新地图路的机会点
-    //   updateForm(store.getState().currentChance); //更新表单
-    //   currentChance = store.getState().currentChance;
-    //   return;
-    // }
+    //删除当前机会点
+    if (!store.getState().currentChance && currentChance) {
+      updateMapChance(store.getState().currentChance); //更新地图路的机会点
+      updateForm(store.getState().currentChance); //更新表单
+      currentChance = null;
+      return;
+    }
 
     //机会点发生变化
     if (
@@ -258,12 +280,14 @@ function initMap(env) {
       updateForm(store.getState().currentChance); //更新表单
       updateeStimateResultLoaded(store.getState().currentChance); //更新评估数据
       currentChance = store.getState().currentChance;
+      return;
     }
 
     //更新位置
     if (store.getState().lnglat && lnglat !== store.getState().lnglat) {
       var lnglat = store.getState().lnglat;
       setLocationMarkerRange(new AMap.LngLat(lnglat[0], lnglat[1]));
+      return;
     }
   });
 
@@ -439,14 +463,56 @@ function initMap(env) {
   });
 
   $("#chance_update").on("click", function() {
+    var isOk = validChance();
+    if (!isOk) return;
     serviceApi.updateChance(currentChance).then(function(data) {
       store.dispatch(updateChance(data));
     });
   });
 
   $("#chance_save").on("click", function(e) {
+    //验证错误
+    var isOk = validChance();
+    if (!isOk) return;
     serviceApi.createChance(currentChance).then(function(data) {
       store.dispatch(addChancePointToList(data));
+    });
+  });
+
+  function validChance(chance) {
+    var chanceName = $("#chance_name").val();
+    if (!chanceName) {
+      $("#name_msg").show();
+      $("#chance_name").addClass("invalid-feedback");
+    } else {
+      $("#name_msg").hide();
+      $("#chance_name").removeClass("invalid-feedback");
+    }
+    var chanceAddress = $("#chance_address").val();
+    if (!chanceAddress) {
+      $("#address_msg").show();
+      $("#chance_address").addClass("invalid-feedback");
+    } else {
+      $("#address_msg").hide();
+      $("#chance_address").removeClass("invalid-feedback");
+    }
+    var chanceType = $("#chance_type").val();
+    if (!chanceType) {
+      $("#type_msg").show();
+      $("#chance_type").addClass("invalid-feedback");
+    } else {
+      $("#type_msg").hide();
+      $("#chance_type").removeClass("invalid-feedback");
+    }
+    if (!chanceName || !chanceAddress || !chanceType) {
+      return false;
+    }
+    return true;
+  }
+
+  $("#chance_delete").on("click", function(e) {
+    serviceApi.deleteChance(currentChance).then(function(data) {
+      store.dispatch(removeChancePointFromList(data));
     });
   });
 
@@ -676,7 +742,6 @@ function initMap(env) {
     $(".content_left").hide();
     $(".searchResultPanel").hide();
     $(".chanceInfoPanel").hide();
-    map.setZoom(12);
   }
 
   /**
@@ -685,9 +750,7 @@ function initMap(env) {
   function updateMapChance(chance) {
     map.clearMap();
     if (!chance) return;
-
     var lnglat = new AMap.LngLat(chance.lng, chance.lat);
-
     setLocationMarkerRange(lnglat);
     setChanceMarker(chance);
     map.panTo(lnglat);
@@ -794,14 +857,11 @@ function initMap(env) {
       marker.on("dragstart", function() {});
       marker.on("dragging", function() {});
       marker.on("dragend", function(e) {
-        //setForm(marker);
         var lng = marker.getPosition().lng;
         var lat = marker.getPosition().lat;
         locatePosition(marker.getPosition()).then(function(result) {
           store.dispatch(
-            updateChanceProps(
-              Object.assign(result, { lnglat: lng + "," + lat })
-            )
+            updateChanceProps(Object.assign(result, { lng: lng, lat: lat }))
           );
         });
       });
@@ -847,11 +907,13 @@ function initMap(env) {
       $("#chance_save").hide();
       $("#chance_update").show();
       $("#chance_fence").hide();
+      $("#chance_delete").show();
     } else {
       $("#chance_revoke").show();
       $("#chance_save").show();
       $("#chance_update").hide();
       $("#chance_fence").show();
+      $("#chance_delete").hide();
     }
   }
 
@@ -880,7 +942,6 @@ function initMap(env) {
     var nav = $('<div class="nav"></div>');
     var estimateResult = chance.estimateResult;
     //受限建立导航
-
     if (estimateResult && estimateResult.length) {
       estimateResult.forEach(function(estimate, index) {
         if (index === navIndex) {
@@ -1064,7 +1125,7 @@ function initMap(env) {
     console.log(keywords);
     var autoOptions = Object.assign(
       {
-        pageSize: 20, //查询的分页
+        pageSize: 12, //查询的分页
         extensions: "all", //返回基本+详细信息
         type:
           "汽车服务|汽车销售|汽车维修|摩托车服务|餐饮服务|购物服务|生活服务|体育休闲服务|医疗保健服务|住宿服务|风景名胜|商务住宅|政府机构及社会团体|科教文化服务|交通设施服务|金融保险服务|公司企业|道路附属设施|地名地址信息|公共设施"

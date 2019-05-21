@@ -107,7 +107,7 @@ function _getAuthInfo() {
     //token: jQuery.param("token")
     userAccount: "hcrf0366",
     token:
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTgzNTYxMDksImV4cCI6MTU1ODM3MDUwOX0._bj1CKYzlQ3IwHEL3vQi8EaVcaxPulmc2PaMdOCjkgZ8WzxY7p7EOPJEtZhmJ2pwcKHQ6iHcGA0XE5Yx7Ikg8w"
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTg0MjAwNDMsImV4cCI6MTU1ODQzNDQ0M30.iA3Ee8bibUxrryJg-PHTGpsJeVTQhjYhzpKQauN3jiOGFfB56vUhRXvmSzo6a_f6WqrWwSwTuTGt2hT04UVUmw"
   };
 }
 
@@ -130,6 +130,34 @@ var serviceApi = {
         success: function(data) {
           if (data.code === 0) {
             resolve(data.data);
+          } else {
+            alert(data.msg);
+            reject();
+          }
+        }
+      });
+    });
+  },
+
+  deleteChance: function(chance) {
+    var authInfo = _getAuthInfo();
+    return new Promise(function(resolve, reject) {
+      $.ajax({
+        url:
+          "http:/localhost:8086/api/chance/delete/" +
+          chance.id +
+          "?userAccount=" +
+          authInfo.userAccount,
+        type: "delete",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=utf8",
+          token: authInfo.token
+        },
+        data: JSON.stringify(chance),
+        success: function(data) {
+          if (data.code === 0) {
+            resolve(chance);
           } else {
             alert(data.msg);
             reject();
