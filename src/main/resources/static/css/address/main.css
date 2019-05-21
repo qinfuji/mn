@@ -672,9 +672,9 @@ span.selected {
 }
 
 .estimateResult .nav {
-  height: 35px;
-  line-height: 35px;
-  font-size: 15px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 14px;
   font-weight: 400;
   display: flex;
   justify-content: space-between;
