@@ -68,7 +68,7 @@ function loadEvn() {
 /**************redux************* */
 
 var ActionTypes = {
-  UPDATE_CHANCE: "updateChance", //设置机会点坐标
+  UPDATE_CHANCE: "updateChance", //更新机会点信息
   UPDATE_CHANGE_PROPS: "updateChanceProps", //更新属性
   DELETE_CHANCE: "deleteChance", //删除机会点
   ADD_CHANCE: "addChance", //添加机会点
@@ -78,19 +78,20 @@ var ActionTypes = {
   UPDATE_MAP_LOCATION: "updateLocation", //更新地图的位置
   UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResult", //更新评估结果
   SELECTED_CHANCE: "selectedChance", //选择机会点
-  REMOVE_CHANCE_FROM_LIST: "removeFromList" //移除机会点列表
+  REMOVE_CHANCE_FROM_LIST: "removeFromList", //移除机会点列表,
+  SWITCH_CHANCE: "switchChance" //切换机会点显示
 };
 
 /**
  * 更新机会点 ， 当机会点没有评估数据， 并且没有初始化时
  *
  */
-function updateChance(chance) {
+function switchChance(chance) {
   if (chance && chance.id && !chance.estimateResult) {
     return function(dispatch) {
       return new Promise(function(resolve, reject) {
         dispatch({
-          type: ActionTypes.UPDATE_CHANCE,
+          type: ActionTypes.SWITCH_CHANCE,
           payload: chance
         });
         resolve();
@@ -119,11 +120,20 @@ function updateChance(chance) {
   } else {
     return function(dispatch) {
       dispatch({
-        type: ActionTypes.UPDATE_CHANCE,
+        type: ActionTypes.SWITCH_CHANCE,
         payload: chance
       });
     };
   }
+}
+
+function updateChance(chance) {
+  return function(dispatch) {
+    dispatch({
+      type: ActionTypes.UPDATE_CHANCE,
+      payload: chance
+    });
+  };
 }
 
 function addChancePointToList(chancePoint) {
@@ -139,7 +149,7 @@ function removeChancePointFromList(chance) {
   return function(dispatch) {
     dispatch({
       type: ActionTypes.REMOVE_CHANCE_FROM_LIST,
-      payload: chancePoint
+      payload: chance
     });
   };
 }
@@ -188,6 +198,22 @@ function queryChanceList(scope, adcode) {
 function ChanceRedux(state, action) {
   state = state || {};
   if (action.type === ActionTypes.UPDATE_CHANCE) {
+    //如果列表中存在，同时需要更新列表
+    var list = [];
+    if (state.chanceList.length) {
+      state.chanceList.forEach(function(chance) {
+        if (chance.id === action.payload.id) {
+          list.push(action.payload);
+        } else {
+          list.push(chance);
+        }
+      });
+    }
+    return Object.assign(state, {
+      chanceList: list,
+      currentChance: action.payload
+    });
+  } else if (action.type === ActionTypes.SWITCH_CHANCE) {
     return Object.assign(state, {
       currentChance: action.payload
     });
@@ -201,7 +227,8 @@ function ChanceRedux(state, action) {
     });
   } else if (action.type === ActionTypes.ADD_CHANCE_TO_LIST) {
     return Object.assign(state, {
-      chanceList: [].concat(action.payload, state.chanceList)
+      chanceList: [].concat(action.payload, state.chanceList),
+      currentChance: action.payload
     });
   } else if (action.type === ActionTypes.UPDATE_MAP_LOCATION) {
     return Object.assign(state, { lnglat: action.payload });
@@ -215,7 +242,7 @@ function ChanceRedux(state, action) {
     var list = [];
     if (state.chanceList.length) {
       var list = state.chanceList.filter(function(chance) {
-        return chance.id === action.payload.id;
+        return chance.id !== action.payload.id;
       });
     }
     return Object.assign(state, {
@@ -511,13 +538,17 @@ function initMap(env) {
   }
 
   $("#chance_delete").on("click", function(e) {
+    var re = confirm("您确认要删除机会点？");
+    if (!re) {
+      return;
+    }
     serviceApi.deleteChance(currentChance).then(function(data) {
       store.dispatch(removeChancePointFromList(data));
     });
   });
 
   $("#chance_revoke").on("click", function(e) {
-    store.dispatch(updateChance(null));
+    store.dispatch(switchChance(null));
   });
 
   $("#chance_location_btn").on("click", function(e) {
@@ -580,7 +611,7 @@ function initMap(env) {
       };
 
       console.log(chance);
-      store.dispatch(updateChance(chance));
+      store.dispatch(switchChance(chance));
       changeMode(ModeEnum.EDIT);
     });
   }
@@ -603,7 +634,7 @@ function initMap(env) {
     $(".chanceItem").removeClass("selected");
     $(this).addClass("selected");
     var json = JSON.parse(decodeURIComponent($(this).data("json")));
-    store.dispatch(updateChance(json));
+    store.dispatch(switchChance(json));
   });
 
   $("#search_btn").on("click", function() {
@@ -878,6 +909,10 @@ function initMap(env) {
     }
     showChanceInfo();
 
+    $("#name_msg").hide();
+    $("#address_msg").hide();
+    $("#type_msg").hide();
+
     var adcode =
       $("#district").val() || $("#city").val() || $("#province").val();
     var geocoder = new AMap.Geocoder({
@@ -902,6 +937,7 @@ function initMap(env) {
         $("#chance_refaddress").html("参考地址：" + address);
       }
     });
+
     if (chance.id) {
       $("#chance_revoke").hide();
       $("#chance_save").hide();
@@ -914,6 +950,11 @@ function initMap(env) {
       $("#chance_update").hide();
       $("#chance_fence").show();
       $("#chance_delete").hide();
+    }
+    if (chance.shopId) {
+      $("#chance_analysis").show();
+    } else {
+      $("#chance_analysis").hide();
     }
   }
 
