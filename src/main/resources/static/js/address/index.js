@@ -757,6 +757,10 @@ function initMap(env) {
     search(adcode, searchStr, {});
   });
 
+  $("#chance_analysis").on("click", function() {
+    DataAnalysis(currentChance);
+  });
+
   function showSearch() {
     $(".content_left").show();
     $(".searchResultPanel").show();
@@ -1068,6 +1072,10 @@ function initMap(env) {
             "</td></tr>"
         );
       });
+    } else {
+      tbody.append(
+        "<tr><td style='text-align:center'>暂时无相关数据</td></tr>"
+      );
     }
     datatable.append(tbody);
     datapanel.append(datatable);
