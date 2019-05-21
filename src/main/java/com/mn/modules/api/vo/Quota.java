@@ -1,6 +1,5 @@
 package com.mn.modules.api.vo;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -34,6 +33,10 @@ public class Quota {
      */
     List<QuotaItem> values = new ArrayList<>();
 
+    /**
+     * 规则处理名称
+     */
+    String roleName;
 
     public void add(QuotaItem quotaItem){
         values.add(quotaItem);

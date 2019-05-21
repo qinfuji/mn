@@ -245,7 +245,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
         Quota ret = new Quota();
         ret.setLabel("商区消费者活跃度");
         ret.setType("business_district_customer_active");
-        ret.setRemark("商区内年龄段占比");
+        ret.setRemark("18-60岁年龄结构占比");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_customer_active", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {
@@ -273,7 +273,7 @@ public class ChancePointEstimateServiceImpl implements ChancePointEstimateServic
         Quota ret = new Quota();
         ret.setLabel("商区消费者有子女占比");
         ret.setType("business_district_customer_children_proportion");
-        ret.setRemark("商区内有无子女占比");
+        ret.setRemark("有未成年子女占比");
         try {
             Map reqMap = getRequestMap(userAccount, chancePoint.getShopId());
             return request(userAccount, "/business_district_customer_children_proportion", reqMap, JSON_DATA_TYPE_ARRAY, (jsonobject) -> {

@@ -132,58 +132,88 @@ public class ChancePointServiceImpl implements ChancePointService {
             EstimateResult circleEstimateResult = new EstimateResult();
             circleEstimateResult.setLabel("商圈评估");
             Quota circlePopulation = chancePointEstimateService.getBusinessCirclePopulation(userAccount, chancePoint, new Date());
+            circlePopulation.setRoleName("circlePopulation");
             //商圈活跃度
             Quota circleActive = chancePointEstimateService.getBusinessCircleActive(userAccount, chancePoint, new Date());
-            //商圈活跃度Top榜
-            //Quota circleActiveTop = chancePointEstimateService.getBusinessCircleActiveTop(userAccount, chancePoint, new Date());
+            circleActive.setRoleName("circleActive");
+
+            Quota circleCreateYear = new Quota();
+            circleCreateYear.setLabel("商圈形成年限");
+            circleCreateYear.setRemark("主要商业设施、居民小区建成时间");
+            circleCreateYear.setValues(new ArrayList<>());
+            circleCreateYear.setRoleName("circleCreateYear");
+            circleEstimateResult.add(circleCreateYear);
+
+            Quota circleDevelopingTrend = new Quota();
+            circleDevelopingTrend.setLabel("商圈发展趋势");
+            circleDevelopingTrend.setRemark("政府发展规划");
+            circleDevelopingTrend.setValues(new ArrayList<>());
+            circleDevelopingTrend.setRoleName("circleDevelopingTrend");
+            circleEstimateResult.add(circleDevelopingTrend);
+
+
             if (circlePopulation != null) {
                 circleEstimateResult.add(circlePopulation);
             }
             if (circleActive != null) {
                 circleEstimateResult.add(circleActive);
             }
-//            if(circleActiveTop != null){
-//                circleEstimateResult.add(circleActiveTop);
-//            }
-
+            circleEstimateResult.add(circleCreateYear);
+            circleEstimateResult.add(circleDevelopingTrend);
             result.add(circleEstimateResult);
+
             //商区评估
             EstimateResult districtEstimateResult = new EstimateResult();
             districtEstimateResult.setLabel("商区评估");
             //商区人口体量
             Quota districtPopulation = chancePointEstimateService.getBusinessDistrictPopulation(userAccount, chancePoint, new Date());
+            districtPopulation.setRoleName("districtPopulation");
+            //政府规划3年内小区人口体量
+            Quota districtPopulationIn3Year = new Quota();
+            districtPopulationIn3Year.setLabel("政府规划3年内小区人口体量");
+            districtPopulationIn3Year.setRemark("市政府规划数据");
+            districtPopulationIn3Year.setValues(new ArrayList<>());
+            districtPopulationIn3Year.setRoleName("districtPopulationIn3Year");
+            districtEstimateResult.add(districtPopulationIn3Year);
+            //商区当前人口活跃度（入住率）
+            Quota districtPopulationActive = new Quota();
+            districtPopulationActive.setLabel("商区当前人口活跃度（入住率）");
+            districtPopulationActive.setRemark("周边主要小区的平均入住率");
+            districtPopulationActive.setValues(new ArrayList<>());
+            districtPopulationActive.setRoleName("districtPopulationActive");
+            districtEstimateResult.add(districtPopulationActive);
             //商区活跃度
             Quota districtActive = chancePointEstimateService.getBusinessDistrictActive(userAccount, chancePoint, new Date());
-            //商区活跃度Top
-            //Quota districtActiveTop = chancePointEstimateService.getBusinessDistrictActiveTop(userAccount, chancePoint, new Date());
+            districtActive.setRoleName("districtActive");
             //商区公交路线数量、公交站点数
             Quota districtBusNum = chancePointEstimateService.getBusinessDistrictBusNum(userAccount, chancePoint, new Date());
+            districtBusNum.setRoleName("districtBusNum");
             //消费者活跃度
             Quota districtCustomerActive = chancePointEstimateService.getBusinessDistrictCustomerActive(userAccount, chancePoint, new Date());
+            districtCustomerActive.setRoleName("districtCustomerActive");
             //商区消费者有子女占比
             Quota districtCustomerChildrenProportion = chancePointEstimateService.getBusinessDistrictCustomerChildrenProportion(userAccount, chancePoint, new Date());
+            districtCustomerChildrenProportion.setRoleName("districtCustomerChildrenProportion");
             //商区关键配套
             Quota districtMating = chancePointEstimateService.getBusinessDistrictMating(userAccount, chancePoint, new Date());
-            //商区关键配套Top榜
-            //Quota districtMatingTop = chancePointEstimateService.getBusinessDistrictMatingTop(userAccount, chancePoint, new Date());
-            // 商区交路线数量、公交站点Top榜
-            //Quota districtBusTop = chancePointEstimateService.getBusinessDistrictBusTop(userAccount, chancePoint, new Date());
+            districtMating.setRoleName("districtMating");
+            //商区定位
+            Quota districtLevel = new Quota();
+            districtLevel.setLabel("商区定位");
+            districtLevel.setRemark("是否是城市核心商区");
+            districtLevel.setValues(new ArrayList<>());
+            districtLevel.setRoleName("districtLevel");
+            districtEstimateResult.add(districtLevel);
+
             if (districtPopulation != null) {
                 districtEstimateResult.add(districtPopulation);
             }
             if (districtActive != null) {
                 districtEstimateResult.add(districtActive);
             }
-//            if(districtActiveTop != null){
-//                districtEstimateResult.add(districtActiveTop);
-//            }
-
             if (districtBusNum != null) {
                 districtEstimateResult.add(districtBusNum);
             }
-//            if(districtBusTop != null){
-//                districtEstimateResult.add(districtBusTop);
-//            }
             if (districtCustomerActive != null) {
                 districtEstimateResult.add(districtCustomerActive);
             }
@@ -193,22 +223,25 @@ public class ChancePointServiceImpl implements ChancePointService {
             if (districtMating != null) {
                 districtEstimateResult.add(districtMating);
             }
-//            if(districtMatingTop !=null){
-//                districtEstimateResult.add(districtMatingTop);
-//            }
+
             result.add(districtEstimateResult);
+
             //街道评估
             EstimateResult streeEstimateResult = new EstimateResult();
             streeEstimateResult.setLabel("街道评估");
             //街道关键配套
             Quota streetMating = chancePointEstimateService.getStreetMating(userAccount, chancePoint, new Date());
-//            Quota streetTop = chancePointEstimateService.getStreetTop(userAccount, chancePoint, new Date());
             if (streetMating != null) {
                 streeEstimateResult.add(streetMating);
             }
-//            if(streetTop != null){
-//                streeEstimateResult.add(streetTop);
-//            }
+
+            Quota districtMainRoadRate = new Quota();
+            districtMainRoadRate.setLabel("落位街道主路口客流");
+            districtMainRoadRate.setRemark("日均客流");
+            districtMainRoadRate.setValues(new ArrayList<>());
+            districtMainRoadRate.setRoleName("districtMainRoadRate");
+            streeEstimateResult.add(districtMainRoadRate);
+
             result.add(streeEstimateResult);
             return result;
         }
