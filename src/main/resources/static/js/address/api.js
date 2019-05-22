@@ -101,13 +101,17 @@ var _a = [
   }
 ];
 
+function getQueryString(name) {
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+  var r = window.location.search.substr(1).match(reg);
+  if (r != null) return unescape(r[2]);
+  return null;
+}
+
 function _getAuthInfo() {
   return {
-    //userAccount: jQuery.param("userAccount"),
-    //token: jQuery.param("token")
-    userAccount: "hcrf0366",
-    token:
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTg1MjM5NzYsImV4cCI6MTU1ODUzODM3Nn0.5XvP-NAnF5Ju3G82S7DJZXyFVzND6hwgTHOVXckeGv80V7IAZ-E7lSljySI_XLe8wi-rD_GFlPdFoAGDFsuygw"
+    userAccount: getQueryString("userAccount"),
+    token: getQueryString("token")
   };
 }
 
