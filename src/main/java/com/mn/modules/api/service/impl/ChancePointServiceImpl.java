@@ -153,8 +153,6 @@ public class ChancePointServiceImpl implements ChancePointService {
             if (circleActive != null) {
                 circleEstimateResult.add(circleActive);
             }
-            circleEstimateResult.add(circleCreateYear);
-            circleEstimateResult.add(circleDevelopingTrend);
             result.add(circleEstimateResult);
 
             //商区评估

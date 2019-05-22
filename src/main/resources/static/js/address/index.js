@@ -1017,79 +1017,58 @@ function initMap(env) {
     var estimateResultDataEle = $("<div class='estimateResultData'></div>");
     var estimatequotaDatas = estimateResults[navIndex].quotas;
     //构造左边tab
+    var accordionId = "estimateResults" + navIndex;
+    var vtabs = $(
+      "<div class='panel-group' id='" +
+        accordionId +
+        "' role='tablist' aria-multiselectable='true'></div>"
+    );
 
-    var vtabs = $('<div class="vtabs"></div>');
-    var preIndex = 1;
-    var currentIndex = 50;
-    var nextInde = 49;
     estimatequotaDatas.forEach(function(estimatequota, index) {
-      var _zindex = 1;
-      if (vtabsIndex > index) {
-        _zindex = preIndex++;
-      } else if (vtabsIndex < index) {
-        _zindex = nextInde--;
+      var datatable = $(
+        "<table class='table table-hover table-sm table-bordered'></table>"
+      );
+      var tbody = $("<tbody></tbody>");
+      if (estimatequota.values && estimatequota.values.length) {
+        estimatequota.values.forEach(function(d, index) {
+          tbody.append(
+            "<tr><td>" +
+              (d.label || "") +
+              "</td><td>" +
+              (renderValue(d.value) || "") +
+              "</td></tr>"
+          );
+        });
       } else {
-        _zindex = currentIndex;
-      }
-
-      var _tab = $(
-        "<div title='" +
-          estimatequota.label +
-          "' style='z-index:" +
-          _zindex +
-          ";top:" +
-          index * 30 +
-          "px' class='" +
-          (vtabsIndex === index ? "selected" : "") +
-          "' data-index='" +
-          index +
-          "'>" +
-          estimatequota.label +
-          "</div>"
-      );
-
-      vtabs.append(_tab);
-    });
-
-    vtabs.on("click", "div", function() {
-      var i = $(this).data("index");
-      updateeStimateResultLoaded(chance, navIndex, i);
-    });
-
-    var data = estimatequotaDatas[vtabsIndex];
-    //构造form
-    var datapanel = $("<div class='datapanel'></div>");
-    //增加备注
-    datapanel.append("<div class='remark'>" + (data.remark || "") + "</div>");
-    //增加具体指标数据
-    var datatable = $(
-      "<table class='table table-hover table-sm table-bordered'></table>"
-    );
-    var tbody = $("<tbody></tbody>");
-    if (data.values && data.values.length) {
-      data.values.forEach(function(d, index) {
         tbody.append(
-          "<tr><td>" +
-            (d.label || "") +
-            "</td><td>" +
-            (renderValue(d.value) || "") +
-            "</td></tr>"
+          "<tr><td style='text-align:center'>暂时无相关数据</td></tr>"
         );
-      });
-    } else {
-      tbody.append(
-        "<tr><td style='text-align:center'>暂时无相关数据</td></tr>"
-      );
-    }
-    datatable.append(tbody);
-    datapanel.append(datatable);
-    /*
-    datapanel.append(
-      "<div class='operation'><button class='btn btn-primary'>修改</button></div>"
-    );
-    */
+      }
+      datatable.append(tbody);
+
+      var quota = $(`<div class="panel panel-default">
+         <div class="panel-heading" role="tab" id="headingOne">
+           <h4 class="panel-title">
+             <a role="button" aria-expanded="false" data-toggle="collapse" data-parent="#${accordionId}" href="#${
+        estimatequota.ruleName
+      }" aria-expanded="false" aria-controls="${estimatequota.ruleName}">
+               ${estimatequota.label}
+             </a>
+           </h4>
+         </div>
+         <div id="${
+           estimatequota.ruleName
+         }" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+           <div class="panel-body">  
+           </div>
+         </div>
+       </div>`);
+
+      quota.find(".panel-body").append(datatable);
+
+      vtabs.append(quota);
+    });
     estimateResultDataEle.append(vtabs);
-    estimateResultDataEle.append(datapanel);
     estimateResultEle.append(nav);
     estimateResultEle.append(estimateResultDataEle);
   }
