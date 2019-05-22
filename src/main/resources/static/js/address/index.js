@@ -984,28 +984,32 @@ function initMap(env) {
     var navIndex = topNavIndex || 0;
     var vtabsIndex = childIndex || 0;
     var estimateResultEle = $(".estimateResults").empty();
-    var nav = $('<div class="nav"></div>');
+    var nav = $('<div class="btn-group nav" role="group""></div>');
     var estimateResults = chance.estimateResults;
-    //受限建立导航
+    //建立导航
     if (estimateResults && estimateResults.length) {
       estimateResults.forEach(function(estimate, index) {
         if (index === navIndex) {
           nav.append(
-            "<span class='selected' data-index='" +
+            "<button type='button' class='btn btn-primary selected' data-index='" +
               index +
               "'>" +
               estimate.label +
-              "</span>"
+              "</button>"
           );
         } else {
           nav.append(
-            "<span data-index='" + index + "'>" + estimate.label + "</span>"
+            "<button type='button' class='btn' data-index='" +
+              index +
+              "'>" +
+              estimate.label +
+              "</button>"
           );
         }
       });
     }
 
-    nav.on("click", "span", function() {
+    nav.on("click", "button", function() {
       var i = $(this).data("index");
       updateeStimateResultLoaded(chance, i, 0);
     });
