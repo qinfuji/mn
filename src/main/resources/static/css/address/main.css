@@ -24,12 +24,12 @@ body {
     "Segoe UI Symbol", "Noto Color Emoji";
   line-height: 1.5;
   font-weight: 100;
-  color: #111213ad;
+  color: #666666;
   width: 100%;
   height: 100%;
   margin: 0px;
   padding: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 hr {
@@ -116,6 +116,14 @@ p {
 .toolsbar .item.tools {
   align-items: center;
   height: 3rem;
+}
+
+.toolsbar .form-group span {
+  font-size: 15px;
+}
+
+.toolsbar .form-group span::after {
+  content: "：";
 }
 
 .container {
@@ -253,13 +261,13 @@ span.selected {
 
 .chanceItem .chance_name {
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.8);
+  color: #666666;
   font-weight: 500;
 }
 
 .chanceItem .chance_address {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
+  color: #999999;
   font-weight: 300;
 }
 
@@ -336,7 +344,7 @@ span.selected {
 .estimateResults .nav button:hover {
   width: 100%;
   text-align: center;
-  background: #83bfb2;
+  background: #129177;
   border-radius: 6px;
   color: #fff;
 }
@@ -443,4 +451,37 @@ input.is-invalid {
 
 #analysisDialog h4 {
   font-weight: 600;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  height: 30px;
+  padding: 0px 12px 6px 4px;
+  font-size: 14px;
+  background-image: none;
+  border-radius: 2px;
+}
+
+.chanceInfoPanel .form-control {
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 6px 12px 6px 4px;
+  font-size: 14px;
+  background-image: none;
+  border-width: 0 0 1px 0;
+  border-radius: 0;
+}
+
+.chanceInfoPanel input,
+input:focus,
+select,
+select:focus {
+  box-shadow: none !important;
+  border-bottom: 1px solid #ccc !important;
+}
+
+.panel-default > .panel-heading {
+  color: #666666;
 }
