@@ -127,23 +127,23 @@ public class ChancePointServiceImpl implements ChancePointService {
             EstimateResult circleEstimateResult = new EstimateResult();
             circleEstimateResult.setLabel("商圈评估");
             Quota circlePopulation = chancePointEstimateService.getBusinessCirclePopulation(userAccount, chancePoint, new Date());
-            circlePopulation.setRoleName("circlePopulation");
+            circlePopulation.setRuleName("circlePopulation");
             //商圈活跃度
             Quota circleActive = chancePointEstimateService.getBusinessCircleActive(userAccount, chancePoint, new Date());
-            circleActive.setRoleName("circleActive");
+            circleActive.setRuleName("circleActive");
 
             Quota circleCreateYear = new Quota();
             circleCreateYear.setLabel("商圈形成年限");
             circleCreateYear.setRemark("主要商业设施、居民小区建成时间");
             circleCreateYear.setValues(new ArrayList<>());
-            circleCreateYear.setRoleName("circleCreateYear");
+            circleCreateYear.setRuleName("circleCreateYear");
             circleEstimateResult.add(circleCreateYear);
 
             Quota circleDevelopingTrend = new Quota();
             circleDevelopingTrend.setLabel("商圈发展趋势");
             circleDevelopingTrend.setRemark("政府发展规划");
             circleDevelopingTrend.setValues(new ArrayList<>());
-            circleDevelopingTrend.setRoleName("circleDevelopingTrend");
+            circleDevelopingTrend.setRuleName("circleDevelopingTrend");
             circleEstimateResult.add(circleDevelopingTrend);
 
 
@@ -162,24 +162,24 @@ public class ChancePointServiceImpl implements ChancePointService {
             districtEstimateResult.setLabel("商区评估");
             //商区人口体量
             Quota districtPopulation = chancePointEstimateService.getBusinessDistrictPopulation(userAccount, chancePoint, new Date());
-            districtPopulation.setRoleName("districtPopulation");
+            districtPopulation.setRuleName("districtPopulation");
             //政府规划3年内小区人口体量
             Quota districtPopulationIn3Year = new Quota();
             districtPopulationIn3Year.setLabel("政府规划3年内小区人口体量");
             districtPopulationIn3Year.setRemark("市政府规划数据");
             districtPopulationIn3Year.setValues(new ArrayList<>());
-            districtPopulationIn3Year.setRoleName("districtPopulationIn3Year");
+            districtPopulationIn3Year.setRuleName("districtPopulationIn3Year");
             districtEstimateResult.add(districtPopulationIn3Year);
             //商区当前人口活跃度（入住率）
             Quota districtPopulationActive = new Quota();
             districtPopulationActive.setLabel("商区当前人口活跃度-入住率");
             districtPopulationActive.setRemark("周边主要小区的平均入住率");
             districtPopulationActive.setValues(new ArrayList<>());
-            districtPopulationActive.setRoleName("districtPopulationActive");
+            districtPopulationActive.setRuleName("districtPopulationActive");
             districtEstimateResult.add(districtPopulationActive);
             //商区活跃度
             Quota districtActive = chancePointEstimateService.getBusinessDistrictActive(userAccount, chancePoint, new Date());
-            districtActive.setRoleName("districtActive");
+            districtActive.setRuleName("districtActive");
             //商区公交路线数量、公交站点数
             Quota districtBusNum = chancePointEstimateService.getBusinessDistrictBusNum(userAccount, chancePoint, new Date());
             //需要将路线数量、公交站数拆分为两个指标
@@ -192,13 +192,13 @@ public class ChancePointServiceImpl implements ChancePointService {
                         Quota districtBusLineNum = new Quota();
                         districtBusLineNum.setLabel("商区公交路线数量");
                         districtBusLineNum.add(item);
-                        districtBusLineNum.setRoleName("districtBusLineNum");
+                        districtBusLineNum.setRuleName("districtBusLineNum");
                         districtEstimateResult.add(districtBusLineNum);
                     }else if("公交站".equals(item.getLabel())){
                         Quota districtBusStopNum = new Quota();
                         districtBusStopNum.setLabel("商区公交路线数量");
                         districtBusStopNum.add(item);
-                        districtBusStopNum.setRoleName("districtBusStopNum");
+                        districtBusStopNum.setRuleName("districtBusStopNum");
                         districtEstimateResult.add(districtBusStopNum);
                     }
                 });
@@ -206,19 +206,19 @@ public class ChancePointServiceImpl implements ChancePointService {
 
             //消费者活跃度
             Quota districtCustomerActive = chancePointEstimateService.getBusinessDistrictCustomerActive(userAccount, chancePoint, new Date());
-            districtCustomerActive.setRoleName("districtCustomerActive");
+            districtCustomerActive.setRuleName("districtCustomerActive");
             //商区消费者有子女占比
             Quota districtCustomerChildrenProportion = chancePointEstimateService.getBusinessDistrictCustomerChildrenProportion(userAccount, chancePoint, new Date());
-            districtCustomerChildrenProportion.setRoleName("districtCustomerChildrenProportion");
+            districtCustomerChildrenProportion.setRuleName("districtCustomerChildrenProportion");
             //商区关键配套
             Quota districtMating = chancePointEstimateService.getBusinessDistrictMating(userAccount, chancePoint, new Date());
-            districtMating.setRoleName("districtMating");
+            districtMating.setRuleName("districtMating");
             //商区定位
             Quota districtLevel = new Quota();
             districtLevel.setLabel("商区定位");
             districtLevel.setRemark("是否是城市核心商区");
             districtLevel.setValues(new ArrayList<>());
-            districtLevel.setRoleName("districtLevel");
+            districtLevel.setRuleName("districtLevel");
             districtEstimateResult.add(districtLevel);
 
             if (districtPopulation != null) {
@@ -252,7 +252,7 @@ public class ChancePointServiceImpl implements ChancePointService {
             districtMainRoadRate.setLabel("落位街道主路口客流");
             districtMainRoadRate.setRemark("日均客流");
             districtMainRoadRate.setValues(new ArrayList<>());
-            districtMainRoadRate.setRoleName("districtMainRoadRate");
+            districtMainRoadRate.setRuleName("districtMainRoadRate");
             streeEstimateResult.add(districtMainRoadRate);
 
             result.add(streeEstimateResult);
@@ -265,31 +265,31 @@ public class ChancePointServiceImpl implements ChancePointService {
             Quota seatDayPersonFlow = new Quota();
             seatDayPersonFlow.setLabel("席位日均客流");
             seatDayPersonFlow.setRemark ("");
-            seatDayPersonFlow.setRoleName("seatDayPersonFlow");
+            seatDayPersonFlow.setRuleName("seatDayPersonFlow");
             seatEstimateResult.add(seatDayPersonFlow);
 
             Quota seatPositionFlow = new Quota();
             seatPositionFlow.setLabel("落位位置-是否人流同侧");
             seatPositionFlow.setRemark ("主干道人流方向，适用于双向4车道以上街道");
-            seatPositionFlow.setRoleName("seatPositionFlow");
+            seatPositionFlow.setRuleName("seatPositionFlow");
             seatEstimateResult.add(seatPositionFlow);
 
             Quota seatPositionDistance = new Quota();
             seatPositionDistance.setLabel("落位位置-主路口距离");
             seatPositionDistance.setRemark ("落位与街道两边路口距离");
-            seatPositionDistance.setRoleName("seatPositionDistance");
+            seatPositionDistance.setRuleName("seatPositionDistance");
             seatEstimateResult.add(seatPositionDistance);
 
             Quota seatDoorHeaderLen = new Quota();
             seatDoorHeaderLen.setLabel("门头长度");
             seatDoorHeaderLen.setRemark ("");
-            seatDoorHeaderLen.setRoleName("seatDoorheaderLen");
+            seatDoorHeaderLen.setRuleName("seatDoorheaderLen");
             seatEstimateResult.add(seatDoorHeaderLen);
 
             Quota seatLeaseTerm = new Quota();
             seatLeaseTerm.setLabel("签约年限");
             seatLeaseTerm.setRemark ("");
-            seatLeaseTerm.setRoleName("seatLeaseTerm");
+            seatLeaseTerm.setRuleName("seatLeaseTerm");
             seatEstimateResult.add(seatLeaseTerm);
 
             result.add(seatEstimateResult);
@@ -302,19 +302,19 @@ public class ChancePointServiceImpl implements ChancePointService {
             Quota competitorNum = new Quota();
             competitorNum.setLabel("竞品店数量");
             competitorNum.setRemark ("1km内竞品店面数量");
-            competitorNum.setRoleName("competitorNum");
+            competitorNum.setRuleName("competitorNum");
             competitorEstimateResult.add(competitorNum);
 
             Quota competitorDistance = new Quota();
             competitorDistance.setLabel("最近竞品距离");
             competitorDistance.setRemark ("");
-            competitorDistance.setRoleName("competitorDistance");
+            competitorDistance.setRuleName("competitorDistance");
             competitorEstimateResult.add(competitorDistance);
 
             Quota competitorSimilarity = new Quota();
             competitorSimilarity.setLabel("竞品店相似度");
             competitorSimilarity.setRemark ("品牌、品类、品相、价格");
-            competitorSimilarity.setRoleName("competitorDistance");
+            competitorSimilarity.setRuleName("competitorDistance");
             competitorEstimateResult.add(competitorSimilarity);
             result.add(competitorEstimateResult);
 

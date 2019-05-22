@@ -76,7 +76,7 @@ var ActionTypes = {
   ADD_CHANCE_TO_LIST: "addChanceToList", //添加新
   UPDATE_SEARCH_LIST: "updateSearchList", //查询结果
   UPDATE_MAP_LOCATION: "updateLocation", //更新地图的位置
-  UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResult", //更新评估结果
+  UPDATE_CHANCE_ESTIMATE_RESULT: "estimateResults", //更新评估结果
   SELECTED_CHANCE: "selectedChance", //选择机会点
   REMOVE_CHANCE_FROM_LIST: "removeFromList", //移除机会点列表,
   SWITCH_CHANCE: "switchChance" //切换机会点显示
@@ -87,7 +87,7 @@ var ActionTypes = {
  *
  */
 function switchChance(chance) {
-  if (chance && chance.id && !chance.estimateResult) {
+  if (chance && chance.id && !chance.estimateResults) {
     return function(dispatch) {
       return new Promise(function(resolve, reject) {
         dispatch({
@@ -235,7 +235,7 @@ function ChanceRedux(state, action) {
   } else if (action.type === ActionTypes.UPDATE_CHANCE_ESTIMATE_RESULT) {
     return Object.assign(state, {
       currentChance: Object.assign({}, state.currentChance, {
-        estimateResult: action.payload
+        estimateResults: action.payload
       })
     });
   } else if (action.type === ActionTypes.REMOVE_CHANCE_FROM_LIST) {
@@ -968,27 +968,27 @@ function initMap(env) {
    */
   function updateeStimateResultLoaded(chance, topNavIndex, childIndex) {
     if (!chance.id) {
-      $(".estimateResult").empty();
+      $(".estimateResults").empty();
       return;
     }
     if (!chance.shopId) {
-      $(".estimateResult").html("<span class='message'>机会点审核中！</span>");
+      $(".estimateResults").html("<span class='message'>机会点审核中！</span>");
       return;
     }
-    if (!chance.estimateResult) {
-      $(".estimateResult").html(
+    if (!chance.estimateResults) {
+      $(".estimateResults").html(
         "<span class='message'>评估数据加载中...</span>"
       );
       return;
     }
     var navIndex = topNavIndex || 0;
     var vtabsIndex = childIndex || 0;
-    var estimateResultEle = $(".estimateResult").empty();
+    var estimateResultEle = $(".estimateResults").empty();
     var nav = $('<div class="nav"></div>');
-    var estimateResult = chance.estimateResult;
+    var estimateResults = chance.estimateResults;
     //受限建立导航
-    if (estimateResult && estimateResult.length) {
-      estimateResult.forEach(function(estimate, index) {
+    if (estimateResults && estimateResults.length) {
+      estimateResults.forEach(function(estimate, index) {
         if (index === navIndex) {
           nav.append(
             "<span class='selected' data-index='" +
@@ -1011,7 +1011,7 @@ function initMap(env) {
     });
 
     var estimateResultDataEle = $("<div class='estimateResultData'></div>");
-    var estimatequotaDatas = estimateResult[navIndex].quotas;
+    var estimatequotaDatas = estimateResults[navIndex].quotas;
     //构造左边tab
 
     var vtabs = $('<div class="vtabs"></div>');

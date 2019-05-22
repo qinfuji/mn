@@ -107,7 +107,7 @@ function _getAuthInfo() {
     //token: jQuery.param("token")
     userAccount: "hcrf0366",
     token:
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTg0MzgwODMsImV4cCI6MTU1ODQ1MjQ4M30.TG7Nv5IhlI3TsNef8S5h0k_smtnYEiwvJAcujK8obRv-obMjEb0Wwxu-VY-UvIn3E0iZWpr7ZrVClPXD1p9f6w"
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoY3IwMDAwMDEiLCJpYXQiOjE1NTg1MjM5NzYsImV4cCI6MTU1ODUzODM3Nn0.5XvP-NAnF5Ju3G82S7DJZXyFVzND6hwgTHOVXckeGv80V7IAZ-E7lSljySI_XLe8wi-rD_GFlPdFoAGDFsuygw"
   };
 }
 

@@ -19,6 +19,11 @@ public class AnalysisResult {
     String chanceId;
 
     /**
+     * 分析的标题
+     */
+    @TableField
+    String title;
+    /**
      * 分析的目标数据
      */
     @TableField("target_data")

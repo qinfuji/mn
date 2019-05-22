@@ -25,49 +25,39 @@
     <script src="./js/redux-thunk.min.js"></script>
     <script src="./js/address/api.js"></script>
     <script src="./js/address/analysis.js"></script>
+    <script src="./js/address/rules_factory.js"></script>
   </head>
 
   <body>
     <div id="outer-box">
       <div class="toolsbar">
         <div class="item search">
-          <div class="input-item">
-            <div class="input-item-prepend">
-              <span class="input-item-text">省市区</span>
-            </div>
-            <select
-              id="province"
-              style="width:100px"
-            ></select>
-          </div>
-          <div class="input-item">
-            <div class="input-item-prepend">
-              <span class="input-item-text">地级市</span>
-            </div>
-            <select
-              id="city"
-              style="width:100px"
-            ></select>
-          </div>
-          <div class="input-item">
-            <div class="input-item-prepend">
-              <span class="input-item-text">区县</span>
-            </div>
-            <select
-              id="district"
-              style="width:100px"
-            ></select>
-          </div>
-          
+            <form class="form-inline">
+                <div class="form-group">
+                  <label>省市区</label>
+                  <select class="form-control" id="province" style="width:150px" ></select>
+                </div>
+                <div class="form-group">
+                  <label>省市区</label>
+                  <select class="form-control" id="city" style="width:150px" ></select>
+                </div>
+                <div class="form-group">
+                  <label>区县</label>
+                  <select class="form-control" id="district" style="width:150px" ></select>
+                </div>
+            </form>
         </div>
         <div class="item tools">
           <div class="input-item" style="margin-right: 20px;">
-                <span>地址搜索：</span><input id="searchStr" style="width:200px" ></select>
-                <div class="input-item-prepend" id="search_btn">
-                  <span class="input-item-text">搜索</span>
-                </div>
+              <form class="form-inline">
+                  <div class="form-group">
+                    <label>地址搜索：</label>
+                    <input class="form-control" id="searchStr" style="width:200px" ></input>
+                  </div>
+                  <button type="button" class="btn btn-primary" id="search_btn">搜索</button>
+              </form>
           </div>
-          <button type="button" class="btn btn-success" id="createChanceBtn">创建机会点</button>
+          <button type="button" class="btn btn-primary" id="createChanceBtn">创建机会点</button>
         </div>
       </div>
       <div class="container">
@@ -129,32 +119,79 @@
                       <!-- <button type="button" id="chance_fence" class="btn btn-primary">设置围栏</button> -->
                     </form>
                 </div>
-                <div class="estimateResult">
+                <div class="estimateResults">
                     
-                    </div>
-                </div> 
-              </div>
-            </div> 
-          </div>
+                </div>
+              </div> 
+            </div>
+          </div> 
+        </div>
       </div>
     </div>
    
 
     <!-- 模态框（Modal） -->
-<div class="modal fade" id="analysisDialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog" style="width:60%;height:100px;">
-        <div class="modal-content">
+<div class="modal fade " id="analysisDialog" tabindex="-1" role="dialog"  style="padding-left:0;">
+    <div class="modal-dialog container-fiuled" style="width:80%;height:100px;margin: 15px auto;">
+        <div class="modal-content" style="border-radius: 0;">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                <button type="button" class="close" data-dismiss="modal">×
                 </button>
-                <h4 class="modal-title" id="myModalLabel">
+                <h4 class="modal-title" id="analysisTitle">
                     机会点评估分析
                 </h4>
             </div>
-            <div class="modal-body">
-                点击关闭按钮检查事件功能。
+            <div class="modal-body"  style="padding: 2px;">
+                 <table class="table table-bordered table-hover" id="analysisTable" style="font-size:14px">
+                    <thead>
+                     <tr>
+                        <th scope="col">评估维度</th>
+                        <th scope="col">关键指标</th>
+                        <th scope="col">权重(%)</th>
+                        <th scope="col">备注</th>
+                        <th scope="col">基础数据</th>
+                        <th scope="col">得分</th>
+                        <th scope="col">加权得分</th>
+                     </tr>
+                    </thead>
+                    <tbody>
+                     <tr>
+                        <td scope="col" rowspan="4">商圈评估(3km)</td>
+                        <td scope="col">商圈人口体量</td>
+                        <td scope="col"><input id="" value="123"/></td>
+                        <td scope="col">楼盘数据参考，按照当地人口统计年鉴计算</td>
+                        <td scope="col">33万</td>
+                        <td scope="col">5</td>
+                        <td scope="col">5</td>
+                     </tr>
+                     <tr>
+                        <td scope="col">商圈活跃度</td>
+                        <td scope="col"><input id="" value="123"/></td>
+                        <td scope="col">商圈内商业主体、商务楼数量、社区</td>
+                        <td scope="col">22（社区）+1商业主体</td>
+                        <td scope="col">5</td>
+                        <td scope="col">5</td>
+                     </tr>
+                     <tr>
+                        <td scope="col">商圈形成年限</td>
+                        <td scope="col"><input id="" value="123"/></td>
+                        <td scope="col">主要商业设施、居民小区建成时间</td>
+                        <td scope="col">33万</td>
+                        <td scope="col">5</td>
+                        <td scope="col">5</td>
+                     </tr>
+                     <tr>
+                        <td scope="col">商圈发展趋势</td>
+                        <td scope="col"><input id="" value="123"/></td>
+                        <td scope="col">政府发展规划</td>
+                        <td scope="col">33万</td>
+                        <td scope="col">5</td>
+                        <td scope="col">5</td>
+                     </tr>
+                    </tbody>
+                 </table>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="padding: 8px;">
                 <button type="button" class="btn btn-default" data-dismiss="modal">
                     关闭
                 </button>

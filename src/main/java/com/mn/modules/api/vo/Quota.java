@@ -36,7 +36,7 @@ public class Quota {
     /**
      * 规则处理名称
      */
-    String roleName;
+    String ruleName;
 
     /**
      * 指标顺序
