@@ -523,15 +523,15 @@ function initMap(env) {
       $("#address_msg").hide();
       $("#chance_address").removeClass("invalid-feedback");
     }
-    var chanceType = $("#chance_type").val();
-    if (!chanceType) {
-      $("#type_msg").show();
-      $("#chance_type").addClass("invalid-feedback");
-    } else {
-      $("#type_msg").hide();
-      $("#chance_type").removeClass("invalid-feedback");
-    }
-    if (!chanceName || !chanceAddress || !chanceType) {
+    // var chanceType = $("#chance_type").val();
+    // if (!chanceType) {
+    //   $("#type_msg").show();
+    //   $("#chance_type").addClass("invalid-feedback");
+    // } else {
+    //   $("#type_msg").hide();
+    //   $("#chance_type").removeClass("invalid-feedback");
+    // }
+    if (!chanceName || !chanceAddress /*|| !chanceType*/) {
       return false;
     }
     return true;
@@ -571,13 +571,13 @@ function initMap(env) {
     );
   });
 
-  $("#chance_type").on("change", function() {
-    store.dispatch(
-      updateChanceProps({
-        type: $(this).val()
-      })
-    );
-  });
+  // $("#chance_type").on("change", function() {
+  //   store.dispatch(
+  //     updateChanceProps({
+  //       type: $(this).val()
+  //     })
+  //   );
+  // });
 
   $("#chance_address").on("change", function() {
     store.dispatch(
@@ -934,7 +934,7 @@ function initMap(env) {
     $("#chance_name").val(chance.name);
     $("#chance_address").val(chance.address);
     $("#chance_fence").val(chance.fence);
-    $("#chance_type").val(chance.type);
+    //$("#chance_type").val(chance.type);
     geocoder.getAddress([lng, lat], function(status, result) {
       if (status === "complete" && result.info === "OK") {
         var address = result.regeocode.formattedAddress; //返回地址描述
