@@ -2,8 +2,8 @@ function DataAnalysis(chancePoint) {
   console.log(chancePoint);
 
   //得到数据分析起
-  function getAnalysisor(ruleName, data, callback) {
-    return ruleEngineFactory(ruleName, data, callback);
+  function getAnalysisor(estimateResults, ruleName, data, callback) {
+    return ruleEngineFactory(estimateResults, ruleName, data, callback);
   }
 
   function initDialog() {
@@ -31,7 +31,11 @@ function DataAnalysis(chancePoint) {
           if (index === 0) {
             tr.append(etd);
           }
-          var analysisor = getAnalysisor(quota.ruleName, quota);
+          var analysisor = getAnalysisor(
+            estimateResults,
+            quota.ruleName,
+            quota
+          );
           tr.append(analysisor.render());
           trs.push(tr);
         });
