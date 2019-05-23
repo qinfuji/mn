@@ -76,7 +76,7 @@ var ruleEngineFactory = function(
           return 100;
         } else if (baseValue >= 4) {
           return 80;
-        } else if (baseValue >= 4) {
+        } else if (baseValue >= 3) {
           return 60;
         } else if (baseValue >= 2) {
           return 40;
@@ -490,7 +490,7 @@ var ruleEngineFactory = function(
     },
 
     //落位位置-是否人流同侧  TODO 加枚举值
-    seatDayPersonFlow: function(callback) {
+    seatPositionFlow: function(callback) {
       function getBaseValue(data) {
         var values = data.values;
         var baseValue = 0;
@@ -501,14 +501,8 @@ var ruleEngineFactory = function(
       }
 
       function getScore(baseValue) {
-        if (baseValue >= 2000) {
+        if (baseValue === 1) {
           return 100;
-        } else if (baseValue >= 1500) {
-          return 80;
-        } else if (baseValue >= 1000) {
-          return 60;
-        } else if (baseValue >= 500) {
-          return 40;
         } else {
           return 0;
         }
@@ -532,9 +526,9 @@ var ruleEngineFactory = function(
         return baseValue;
       }
       function getScore(baseValue) {
-        if (baseValue >= 1) {
+        if (baseValue === 1) {
           return 100;
-        } else if (baseValue >= 2) {
+        } else if (baseValue === 2) {
           return 80;
         } else {
           return 0;
@@ -691,10 +685,12 @@ var ruleEngineFactory = function(
       ruleCalculate(function(getBaseValue, getScore, getSelectValues) {
         var selectValues = getSelectValues ? getSelectValues() : null; //得到参考值
         var baseValue = getBaseValue(_data);
-        baseScoreEle = $("<td></td>");
-        weightScoreEle = $("<td></td>");
+        baseScoreEle = $("<td style='padding-left:10px'></td>");
+        weightScoreEle = $("<td style='padding-left:10px'></td>");
         if (selectValues && selectValues.length) {
-          baseValueEle = $("<select></select>");
+          baseValueEle = $(
+            "<select class='form-control' style='width:100%'></select>"
+          );
           for (let index = 0; index < selectValues.length; index++) {
             const element = selectValues[index];
             baseValueEle.append(
@@ -712,18 +708,20 @@ var ruleEngineFactory = function(
             innercalculate();
           });
         } else {
-          baseValueEle = $("<input style='width:75px' value='' />");
+          baseValueEle = $(
+            "<input class='form-control' style='width:100%' value='' />"
+          );
           baseValueEle.val(baseValue);
           baseValueEle.on("keyup", function() {
             _data.baseValue = $(this).val();
             innercalculate();
           });
         }
-        baseValueContainerEle = $("<td style='width:75px'></td>");
+        baseValueContainerEle = $("<td style='width:90px;'></td>");
         baseValueContainerEle.append(baseValueEle);
 
         weightEle = $(
-          "<td style='width:65px'><input style='width:65px' value=''/></td>"
+          "<td style='width:90px'><input class='input-mini form-control' style='width:100%' value=''/></td>"
         );
         remarkEle = $("<td>" + _data.remark + "</td>");
         quotaLabelEle = $("<td>" + _data.label + "</td>");
