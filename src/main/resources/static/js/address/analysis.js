@@ -12,6 +12,7 @@ function DataAnalysis(chancePoint) {
     );
 
     var estimateResults = chancePoint.estimateResults;
+    if (!estimateResults) return;
     var trs = [];
     estimateResults.forEach(function(estimateResult, estimateIndex) {
       console.log(estimateResult);

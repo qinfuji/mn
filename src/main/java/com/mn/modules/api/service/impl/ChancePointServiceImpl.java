@@ -184,17 +184,17 @@ public class ChancePointServiceImpl implements ChancePointService {
             List<QuotaItem> items = districtBusNum.getValues();
             if(items != null && items.size()>0){
                 items.forEach((item)->{
-                    String label = item.getLabel();
-                    Object value = item.getValue();
                     if("公交线".equals(item.getLabel())){
                         Quota districtBusLineNum = new Quota();
                         districtBusLineNum.setLabel("商区公交路线数量");
+                        districtBusLineNum.setRemark("方圆500m内的交通枢纽数量");
                         districtBusLineNum.add(item);
                         districtBusLineNum.setRuleName("districtBusLineNum");
                         districtEstimateResult.add(districtBusLineNum);
                     }else if("公交站".equals(item.getLabel())){
                         Quota districtBusStopNum = new Quota();
                         districtBusStopNum.setLabel("商区公交路线数量");
+                        districtBusStopNum.setRemark("以500m为半径");
                         districtBusStopNum.add(item);
                         districtBusStopNum.setRuleName("districtBusStopNum");
                         districtEstimateResult.add(districtBusStopNum);
@@ -242,8 +242,10 @@ public class ChancePointServiceImpl implements ChancePointService {
             streeEstimateResult.setLabel("街道评估");
             //街道关键配套
             Quota streetMating = chancePointEstimateService.getStreetMating(userAccount, chancePoint, new Date());
+            streetMating.setRuleName("streetMating");
             if (streetMating != null) {
                 streeEstimateResult.add(streetMating);
+
             }
             //落位街道主路口客流
             Quota districtMainRoadRate = new Quota();
@@ -279,7 +281,7 @@ public class ChancePointServiceImpl implements ChancePointService {
             seatEstimateResult.add(seatPositionDistance);
 
             Quota seatDoorHeaderLen = new Quota();
-            seatDoorHeaderLen.setLabel("门头长度");
+            seatDoorHeaderLen.setLabel("门头长度(米)");
             seatDoorHeaderLen.setRemark ("");
             seatDoorHeaderLen.setRuleName("seatDoorheaderLen");
             seatEstimateResult.add(seatDoorHeaderLen);
@@ -304,16 +306,12 @@ public class ChancePointServiceImpl implements ChancePointService {
             competitorEstimateResult.add(competitorNum);
 
             Quota competitorDistance = new Quota();
-            competitorDistance.setLabel("最近竞品距离");
-            competitorDistance.setRemark ("");
+            competitorDistance.setLabel("最近竞品距离(米)");
+            competitorDistance.setRemark ("单位米");
             competitorDistance.setRuleName("competitorDistance");
             competitorEstimateResult.add(competitorDistance);
 
-            Quota competitorSimilarity = new Quota();
-            competitorSimilarity.setLabel("竞品店相似度");
-            competitorSimilarity.setRemark ("品牌、品类、品相、价格");
-            competitorSimilarity.setRuleName("competitorDistance");
-            competitorEstimateResult.add(competitorSimilarity);
+
             result.add(competitorEstimateResult);
 
             return result;
