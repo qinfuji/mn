@@ -104,10 +104,6 @@ p {
   border-bottom: 1px solid #cccccc;
 }
 
-.toolsbar .search {
-  min-width: 684px;
-}
-
 .toolsbar .item {
   margin: 0 10px;
   display: flex;
@@ -115,7 +111,6 @@ p {
 
 .toolsbar .item.tools {
   align-items: center;
-  height: 3rem;
 }
 
 .toolsbar .form-group span {
