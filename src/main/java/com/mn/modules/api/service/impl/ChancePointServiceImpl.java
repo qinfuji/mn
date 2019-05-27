@@ -82,25 +82,25 @@ public class ChancePointServiceImpl implements ChancePointService {
             queryWrapper.eq("district", adCode);
         }
         IPage page = chancePointDao.selectPage(pageParam, queryWrapper);
+
+        List<ChancePoint> records = page.getRecords();
+        if (records.size() == 0) {
+            return page;
+        }
+        List<ChancePoint> newrecords = new ArrayList<>();
+        records.forEach((record) -> {
+            if (record.getShopId() == null) {
+                String shopId = shopService.getChancePointShopId(userAccount, record);
+                if (shopId != null) {
+                    record.setShopId(shopId);
+                    chancePointDao.updateById(record);
+                }
+            }
+            newrecords.add(record);
+        });
+
+        page.setRecords(newrecords);
         return page;
-//        List<ChancePoint> records = page.getRecords();
-//        if (records.size() == 0) {
-//            return page;
-//        }
-//        List<ChancePoint> newrecords = new ArrayList<>();
-//        records.forEach((record) -> {
-//            if (record.getShopId() == null) {
-//                String shopId = shopService.getChancePointShopId(userAccount, record);
-//                if (shopId != null) {
-//                    record.setShopId(shopId);
-//                    chancePointDao.updateById(record);
-//                }
-//            }
-//            newrecords.add(record);
-//        });
-//
-//        page.setRecords(newrecords);
-//        return page;
     }
 
 
