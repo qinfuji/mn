@@ -75,13 +75,16 @@ public interface ChancePointService {
      * 分析机会点评估结果， 用户指标加权重后数据
      * @param chancePoint 机会点s
      * @param estimateResultList 机会点评估结果，用户加入指标权重
+     * @return 返回分析结果对象
      */
-    void analysis(ChancePoint chancePoint , List<EstimateResult> estimateResultList);
+    AnalysisResult saveAnalysisResult(ChancePoint chancePoint , List<EstimateResult> estimateResultList);
+
 
     /**
-     * 评估结果分析劣势
-     * @param chancePoint
+     * 得到机会点分析结果
+     * @param chanceId 机会点id
      * @return
      */
-    List<AnalysisResult> analysisHistory(ChancePoint chancePoint);
+    AnalysisResult getAnalysisResult(String chanceId);
+
 }

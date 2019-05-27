@@ -2,7 +2,7 @@ var ruleEngineFactory = function(
   estimateResults,
   ruleName,
   quotaData,
-  onerror
+  onchange
 ) {
   var ruleEngins = {
     //商圈人口体量
@@ -592,6 +592,9 @@ var ruleEngineFactory = function(
       function getBaseValue(data) {
         return 0;
       }
+      function getScoreDescr(data) {
+        return "";
+      }
       function getScore(baseValue) {
         if (baseValue >= 20) {
           return 0;
@@ -603,7 +606,7 @@ var ruleEngineFactory = function(
           return 100;
         }
       }
-      callback(getBaseValue, getScore);
+      callback(getBaseValue, getScore, getScoreDescr);
     },
 
     //最近竞品距离
@@ -649,42 +652,57 @@ var ruleEngineFactory = function(
       weightEle, //权重
       remarkEle, //备注
       quotaLabelEle, //指标名称
-      weightScoreEle; //加权得分
+      weightScoreEle, //加权得分
+      mode = "edit", //默认编辑模式
+      baseValueContainerEle;
 
-    var _data = Object.assign({}, quotaData);
-
+    //更新数据
     function resetValue(calculateValue) {
-      _data = Object.assign(_data, calculateValue);
-      baseValueEle.find("input").val(_data.baseValue);
-      baseScoreEle.html(_data.baseScore);
-      weightScoreEle.html(_data.weightScore);
-      weightEle.find("input").val(_data.weight);
+      Object.assign(quotaData, calculateValue);
+      baseValueEle.find("input").val(quotaData.baseValue);
+      baseScoreEle.html(quotaData.baseScore);
+      weightScoreEle.html(quotaData.weightScore);
+      weightEle.find("input").val(quotaData.weight);
+    }
+
+    //设置展示模式
+    function setModel(_mode) {
+      mode = mode;
     }
 
     function innercalculate() {
       ruleCalculate(function(getBaseValue, getScore, getReferValues) {
-        var baseValue = _data.baseValue;
+        var baseValue = quotaData.baseValue;
         if (typeof baseValue === "undefined" || baseValue == null) {
-          baseValue = getBaseValue(_data);
+          baseValue = getBaseValue(quotaData);
         }
         var baseScore = getScore(parseFloat(baseValue));
         var weightScore = 0;
-        if (_data.weight) {
-          weightScore = (baseScore * (_data.weight / 100)).toFixed(2);
+        if (quotaData.weight) {
+          weightScore = (baseScore * (quotaData.weight / 100)).toFixed(2);
         }
-        resetValue({
-          weight: _data.weight, //权重
+        var ret = {
+          weight: quotaData.weight, //权重
           weightScore: weightScore, //加权得分
           baseValue: baseValue, //基础数据
           baseScore: baseScore //给予基础数据的得分
-        });
+        };
+        resetValue(ret);
+        if (onchange) {
+          onchange();
+        }
       });
     }
 
     function init() {
-      ruleCalculate(function(getBaseValue, getScore, getSelectValues) {
+      ruleCalculate(function(
+        getBaseValue,
+        getScore,
+        getSelectValues,
+        getBaseDetail
+      ) {
         var selectValues = getSelectValues ? getSelectValues() : null; //得到参考值
-        var baseValue = getBaseValue(_data);
+        var baseValue = quotaData.baseValue || getBaseValue(quotaData);
         baseScoreEle = $("<td style='padding-left:10px'></td>");
         weightScoreEle = $("<td style='padding-left:10px'></td>");
         if (selectValues && selectValues.length) {
@@ -704,7 +722,7 @@ var ruleEngineFactory = function(
             );
           }
           baseValueEle.on("change", function() {
-            _data.baseValue = $(this).val();
+            quotaData.baseValue = $(this).val();
             innercalculate();
           });
         } else {
@@ -713,7 +731,7 @@ var ruleEngineFactory = function(
           );
           baseValueEle.val(baseValue);
           baseValueEle.on("keyup", function() {
-            _data.baseValue = $(this).val();
+            quotaData.baseValue = $(this).val();
             innercalculate();
           });
         }
@@ -723,10 +741,10 @@ var ruleEngineFactory = function(
         weightEle = $(
           "<td style='width:90px'><input class='input-mini form-control' style='width:100%' value=''/></td>"
         );
-        remarkEle = $("<td>" + _data.remark + "</td>");
-        quotaLabelEle = $("<td>" + _data.label + "</td>");
+        remarkEle = $("<td>" + quotaData.remark + "</td>");
+        quotaLabelEle = $("<td>" + quotaData.label + "</td>");
         weightEle.on("keyup", "input", function() {
-          _data.weight = $(this).val();
+          quotaData.weight = $(this).val();
           innercalculate();
         });
         innercalculate();
@@ -743,6 +761,18 @@ var ruleEngineFactory = function(
           baseScoreEle,
           weightScoreEle
         ];
+      },
+
+      getWeight: function() {
+        return quotaData.weight ? parseFloat(quotaData.weight) : 0;
+      },
+
+      getWeightScore: function() {
+        return quotaData.weightScore ? parseFloat(quotaData.weightScore) : 0;
+      },
+
+      setMode: function(mode) {
+        setModel(mode);
       }
     };
   }
@@ -750,6 +780,6 @@ var ruleEngineFactory = function(
     estimateResults,
     quotaData,
     ruleEngins[ruleName] ? ruleEngins[ruleName] : ruleEngins["defaultRule"],
-    onerror
+    onchange
   );
 };

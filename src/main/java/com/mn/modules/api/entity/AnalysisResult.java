@@ -13,7 +13,7 @@ import java.util.Date;
 public class AnalysisResult {
 
     @TableId(type= IdType.AUTO)
-    Long id;
+    Integer id;
 
     @TableField("chance_id")
     String chanceId;
@@ -23,11 +23,6 @@ public class AnalysisResult {
      */
     @TableField
     String title;
-    /**
-     * 分析的目标数据
-     */
-    @TableField("target_data")
-    String targetData;
 
     /**
      * 分析结果
@@ -39,5 +34,11 @@ public class AnalysisResult {
      * 分析时间
      */
     @TableField("created_time")
-    Date  createTime;
+    Date  createdTime;
+
+    /**
+     * 最后更新时间
+     */
+    @TableField("updated_time")
+    Date  updatedTime;
 }

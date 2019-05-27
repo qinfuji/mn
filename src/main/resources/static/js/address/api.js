@@ -1,4 +1,4 @@
-var HOST = "";
+var HOST = "http://localhost:8086";
 
 function getQueryString(name) {
   var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
@@ -143,6 +143,35 @@ var serviceApi = {
           token: authInfo.token
         },
         data: JSON.stringify(chance),
+        success: function(data) {
+          if (data.code === 0) {
+            resolve(data.data);
+          } else {
+            alert(data.msg);
+            reject();
+          }
+        }
+      });
+    });
+  },
+
+  saveAnalysis: function(chance, analysis) {
+    var authInfo = _getAuthInfo();
+    return new Promise(function(resolve, reject) {
+      $.ajax({
+        url:
+          HOST +
+          "/api/chance/" +
+          chance.id +
+          "/analysis?userAccount=" +
+          authInfo.userAccount,
+        type: "put",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=utf8",
+          token: authInfo.token
+        },
+        data: JSON.stringify(analysis),
         success: function(data) {
           if (data.code === 0) {
             resolve(data.data);

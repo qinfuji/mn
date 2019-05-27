@@ -8,8 +8,10 @@ import java.util.List;
 
 @Data
 public class EstimateResult {
-     //评估点
-     String type;
+    /**
+     * 评估类型
+     */
+    String type;
 
     /**
      * 名称

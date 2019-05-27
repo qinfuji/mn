@@ -495,3 +495,18 @@ select:focus {
 .panel-default > .panel-heading {
   color: #666666;
 }
+
+#operationBar {
+  display: flex;
+}
+
+#analysisInfo {
+  flex-grow: 1;
+  padding-left: 20px;
+  text-align: left;
+  color: #22b394;
+}
+
+#analysisInfo span {
+  margin-left: 20px;
+}

@@ -246,4 +246,8 @@ public class TestChancePointController extends BaseTest {
         Assert.assertEquals(ChancePointService.CHANCE_STATUS_INVALID , dbcp.getStatus());
 
     }
+
+    public void testSaveAnalysisResult(){
+
+    }
 }

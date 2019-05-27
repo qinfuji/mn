@@ -1,9 +1,10 @@
 package com.mn.modules.api.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.mn.modules.api.dao.AnalysisResultDao;
 import com.mn.modules.api.dao.ChancePointDao;
-import com.mn.modules.api.dao.EstimateResultDataDao;
 import com.mn.modules.api.entity.AnalysisResult;
 import com.mn.modules.api.entity.ChancePoint;
 import com.mn.modules.api.remote.ChancePointEstimateService;
@@ -30,9 +31,6 @@ public class ChancePointServiceImpl implements ChancePointService {
     @Autowired
     private ChancePointDao chancePointDao;
 
-    @Autowired
-    private EstimateResultDataDao estimateResultDataDao;
-
 
     @Autowired
     private ChancePointEstimateService chancePointEstimateService;
@@ -41,15 +39,20 @@ public class ChancePointServiceImpl implements ChancePointService {
     private ShopService shopService;
 
 
+    @Autowired
+    private AnalysisResultDao analysisResultDao;
+
+
     public ChancePointServiceImpl() {
     }
 
-    public ChancePointServiceImpl(ChancePointDao chancePointDao, EstimateResultDataDao estimateResultDataDao,
+    public ChancePointServiceImpl(ChancePointDao chancePointDao,AnalysisResultDao analysisResultDao,
                                   ChancePointEstimateService chancePointEstimateService, ShopService shopService) {
         this.chancePointDao = chancePointDao;
-        this.estimateResultDataDao = estimateResultDataDao;
+
         this.chancePointEstimateService = chancePointEstimateService;
         this.shopService = shopService;
+        this.analysisResultDao = analysisResultDao;
     }
 
     @Override
@@ -79,25 +82,25 @@ public class ChancePointServiceImpl implements ChancePointService {
             queryWrapper.eq("district", adCode);
         }
         IPage page = chancePointDao.selectPage(pageParam, queryWrapper);
-
-        List<ChancePoint> records = page.getRecords();
-        if (records.size() == 0) {
-            return page;
-        }
-        List<ChancePoint> newrecords = new ArrayList<>();
-        records.forEach((record) -> {
-            if (record.getShopId() == null) {
-                String shopId = shopService.getChancePointShopId(userAccount, record);
-                if (shopId != null) {
-                    record.setShopId(shopId);
-                    chancePointDao.updateById(record);
-                }
-            }
-            newrecords.add(record);
-        });
-
-        page.setRecords(newrecords);
         return page;
+//        List<ChancePoint> records = page.getRecords();
+//        if (records.size() == 0) {
+//            return page;
+//        }
+//        List<ChancePoint> newrecords = new ArrayList<>();
+//        records.forEach((record) -> {
+//            if (record.getShopId() == null) {
+//                String shopId = shopService.getChancePointShopId(userAccount, record);
+//                if (shopId != null) {
+//                    record.setShopId(shopId);
+//                    chancePointDao.updateById(record);
+//                }
+//            }
+//            newrecords.add(record);
+//        });
+//
+//        page.setRecords(newrecords);
+//        return page;
     }
 
 
@@ -325,14 +328,40 @@ public class ChancePointServiceImpl implements ChancePointService {
     }
 
     @Override
-    public void analysis(ChancePoint chancePoint, List<EstimateResult> estimateResultList) {
+    public AnalysisResult saveAnalysisResult(ChancePoint chancePoint, List<EstimateResult> estimateResultList) {
 
+        AnalysisResult analysisResult =  getAnalysisResult(chancePoint.getId());
+        String analysisResultString = JSONArray.toJSONString(estimateResultList);
+        if(analysisResult != null){
+            //更新数据
+            analysisResult.setResult(analysisResultString);
+            analysisResult.setUpdatedTime(new Date());
+            analysisResultDao.updateById(analysisResult);
+        }else{
+            Date currentDate =  new Date();
+            analysisResult = new AnalysisResult();
+            analysisResult.setResult(analysisResultString);
+            analysisResult.setUpdatedTime(currentDate);
+            analysisResult.setCreatedTime(currentDate);
+            analysisResult.setChanceId(chancePoint.getId());
+            analysisResult.setTitle("");
+            analysisResult.setChanceId(chancePoint.getId());
+            analysisResultDao.insert(analysisResult);
+        }
+        return analysisResult;
     }
+
+
 
     @Override
-    public List<AnalysisResult> analysisHistory(ChancePoint chancePoint) {
-        return null;
+    public AnalysisResult getAnalysisResult(String chanceId){
+        QueryWrapper<AnalysisResult> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("chance_id" , chanceId);
+        AnalysisResult analysisResult =  analysisResultDao.selectOne(queryWrapper);
+        return analysisResult;
     }
+
+
 
     @Override
     public boolean invalidChancePoint(String id) {

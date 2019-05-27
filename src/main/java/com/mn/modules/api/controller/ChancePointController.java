@@ -1,5 +1,6 @@
 package com.mn.modules.api.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mn.common.validator.ValidatorUtils;
@@ -90,33 +91,28 @@ public class ChancePointController {
     public RestResult<List<EstimateResult>> queryEstimateResults(@PathVariable String id,
                                                                  @RequestParam String userAccount) {
 
+        AnalysisResult ar = service.getAnalysisResult(id);
+        if(ar!=null){
+            String  analysisResultString =  ar.getResult();
+            List<EstimateResult>  estimateResultList = JSONArray.parseArray(analysisResultString , EstimateResult.class);
+            return RestResult.build(estimateResultList);
+        }
         ChancePoint chancePoint = service.queryChance(id);
         List<EstimateResult> ret = service.getChanceEstimateResult(chancePoint, userAccount, new Date());
         return RestResult.build(ret);
     }
 
-    @PostMapping("/{id}/analysis")
+    @PutMapping("/{id}/analysis")
     @CheckToken
-    public RestResult analysis(@PathVariable String id,
+    public RestResult saveAnalysis(@PathVariable String id,
                                @RequestAttribute String appId,
                                @RequestBody List<EstimateResult> estimateResultList) {
         ChancePoint chancePoint = service.queryChance(id);
         if (!appId.equals(chancePoint.getAppId())) {
             return RestResult.fail.msg("你无权操作该数据");
         }
-        service.analysis(chancePoint, estimateResultList);
-        return null;
+        service.saveAnalysisResult(chancePoint, estimateResultList);
+        return RestResult.ok;
     }
 
-    @PostMapping("/{id}/analysisHistory")
-    @CheckToken
-    public RestResult<List<AnalysisResult>> analysisHistory(@PathVariable String id,
-                                                            @RequestAttribute String appId) {
-        ChancePoint chancePoint = service.queryChance(id);
-        if (!appId.equals(chancePoint.getAppId())) {
-            return RestResult.fail.msg("你无权操作该数据");
-        }
-        List<AnalysisResult> ret = service.analysisHistory(chancePoint);
-        return RestResult.build(ret);
-    }
 }

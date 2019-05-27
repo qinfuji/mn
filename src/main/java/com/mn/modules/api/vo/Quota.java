@@ -29,6 +29,16 @@ public class Quota {
     double weight;
 
     /**
+     * 权重得分
+     */
+    double weightScore;
+
+    /**
+     * 基本得分
+     */
+    double baseValue;
+
+    /**
      * 指标项
      */
     List<QuotaItem> values = new ArrayList<>();

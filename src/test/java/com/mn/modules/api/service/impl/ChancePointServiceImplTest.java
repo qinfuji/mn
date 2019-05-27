@@ -1,10 +1,12 @@
 package com.mn.modules.api.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mn.modules.api.BaseTest;
+import com.mn.modules.api.dao.AnalysisResultDao;
 import com.mn.modules.api.dao.ChancePointDao;
-import com.mn.modules.api.dao.EstimateResultDataDao;
+import com.mn.modules.api.entity.AnalysisResult;
 import com.mn.modules.api.entity.ChancePoint;
 import com.mn.modules.api.remote.ChancePointEstimateService;
 import com.mn.modules.api.remote.ShopService;
@@ -12,7 +14,6 @@ import com.mn.modules.api.service.ChancePointService;
 import com.mn.modules.api.vo.EstimateResult;
 import com.mn.modules.api.vo.Quota;
 import com.mn.modules.api.vo.QuotaItem;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -36,19 +37,20 @@ class ChancePointServiceImplTest extends BaseTest {
     @Autowired
     private ChancePointService chancePointService;
 
+    @Autowired
+    private AnalysisResultDao analysisResultDao;
+
     @Mock
     private ChancePointEstimateService chancePointEstimateService;
 
     @Mock
     private ShopService shopService;
 
-    @Autowired
-    private EstimateResultDataDao estimateResultDataDao;
 
     @BeforeEach
     public void init() {
         chancePointService = new ChancePointServiceImpl(
-                chancePointDao, estimateResultDataDao, chancePointEstimateService, shopService);
+                chancePointDao, analysisResultDao, chancePointEstimateService, shopService);
     }
 
 
@@ -77,8 +79,8 @@ class ChancePointServiceImplTest extends BaseTest {
     @Test
     public void testGetChancePointList() {
 
-        String[]  adcodes = {"100001","1000002","1000003"};
-        String[]  names = {"湖北省","武汉市","洪山区"};
+        String[] adcodes = {"100001", "1000002", "1000003"};
+        String[] names = {"湖北省", "武汉市", "洪山区"};
         for (int i = 0; i < 50; i++) {
             ChancePoint cp = getTempChancePoint();
             cp.setAppId("1");
@@ -90,26 +92,26 @@ class ChancePointServiceImplTest extends BaseTest {
             cp.setDistrictName(names[2]);
             chancePointDao.insert(cp);
         }
-        IPage<ChancePoint> page = new Page(1,10);
-        IPage result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_DISTRICT , "100001" , "1"  , page ,"hcrf0380");
-        assertEquals(result.getTotal() , 0);
-        assertEquals(result.getRecords().size() , 0);
+        IPage<ChancePoint> page = new Page(1, 10);
+        IPage result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_DISTRICT, "100001", "1", page, "hcrf0380");
+        assertEquals(result.getTotal(), 0);
+        assertEquals(result.getRecords().size(), 0);
 
-        page = new Page(1,10);
-        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE , "100001" , "1"  , page,"hcrf0380");
-        assertEquals(result.getTotal() , 50);
-        assertEquals(result.getRecords().size() , 10);
+        page = new Page(1, 10);
+        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE, "100001", "1", page, "hcrf0380");
+        assertEquals(result.getTotal(), 50);
+        assertEquals(result.getRecords().size(), 10);
 
-        page = new Page(1,10);
-        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_CITY , "100001" , "1"  , page ,"hcrf0380");
-        assertEquals(result.getTotal() , 0);
-        assertEquals(result.getRecords().size() , 0);
+        page = new Page(1, 10);
+        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_CITY, "100001", "1", page, "hcrf0380");
+        assertEquals(result.getTotal(), 0);
+        assertEquals(result.getRecords().size(), 0);
 
 
-        page = new Page(1,10);
-        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE , "100001" , "10"  , page ,"hcrf0380");
-        assertEquals(result.getTotal() , 0);
-        assertEquals(result.getRecords().size() , 0);
+        page = new Page(1, 10);
+        result = chancePointService.getChancePointList(ChancePointService.AREA_SCOPE_PROVINCE, "100001", "10", page, "hcrf0380");
+        assertEquals(result.getTotal(), 0);
+        assertEquals(result.getRecords().size(), 0);
     }
 
     @Test
@@ -117,7 +119,7 @@ class ChancePointServiceImplTest extends BaseTest {
 
         String accountName = "account";
         ChancePoint cp = new ChancePoint();
-        Mockito.when(shopService.getChancePointShopId(accountName ,cp)).thenReturn("1");
+        Mockito.when(shopService.getChancePointShopId(accountName, cp)).thenReturn("1");
 
         Quota circleActive = new Quota();
         circleActive.setRemark("楼盘数据参考，按照当地人口统计年鉴计算");
@@ -132,7 +134,7 @@ class ChancePointServiceImplTest extends BaseTest {
         item.setValue(12);
         circleActive.add(item);
 
-        Mockito.when(chancePointEstimateService.getBusinessCircleActive(any(),any() , any())).thenReturn(circleActive);
+        Mockito.when(chancePointEstimateService.getBusinessCircleActive(any(), any(), any())).thenReturn(circleActive);
 
 
         Quota circlePopulation = new Quota();
@@ -147,7 +149,7 @@ class ChancePointServiceImplTest extends BaseTest {
         item.setLabel("固定人口");
         item.setValue(12);
         circlePopulation.add(item);
-        Mockito.when(chancePointEstimateService.getBusinessCirclePopulation(any(),any() , any())).thenReturn(circlePopulation);
+        Mockito.when(chancePointEstimateService.getBusinessCirclePopulation(any(), any(), any())).thenReturn(circlePopulation);
 
 
         Quota circleActiveTop = new Quota();
@@ -172,7 +174,7 @@ class ChancePointServiceImplTest extends BaseTest {
         circleActiveTop.add(item);
 
 
-        Mockito.when(chancePointEstimateService.getBusinessCircleActiveTop (any(),any() , any())).thenReturn(circleActiveTop);
+        Mockito.when(chancePointEstimateService.getBusinessCircleActiveTop(any(), any(), any())).thenReturn(circleActiveTop);
 
 
         Quota districtActive = new Quota();
@@ -187,10 +189,44 @@ class ChancePointServiceImplTest extends BaseTest {
         item.setLabel("商务楼数量");
         item.setValue(12);
         districtActive.add(item);
-        Mockito.when(chancePointEstimateService.getBusinessDistrictActive (any(),any() , any())).thenReturn(districtActive);
+        Mockito.when(chancePointEstimateService.getBusinessDistrictActive(any(), any(), any())).thenReturn(districtActive);
 
-        List<EstimateResult> result =  chancePointService.getChanceEstimateResult(cp , accountName , new Date());
-        assertEquals(result.size() , 3);
+        List<EstimateResult> result = chancePointService.getChanceEstimateResult(cp, accountName, new Date());
+        assertEquals(result.size(), 3);
+
+    }
+
+    @Test
+    public void testSaveAnalysisResult() {
+
+        ChancePoint cp = getTempChancePoint();
+        cp.setId("1234");
+        List<EstimateResult> estimateResultList = new ArrayList<>();
+        EstimateResult er = new EstimateResult();
+        er.setLabel("商圈评估");
+
+        Quota quota1 = new Quota();
+        quota1.setRuleName("quota1");
+        QuotaItem qi = new QuotaItem();
+        qi.setValue(12);
+        qi.setLabel("人口活跃度");
+        quota1.add(qi);
+        quota1.setWeight(1);
+        quota1.setBaseValue(100);
+        er.add(quota1);
+        estimateResultList.add(er);
+        AnalysisResult ar = chancePointService.saveAnalysisResult(cp, estimateResultList);
+        assertNotEquals(null , ar.getId());
+        String strResult = ar.getResult();
+        List<EstimateResult> saved = JSONArray.parseArray(strResult, EstimateResult.class);
+        assertEquals(estimateResultList.size(), saved.size());
+
+        AnalysisResult arSaved = chancePointService.getAnalysisResult(cp.getId());
+        assertNotEquals(null , arSaved);
+        strResult = arSaved.getResult();
+        saved = JSONArray.parseArray(strResult, EstimateResult.class);
+        assertEquals(estimateResultList.size(), saved.size());
+        assertEquals(estimateResultList.get(0).getLabel(), saved.get(0).getLabel());
 
     }
 }
