@@ -380,7 +380,7 @@ input.is-invalid {
 .table > tfoot > tr > td,
 .table > tfoot > tr > th,
 .table > thead > tr > td {
-  line-height: 14px;
+  line-height: 24px;
   padding: 2px;
   vertical-align: middle;
 }
@@ -509,4 +509,10 @@ select:focus {
 
 #analysisInfo span {
   margin-left: 20px;
+}
+
+span.report {
+  width: 100%;
+  display: block;
+  text-align: center;
 }

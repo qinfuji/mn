@@ -2,6 +2,7 @@ var ruleEngineFactory = function(
   estimateResults,
   ruleName,
   quotaData,
+  mode,
   onchange
 ) {
   var ruleEngins = {
@@ -21,6 +22,10 @@ var ruleEngineFactory = function(
         }
       }
 
+      function getScoreDescr(data) {
+        return parseFloat(data.baseValue / 10000).toFixed(2) + "万";
+      }
+
       function getBaseValue(data) {
         var values = data.values;
         var baseValue = 0;
@@ -36,7 +41,7 @@ var ruleEngineFactory = function(
         return baseValue;
       }
 
-      callback(getBaseValue, getScore);
+      callback(getBaseValue, getScore, null, getScoreDescr);
     },
 
     //商圈活跃度
@@ -84,9 +89,19 @@ var ruleEngineFactory = function(
           return 0;
         }
       }
-      callback(function() {
-        return 0;
-      }, getScore);
+
+      function getScoreDescr(data) {
+        return data.baseValue + "年";
+      }
+
+      callback(
+        function() {
+          return 0;
+        },
+        getScore,
+        null,
+        getScoreDescr
+      );
     },
 
     //商圈发展趋势 TODO 需要返回枚举值
@@ -112,6 +127,20 @@ var ruleEngineFactory = function(
         }
       }
 
+      function getScoreDescr(data) {
+        var baseValue = data.baseValue;
+        switch (baseValue) {
+          case 1:
+            return "成熟型";
+          case 2:
+            return "成长型";
+          case 3:
+            return "规划型";
+          default:
+            return "未规划";
+        }
+      }
+
       function getSelectValues() {
         return [
           { label: "成熟型", value: 1 },
@@ -121,7 +150,7 @@ var ruleEngineFactory = function(
         ];
       }
 
-      callback(getBaseValue, getScore, getSelectValues);
+      callback(getBaseValue, getScore, getSelectValues, getScoreDescr);
     },
 
     //商区人口体量
@@ -153,7 +182,14 @@ var ruleEngineFactory = function(
         }
         return baseValue;
       }
-      callback(getBaseValue, getScore);
+
+      function getScoreDescr(data) {
+        return data.baseValue
+          ? parseFloat(data.baseValue / 10000).toFixed(2) + "万"
+          : 0;
+      }
+
+      callback(getBaseValue, getScore, null, getScoreDescr);
     },
 
     //政府规划3年内小区人口体量
@@ -161,6 +197,11 @@ var ruleEngineFactory = function(
       function getBaseValue(data) {
         return 0;
       }
+
+      function getScoreDescr(data) {
+        return data.baseValue ? parseFloat(data.baseValue / 10000) + "万" : "0";
+      }
+
       function getScore(baseValue) {
         if (baseValue >= 500000) {
           return 100;
@@ -174,7 +215,7 @@ var ruleEngineFactory = function(
           return 0;
         }
       }
-      callback(getBaseValue, getScore);
+      callback(getBaseValue, getScore, null, getScoreDescr);
     },
 
     //商区当前人口活跃度-入住率（%）
@@ -195,7 +236,12 @@ var ruleEngineFactory = function(
           return 0;
         }
       }
-      callback(getBaseValue, getScore);
+
+      function getScoreDescr(data) {
+        return data.baseValue + "%";
+      }
+
+      callback(getBaseValue, getScore, null, getScoreDescr);
     },
 
     //商区消费者活跃度
@@ -227,7 +273,12 @@ var ruleEngineFactory = function(
           return 0;
         }
       }
-      callback(getBaseValue, getScore);
+
+      function getScoreDescr(data) {
+        return data.baseValue + "%";
+      }
+
+      callback(getBaseValue, getScore, null, getScoreDescr);
     },
 
     //商区消费者有子女占比,TODO 取有还是无？
@@ -247,6 +298,10 @@ var ruleEngineFactory = function(
         return baseValue;
       }
 
+      function getScoreDescr(data) {
+        return data.baseValue + "%";
+      }
+
       function getScore(baseValue) {
         if (baseValue >= 50) {
           return 100;
@@ -260,7 +315,7 @@ var ruleEngineFactory = function(
           return 0;
         }
       }
-      callback(getBaseValue, getScore);
+      callback(getBaseValue, getScore, null, getScoreDescr);
     },
 
     //商区活跃度
@@ -346,6 +401,20 @@ var ruleEngineFactory = function(
         }
       }
 
+      function getScoreDescr(data) {
+        var baseValue = data.baseValue;
+        switch (baseValue) {
+          case 1:
+            return "核心商区";
+          case 2:
+            return "次核心商区";
+          case 3:
+            return "规划型商区";
+          default:
+            return "未规划商区";
+        }
+      }
+
       function getSelectValues() {
         return [
           { label: "核心商区", value: 1 },
@@ -355,7 +424,7 @@ var ruleEngineFactory = function(
         ];
       }
 
-      callback(getBaseValue, getScore, getSelectValues);
+      callback(getBaseValue, getScore, getSelectValues, getScoreDescr);
     },
 
     //商区公交路线数量
@@ -508,11 +577,21 @@ var ruleEngineFactory = function(
         }
       }
 
+      function getScoreDescr(data) {
+        var baseValue = data.baseValue;
+        switch (baseValue) {
+          case 1:
+            return "是";
+          default:
+            return "否";
+        }
+      }
+
       function getSelectValues() {
         return [{ label: "是", value: 1 }, { label: "否", value: 0 }];
       }
 
-      callback(getBaseValue, getScore, getSelectValues);
+      callback(getBaseValue, getScore, getSelectValues, getScoreDescr);
     },
 
     //落位位置-主路口距离 TODO  加枚举值
@@ -534,6 +613,19 @@ var ruleEngineFactory = function(
           return 0;
         }
       }
+
+      function getScoreDescr(data) {
+        var baseValue = data.baseValue;
+        switch (baseValue) {
+          case 1:
+            return "均小于50m";
+          case 2:
+            return "单侧小于50m";
+          default:
+            return "均大于100m";
+        }
+      }
+
       function getSelectValues() {
         return [
           { label: "均小于50m", value: 1 },
@@ -541,7 +633,7 @@ var ruleEngineFactory = function(
           { label: "均大于100m", value: 0 }
         ];
       }
-      callback(getBaseValue, getScore, getSelectValues);
+      callback(getBaseValue, getScore, getSelectValues, getScoreDescr);
     },
 
     //门头长度
@@ -653,21 +745,18 @@ var ruleEngineFactory = function(
       remarkEle, //备注
       quotaLabelEle, //指标名称
       weightScoreEle, //加权得分
-      mode = "edit", //默认编辑模式
       baseValueContainerEle;
 
     //更新数据
     function resetValue(calculateValue) {
       Object.assign(quotaData, calculateValue);
-      baseValueEle.find("input").val(quotaData.baseValue);
-      baseScoreEle.html(quotaData.baseScore);
-      weightScoreEle.html(quotaData.weightScore);
+      baseScoreEle.html(
+        "<span class='report'>" + quotaData.baseScore + "</span>"
+      );
+      weightScoreEle.html(
+        "<span class='report'>" + quotaData.weightScore + "</span>"
+      );
       weightEle.find("input").val(quotaData.weight);
-    }
-
-    //设置展示模式
-    function setModel(_mode) {
-      mode = mode;
     }
 
     function innercalculate() {
@@ -699,54 +788,68 @@ var ruleEngineFactory = function(
         getBaseValue,
         getScore,
         getSelectValues,
-        getBaseDetail
+        getScoreDescr
       ) {
         var selectValues = getSelectValues ? getSelectValues() : null; //得到参考值
         var baseValue = quotaData.baseValue || getBaseValue(quotaData);
+        quotaData.baseValue = baseValue;
         baseScoreEle = $("<td style='padding-left:10px'></td>");
         weightScoreEle = $("<td style='padding-left:10px'></td>");
-        if (selectValues && selectValues.length) {
-          baseValueEle = $(
-            "<select class='form-control' style='width:100%'></select>"
-          );
-          for (let index = 0; index < selectValues.length; index++) {
-            const element = selectValues[index];
-            baseValueEle.append(
-              "<option value='" +
-                element.value +
-                "'" +
-                (element.value === baseValue ? "selected" : "") +
-                ">" +
-                element.label +
-                "</option>"
+        if (mode === "edit") {
+          if (selectValues && selectValues.length) {
+            baseValueEle = $(
+              "<select class='form-control' style='width:100%'></select>"
             );
+            for (let index = 0; index < selectValues.length; index++) {
+              const element = selectValues[index];
+              baseValueEle.append(
+                "<option value='" +
+                  element.value +
+                  "'" +
+                  (element.value === baseValue ? "selected" : "") +
+                  ">" +
+                  element.label +
+                  "</option>"
+              );
+            }
+            baseValueEle.on("change", function() {
+              quotaData.baseValue = $(this).val();
+              innercalculate();
+            });
+          } else {
+            baseValueEle = $(
+              "<input class='form-control' style='width:100%' value='' />"
+            );
+            baseValueEle.val(baseValue);
+            baseValueEle.on("keyup", function() {
+              quotaData.baseValue = $(this).val();
+              innercalculate();
+            });
           }
-          baseValueEle.on("change", function() {
-            quotaData.baseValue = $(this).val();
+          weightEle = $(
+            "<td style='width:90px'><input class='input-mini form-control' style='width:100%' value=''/></td>"
+          );
+          weightEle.on("keyup", "input", function() {
+            quotaData.weight = $(this).val();
             innercalculate();
           });
         } else {
-          baseValueEle = $(
-            "<input class='form-control' style='width:100%' value='' />"
+          baseValueEle = getScoreDescr
+            ? $("<span class='report'>" + getScoreDescr(quotaData) + "</span>")
+            : $("<span class='report'>" + quotaData.baseValue + "</span>");
+          weightEle = $(
+            "<td style='width:90px'><span class='report'>" +
+              quotaData.weight +
+              "%</span></td>"
           );
-          baseValueEle.val(baseValue);
-          baseValueEle.on("keyup", function() {
-            quotaData.baseValue = $(this).val();
-            innercalculate();
-          });
         }
+
         baseValueContainerEle = $("<td style='width:90px;'></td>");
         baseValueContainerEle.append(baseValueEle);
 
-        weightEle = $(
-          "<td style='width:90px'><input class='input-mini form-control' style='width:100%' value=''/></td>"
-        );
-        remarkEle = $("<td>" + quotaData.remark + "</td>");
+        remarkEle = $("<td><span>" + quotaData.remark + "</td>");
         quotaLabelEle = $("<td>" + quotaData.label + "</td>");
-        weightEle.on("keyup", "input", function() {
-          quotaData.weight = $(this).val();
-          innercalculate();
-        });
+
         innercalculate();
       });
     }
@@ -769,17 +872,12 @@ var ruleEngineFactory = function(
 
       getWeightScore: function() {
         return quotaData.weightScore ? parseFloat(quotaData.weightScore) : 0;
-      },
-
-      setMode: function(mode) {
-        setModel(mode);
       }
     };
   }
   return template(
     estimateResults,
     quotaData,
-    ruleEngins[ruleName] ? ruleEngins[ruleName] : ruleEngins["defaultRule"],
-    onchange
+    ruleEngins[ruleName] ? ruleEngins[ruleName] : ruleEngins["defaultRule"]
   );
 };

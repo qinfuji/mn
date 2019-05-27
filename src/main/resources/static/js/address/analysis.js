@@ -2,7 +2,7 @@ function DataAnalysis(chancePoint) {
   var estimateResults = chancePoint.estimateResults;
   var analysisors = [];
 
-  function initDialog() {
+  function initDialog(mode) {
     $("#analysisDialog #analysisTitle").html(
       "机会点<" + chancePoint.name + ">评估分析"
     );
@@ -10,7 +10,6 @@ function DataAnalysis(chancePoint) {
     var trs = [];
 
     estimateResults.forEach(function(estimateResult, estimateIndex) {
-      console.log(estimateResult);
       var quotas = estimateResult.quotas;
       var etd = $(
         "<td class='quota-label' rowspan='" +
@@ -29,6 +28,7 @@ function DataAnalysis(chancePoint) {
             estimateResults,
             quota.ruleName,
             quota,
+            mode,
             function() {
               validWeight(analysisors);
             }
@@ -43,45 +43,45 @@ function DataAnalysis(chancePoint) {
       .empty()
       .append(trs);
 
-    $("#resetAnalysis").on("click", resetAnalysis);
-  }
+    var operationBar = $("#operationBar").empty();
 
-  //保存分析
-  function saveAnalysis() {
-    serviceApi.saveAnalysis(chancePoint, estimateResults).then(function() {});
-  }
+    var analysisInfo = $('<div id="analysisInfo"></div>');
 
-  //进入模型调整模式
-  function editMode() {
-    if (analysisors && analysisors.length) {
-      analysisors.forEach(function(analysisor) {
-        analysisor.setMode("edit");
-      });
+    var saveBtn = $(
+      '<button type="button" class="btn btn-primary" id="saveAnalysis">保存</button>'
+    );
+
+    var editBtn = $(
+      '<button type="button" class="btn btn-primary" id="editAnalysis">模型调整</button>'
+    );
+
+    var reportBtn = $(
+      '<button type="button" class="btn btn-primary" id="reportAnalysis">结果模拟</button>'
+    );
+
+    if (mode === "edit") {
+      editBtn.hide();
+    } else {
+      reportBtn.hide();
     }
-  }
 
-  //进入报告模式
-  function reportMode() {
-    if (analysisors && analysisors.length) {
-      analysisors.forEach(function(analysisor) {
-        analysisor.setMode("report");
+    operationBar.append(analysisInfo);
+    operationBar.append(saveBtn);
+    operationBar.append(editBtn);
+    operationBar.append(reportBtn);
+
+    saveBtn.on("click", function() {
+      serviceApi.saveAnalysis(chancePoint, estimateResults).then(function() {
+        alert("保存成功！");
       });
-    }
-  }
-
-  //重置分析
-  function resetAnalysis() {
-    estimateResults.forEach(function(estimateResult) {
-      var quotas = estimateResult.quotas;
-      if (quotas && quotas.length) {
-        quotas.forEach(function(quota, index) {
-          quota.weight = 0;
-          quota.weightScore = 0;
-          quota.baseValue = null;
-        });
-      }
     });
-    initDialog();
+    editBtn.on("click", function() {
+      initDialog("edit");
+    });
+    reportBtn.on("click", function() {
+      initDialog("report");
+    });
+    validWeight();
   }
 
   //显示信息
@@ -115,10 +115,8 @@ function DataAnalysis(chancePoint) {
     }
     $("#analysisInfo").html(info);
 
-    $("#saveAnalysis").off("click", saveAnalysis);
     if (weight === 100) {
       $("#saveAnalysis").removeClass("disabled");
-      $("#saveAnalysis").on("click", saveAnalysis);
     } else {
       $("#saveAnalysis").addClass("disabled");
     }
@@ -132,6 +130,6 @@ function DataAnalysis(chancePoint) {
     });
   }
 
-  initDialog();
+  initDialog("edit");
   show();
 }
