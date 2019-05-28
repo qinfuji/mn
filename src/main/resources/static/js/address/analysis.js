@@ -107,19 +107,13 @@ function DataAnalysis(chancePoint) {
         "</span>";
     } else {
       info =
-        "<span style='color:red'>权重总计：" +
+        "权重总计：<span>" +
         weight +
         "%</span><span>权重得分总计：" +
         weightScore +
         "</span>";
     }
     $("#analysisInfo").html(info);
-
-    if (weight === 100) {
-      $("#saveAnalysis").removeClass("disabled");
-    } else {
-      $("#saveAnalysis").addClass("disabled");
-    }
   }
 
   function show() {
