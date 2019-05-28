@@ -79,10 +79,10 @@ function DataAnalysis(chancePoint) {
       exportBtn.on("click", function() {
         var ExportButtons = document.getElementById("analysisTable");
         var instance = new TableExport(ExportButtons, {
-          formats: ["xls"],
+          formats: ["xlsx"],
           exportButtons: false
         });
-        var exportData = instance.getExportData()["analysisTable"]["xls"];
+        var exportData = instance.getExportData()["analysisTable"]["xlsx"];
         instance.export2file(
           exportData.data,
           exportData.mimeType,
