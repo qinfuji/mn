@@ -1,4 +1,4 @@
-var HOST = "http://localhost:8086";
+var HOST = "";
 
 function getQueryString(name) {
   var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
