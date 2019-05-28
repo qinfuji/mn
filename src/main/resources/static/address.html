@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css"/>
     <link rel="stylesheet" href="./css/address/main.css?_d=2019052809" />
     <link rel="stylesheet" href="./font-awesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="./css/plugins/tableexport/tableexport.css"/>
     
     <script
       type="text/javascript"
@@ -25,6 +26,11 @@
     <script src="./js/address/api.js?_d=2019052809"></script>
     <script src="./js/address/analysis.js?_d=2019052809"></script>
     <script src="./js/address/rules_factory.js?_d=2019052809"></script>
+
+    <!--export excel--->
+    <script src="./js/plugins/tableexport/xls.core.min.js"></script>
+    <script src="./js/plugins/tableexport/filesaver.min.js"></script>
+    <script src="./js/plugins/tableexport/tableexport.js"></script>
   </head>
 
   <body>
@@ -214,6 +220,9 @@
                 <button type="button" class="btn btn-primary" id="reportAnalysis">
                     模拟结果    
                 </button>
+                <button type="button" class="btn btn-primary" id="exportAnalysis">
+                   到处Excel
+              </button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

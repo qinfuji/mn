@@ -59,6 +59,10 @@ function DataAnalysis(chancePoint) {
       '<button type="button" class="btn btn-primary" id="reportAnalysis">结果模拟</button>'
     );
 
+    var exportBtn = $(
+      '<button type="button" class="btn btn-primary" id="exportAnalysis">导出Excel</button>'
+    );
+
     if (mode === "edit") {
       editBtn.hide();
     } else {
@@ -69,6 +73,24 @@ function DataAnalysis(chancePoint) {
     operationBar.append(saveBtn);
     operationBar.append(editBtn);
     operationBar.append(reportBtn);
+
+    if (mode === "report") {
+      operationBar.append(exportBtn);
+      exportBtn.on("click", function() {
+        var ExportButtons = document.getElementById("analysisTable");
+        var instance = new TableExport(ExportButtons, {
+          formats: ["xls"],
+          exportButtons: false
+        });
+        var exportData = instance.getExportData()["analysisTable"]["xls"];
+        instance.export2file(
+          exportData.data,
+          exportData.mimeType,
+          "结果模拟",
+          exportData.fileExtension
+        );
+      });
+    }
 
     saveBtn.on("click", function() {
       serviceApi.saveAnalysis(chancePoint, estimateResults).then(function() {
@@ -81,6 +103,7 @@ function DataAnalysis(chancePoint) {
     reportBtn.on("click", function() {
       initDialog("report");
     });
+
     validWeight();
   }
 
