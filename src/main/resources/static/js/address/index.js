@@ -54,7 +54,8 @@ function loadEvn() {
           "AMap.Geolocation",
           "AMap.Scale",
           "AMap.ToolBar",
-          "AMap.Geocoder"
+          "AMap.Geocoder",
+          "AMap.MouseTool"
         ],
         function() {
           //异步加载插件
