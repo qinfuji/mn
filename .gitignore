@@ -53,3 +53,5 @@ blog/bin/
 
 hs_err_pid*
 /logs
+
+**/node_modules
