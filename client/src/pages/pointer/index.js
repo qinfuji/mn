@@ -1,5 +1,5 @@
 import React from 'react';
-import {loadMap, loadPlugin} from '@/components/AMap/api';
+import {loadMap, loadPlugin, loadAmpLocaApi, loadAmpUI} from '@/components/AMap/api';
 import Map from '@/components/AMap/Map';
 import Marker from '@/components/AMap/Marker';
 
@@ -13,12 +13,8 @@ class PointManager extends React.Component {
 
   componentDidMount() {
     setTimeout(async () => {
-      await loadMap({
-        key: 'f7afe9ac13d8d7afcfdd07b8e8e551fa',
-        useAMapUI: function() {
-          window.AMapUI.load(['ui/geo/DistrictExplorer', 'lib/$', 'ui/misc/PositionPicker']);
-        },
-      });
+      await loadMap();
+      await loadAmpUI();
       await loadPlugin([
         'AMap.PlaceSearch',
         'AMap.Geolocation',
@@ -27,6 +23,7 @@ class PointManager extends React.Component {
         'AMap.Geocoder',
         'AMap.MouseTool',
       ]);
+      await loadAmpLocaApi();
       this.setState({initedMap: true});
     });
   }

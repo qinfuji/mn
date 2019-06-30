@@ -2,29 +2,28 @@ import forOwn from 'lodash/forOwn';
 import isEqual from 'lodash/isEqual';
 import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
-import APILoader from './APILoader';
+import {getAmapuiPromise, getLocaApiPromise, getMainPromise} from './APILoader';
+
+const DEFAULT_CONFIG = {
+  v: '1.4.0',
+  hostAndPath: 'webapi.amap.com/maps',
+  key: 'f7afe9ac13d8d7afcfdd07b8e8e551fa',
+  callback: '__amap_init_callback',
+  protocol: 'https',
+};
 
 const xdebug = console.log;
 // const xdebug = () => {};
 
-export const loadApi = ({key = 'f7afe9ac13d8d7afcfdd07b8e8e551fa', ...reset}) => {
-  return new APILoader({
-    key,
-    useAMapUI: true,
-    version: '1.4.14',
-    protocol: 'https',
-    ...reset,
-  }).load();
-};
 export const loadMap = (config = {}) => {
   return new Promise((resolve, reject) => {
     if (window.AMap) {
       resolve(window.AMap);
     }
-    loadApi(config)
+    getMainPromise({...DEFAULT_CONFIG, ...config})
       .then((ret) => {
         if (window.AMap) {
-          resolve(window.AMap);
+          resolve();
         } else {
           reject(new Error('window.AMap不存在!'));
         }
@@ -32,6 +31,34 @@ export const loadMap = (config = {}) => {
       .catch((error) => {
         reject(new Error('加载地图错误!' + error.message));
       });
+  });
+};
+
+export const loadAmpUI = (config = {}) => {
+  return new Promise((resolve, reject) => {
+    if (window.AMap) {
+      getAmapuiPromise({...DEFAULT_CONFIG, ...config}).then(() => {
+        resolve();
+      });
+    } else {
+      reject(new Error('地图还未加载!'));
+    }
+  });
+};
+
+export const loadAmpLocaApi = (config = {}) => {
+  return new Promise((resolve, reject) => {
+    if (window.AMap) {
+      getLocaApiPromise({...DEFAULT_CONFIG, ...config}).then(() => {
+        if (window.Loca) {
+          resolve();
+        } else {
+          reject(new Error('window.Loca不存在!'));
+        }
+      });
+    } else {
+      reject(new Error('地图还未加载!'));
+    }
   });
 };
 
