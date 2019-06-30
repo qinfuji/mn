@@ -9,7 +9,7 @@ const DEFAULT_CONFIG = {
   hostAndPath: 'webapi.amap.com/maps',
   key: 'f7afe9ac13d8d7afcfdd07b8e8e551fa',
   callback: '__amap_init_callback',
-  protocol: 'https',
+  protocol: 'http',
 };
 
 const xdebug = console.log;
@@ -34,7 +34,7 @@ export const loadMap = (config = {}) => {
   });
 };
 
-export const loadAmpUI = (config = {}) => {
+export const loadAmpUIApi = (config = {}) => {
   return new Promise((resolve, reject) => {
     if (window.AMap) {
       getAmapuiPromise({...DEFAULT_CONFIG, ...config}).then(() => {
@@ -74,6 +74,20 @@ export const loadPlugin = (name) => {
     if (window.AMap) {
       window.AMap.plugin(name, () => {
         resolve(true);
+      });
+      //是否有加载失败的情况,如果加载失败,怎么reject?
+    } else {
+      reject(new Error('地图还未加载!'));
+    }
+  });
+};
+
+export const loadUI = (name) => {
+  return new Promise((resolve, reject) => {
+    if (window.AMap) {
+      window.AMapUI.load(name, function() {
+        const uis = [].slice.apply(arguments);
+        resolve(uis);
       });
       //是否有加载失败的情况,如果加载失败,怎么reject?
     } else {
