@@ -4,7 +4,7 @@ import {Form, Input, Button} from 'antd';
 const FormItem = Form.Item;
 
 @Form.create()
-class CreatePointer extends React.Component {
+class CreateAppraise extends React.Component {
   onSubmit = (e) => {
     e.preventDefault();
     const {onPointer} = this.props;
@@ -31,4 +31,4 @@ class CreatePointer extends React.Component {
   }
 }
 
-export default CreatePointer;
+export default CreateAppraise;

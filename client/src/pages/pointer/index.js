@@ -5,6 +5,7 @@ import Circle from '@/components/AMap/Circle';
 import {Layout, Form, Row, Col, Select, Button, Input, Icon} from 'antd';
 import localData from '../../utils/adcode.json';
 import SearchResultList from './searchResultList';
+import CreatePointer from './createPoint';
 import AMap from './Map';
 const {Header, Content, Footer, Sider} = Layout;
 
@@ -23,10 +24,13 @@ function generateUUID() {
   var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r = (d + Math.random() * 16) % 16 | 0;
     d = Math.floor(d / 16);
-    return (c == 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
   return uuid;
 }
+
+const MODEL_CREATE = 'createPointer';
+const MODEL_POI_LIST = 'poiList';
 
 @Form.create()
 class PointManager extends React.Component {
@@ -44,6 +48,7 @@ class PointManager extends React.Component {
       mapPolygons: [],
       mapZoom: 4,
       mapNeedClear: false,
+      rightMode: null,
     };
   }
 
@@ -113,6 +118,7 @@ class PointManager extends React.Component {
         }
         this.setState({
           poiList: result.poiList,
+          rightMode: MODEL_POI_LIST,
         });
         return resolve(result);
       });
@@ -231,15 +237,46 @@ class PointManager extends React.Component {
     });
   };
 
+  createPointer = () => {
+    this.setState({
+      rightMode: MODEL_CREATE,
+    });
+  };
+
+  createPointerMarker = (e) => {
+    const lnglat = e.lnglat;
+    const marker = {
+      id: generateUUID(),
+      type: 'new',
+      position: [lnglat.lng, lnglat.lat],
+      offset: new window.AMap.Pixel(-13, -30),
+      draggable: true,
+      cursor: 'move',
+    };
+
+    this.setState({
+      mapMarkers: [marker],
+    });
+  };
+
   render() {
-    const {poiList = [], currentAdcode = 100000, mapCenter, mapNeedClear, mapZoom = 4, mapCircles} = this.state;
+    const {
+      poiList = [],
+      rightMode,
+      currentAdcode = 100000,
+      mapCenter,
+      mapNeedClear,
+      mapZoom = 4,
+      mapCircles,
+      mapMarkers,
+    } = this.state;
     return (
       <Layout style={{width: '100%', height: '100%'}}>
         <Header style={{background: '#fff', paddingTop: '10px', borderBottom: '1px solid #615a5a42'}}>
           <div style={{float: 'left'}}>{this.renderSearch()}</div>
           <div style={{float: 'right'}}>
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" onClick={this.createPointer}>
                 新建点址
               </Button>
             </Form.Item>
@@ -247,20 +284,37 @@ class PointManager extends React.Component {
         </Header>
         <Layout style={{width: '100%', height: '100%'}}>
           <Content>
-            <AMap center={mapCenter} currentAdcode={currentAdcode} zoom={mapZoom} clean={mapNeedClear}>
+            <AMap
+              events={{
+                click: this.createPointerMarker,
+              }}
+              center={mapCenter}
+              currentAdcode={currentAdcode}
+              zoom={mapZoom}
+              clean={mapNeedClear}
+            >
               {mapCircles &&
                 mapCircles.length &&
                 mapCircles.map((c) => {
                   return <Circle key={c.id} options={c} />;
                 })}
+
+              {mapMarkers &&
+                mapMarkers.length &&
+                mapMarkers.map((c) => {
+                  return <Marker key={c.id} options={c} />;
+                })}
             </AMap>
           </Content>
-          <Sider theme="light" width="25%" style={{height: '100%', overflow: 'auto'}}>
-            <SearchResultList
-              poiList={poiList}
-              onPageChange={this.onPoiListPageChange}
-              onItemSelected={this.onPoiListItemSelected}
-            />
+          <Sider theme="light" width={rightMode ? '25%' : '1px'} style={{height: '100%', overflow: 'auto'}}>
+            {rightMode === MODEL_POI_LIST && (
+              <SearchResultList
+                poiList={poiList}
+                onPageChange={this.onPoiListPageChange}
+                onItemSelected={this.onPoiListItemSelected}
+              />
+            )}
+            {rightMode === MODEL_CREATE && <CreatePointer />}
           </Sider>
         </Layout>
       </Layout>

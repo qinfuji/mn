@@ -153,7 +153,7 @@ class Amap extends React.Component {
 
   render() {
     const {initedMap} = this.state;
-    const {zoom, center} = this.props;
+    const {zoom, center, events} = this.props;
     return (
       initedMap && (
         <Map
@@ -164,7 +164,7 @@ class Amap extends React.Component {
             center: center,
             mapStyle: 'amap://styles/ab2c0d8d125f8d8556e453149622a5a2',
           }}
-          events={{}}
+          events={events}
         >
           {this.props.children}
         </Map>

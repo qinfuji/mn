@@ -15,3 +15,15 @@ code {
 #root {
   height: 100%;
 }
+
+.pointerCreate {
+  margin: 0 20px;
+}
+
+.pointerCreate .ant-form-item-label {
+  height: 30px;
+}
+
+.pointerCreate .ant-form-item {
+  margin-bottom: 2px;
+}
