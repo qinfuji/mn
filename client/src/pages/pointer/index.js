@@ -1,9 +1,11 @@
 import React from 'react';
 import {connect} from 'dva';
-import {loadMap, loadPlugin, loadAmpLocaApi, loadAmpUIApi, loadUI} from '@/components/AMap/api';
-import Map from '@/components/AMap/Map';
 import Marker from '@/components/AMap/Marker';
+import Circle from '@/components/AMap/Circle';
 import {Layout, Form, Row, Col, Select, Button, Input, Icon} from 'antd';
+import localData from '../../utils/adcode.json';
+import SearchResultList from './searchResultList';
+import AMap from './Map';
 const {Header, Content, Footer, Sider} = Layout;
 
 const FormItem = Form.Item;
@@ -13,83 +15,164 @@ function hasErrors(fieldsError) {
   return Object.keys(fieldsError).some((field) => fieldsError[field]);
 }
 
+function generateUUID() {
+  var d = new Date().getTime();
+  if (window.performance && typeof window.performance.now === 'function') {
+    d += performance.now(); //use high-precision timer if available
+  }
+  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = (d + Math.random() * 16) % 16 | 0;
+    d = Math.floor(d / 16);
+    return (c == 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+  return uuid;
+}
+
 @Form.create()
 class PointManager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       initedMap: false,
+      province: '',
+      city: '',
+      district: '',
+      mapCenter: null,
+      currentAdcode: '',
+      mapCircles: [],
+      mapMarkers: [],
+      mapPolygons: [],
+      mapZoom: 4,
+      mapNeedClear: false,
     };
   }
 
-  componentDidMount() {
-    setTimeout(async () => {
-      await loadMap(); //加载地图API
-      await loadAmpUIApi(); //加载UI api
-      const uis = await loadUI(['ui/geo/DistrictExplorer', 'ui/misc/PositionPicker', 'ui/misc/PointSimplifier']);
-      this.DistrictExplorer = uis[0];
-      this.PositionPicker = uis[1];
-      this.PointSimplifier = uis[2];
-      await loadPlugin([
-        'AMap.PlaceSearch',
-        'AMap.Geolocation',
-        'AMap.Scale',
-        'AMap.ToolBar',
-        'AMap.Geocoder',
-        'AMap.MouseTool',
-      ]);
-      await loadAmpLocaApi(); //加载loca api
-      this.setState({initedMap: true});
-    });
-  }
+  componentDidMount() {}
 
   itemLayout = {
     labelCol: {span: 9},
     wrapperCol: {span: 15},
   };
 
-  renderSearch = () => {
-    const {getFieldDecorator, getFieldsError, getFieldError, isFieldTouched} = this.props.form;
+  provinceChange = (value) => {
+    const {form} = this.props;
+    form.setFieldsValue({city: null, district: null});
+    if (value)
+      this.setState({
+        currentAdcode: value,
+      });
+  };
 
-    // Only show error after a field is touched.
-    const usernameError = isFieldTouched('username') && getFieldError('username');
-    const passwordError = isFieldTouched('password') && getFieldError('password');
+  cityChange = (value) => {
+    const {form} = this.props;
+    form.setFieldsValue({district: null});
+    if (value)
+      this.setState({
+        currentAdcode: value,
+      });
+  };
+
+  districtChange = (value) => {
+    if (value)
+      this.setState({
+        currentAdcode: value,
+      });
+  };
+
+  onSearch = async (e) => {
+    e.preventDefault();
+    this.keywordSearch({});
+  };
+
+  keywordSearch = ({pageIndex = 1, pageSize = 20, ...reset}) => {
+    const {form} = this.props;
+    const address = form.getFieldValue('address');
+    const province = form.getFieldValue('province');
+    const city = form.getFieldValue('city');
+    const district = form.getFieldValue('district');
+    const limitAdcode = district || city || province;
+    var autoOptions = Object.assign(
+      {
+        pageSize: pageSize, //查询的分页
+        pageIndex: pageIndex,
+        extensions: 'all', //返回基本+详细信息
+        type:
+          '汽车服务|汽车销售|汽车维修|摩托车服务|餐饮服务|购物服务|生活服务|体育休闲服务|医疗保健服务|住宿服务|风景名胜|商务住宅|政府机构及社会团体|科教文化服务|交通设施服务|金融保险服务|公司企业|道路附属设施|地名地址信息|公共设施',
+      },
+      reset,
+    );
+    if (limitAdcode) {
+      autoOptions.city = limitAdcode;
+      autoOptions.citylimit = true;
+    }
+    var placeSearch = new window.AMap.PlaceSearch(autoOptions);
+    return new Promise((resolve, reject) => {
+      placeSearch.search(address, (status, result) => {
+        if (status === 'error') {
+          return reject(result);
+        }
+        this.setState({
+          poiList: result.poiList,
+        });
+        return resolve(result);
+      });
+    });
+  };
+
+  renderSearch = () => {
+    const {getFieldDecorator, getFieldValue} = this.props.form;
+    const province = getFieldValue('province');
+    const city = getFieldValue('city');
+    const citys = localData.city[province] || [];
+    const districts = localData.district[city] || [];
     return (
-      <Form layout="inline" onSubmit={this.handleSubmit}>
-        <Form.Item label="省" validateStatus={usernameError ? 'error' : ''} help={usernameError || ''}>
-          {getFieldDecorator('username')(
-            <Input prefix={<Icon type="user" style={{color: 'rgba(0,0,0,.25)'}} />} placeholder="Username" />,
+      <Form layout="inline" onSubmit={this.onSearch}>
+        <Form.Item label="省">
+          {getFieldDecorator('province', {
+            initialValue: province || 100000,
+          })(
+            <Select allowClear placeholder="请选择" style={{width: 150}} onChange={this.provinceChange}>
+              {localData.province.map((o) => {
+                return (
+                  <Option key={o.key} value={o.key}>
+                    {o.label}
+                  </Option>
+                );
+              })}
+            </Select>,
           )}
         </Form.Item>
+
         <Form.Item label="市">
-          {getFieldDecorator('password')(
-            <Input
-              prefix={<Icon type="lock" style={{color: 'rgba(0,0,0,.25)'}} />}
-              type="password"
-              placeholder="Password"
-            />,
+          {getFieldDecorator('city', {})(
+            <Select allowClear placeholder="请选择" style={{width: 150}} onChange={this.cityChange}>
+              {citys.map((o) => {
+                return (
+                  <Option key={o.key} value={o.key}>
+                    {o.label}
+                  </Option>
+                );
+              })}
+            </Select>,
           )}
         </Form.Item>
+
         <Form.Item label="区县">
-          {getFieldDecorator('password')(
-            <Input
-              prefix={<Icon type="lock" style={{color: 'rgba(0,0,0,.25)'}} />}
-              type="password"
-              placeholder="Password"
-            />,
+          {getFieldDecorator('district', {})(
+            <Select allowClear placeholder="请选择" style={{width: 150}} onChange={this.districtChange}>
+              {districts.map((o) => {
+                return (
+                  <Option key={o.key} value={o.key}>
+                    {o.label}
+                  </Option>
+                );
+              })}
+            </Select>,
           )}
         </Form.Item>
-        <Form.Item label="地址">
-          {getFieldDecorator('password')(
-            <Input
-              prefix={<Icon type="lock" style={{color: 'rgba(0,0,0,.25)'}} />}
-              type="password"
-              placeholder="Password"
-            />,
-          )}
-        </Form.Item>
+        <Form.Item label="地址">{getFieldDecorator('address', {})(<Input></Input>)}</Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={hasErrors(getFieldsError())}>
+          <Button type="primary" htmlType="submit">
             查询
           </Button>
         </Form.Item>
@@ -97,8 +180,59 @@ class PointManager extends React.Component {
     );
   };
 
+  onPoiListPageChange = (pageIndex) => {
+    this.keywordSearch({pageIndex});
+  };
+
+  onPoiListItemSelected = (item) => {
+    const location = item.location;
+    var options = {
+      strokeColor: '#F33', //线颜色
+      strokeOpacity: 0.05, //线透明度
+      strokeWeight: 0.05, //线粗细度
+      fillColor: '#ee2200', //填充颜色
+      fillOpacity: 0.05, //填充透明度
+      bubble: true,
+    };
+    const center = [location.lng, location.lat];
+    const circle1 = Object.assign(
+      {
+        id: generateUUID(),
+        center, // 圆心位置
+        radius: 20, //半径
+      },
+      options,
+    );
+
+    const circle2 = Object.assign(
+      {
+        id: generateUUID(),
+        center, // 圆心位置
+        radius: 500, //半径
+      },
+      options,
+    );
+
+    const circle3 = Object.assign(
+      {
+        id: generateUUID(),
+        center, // 圆心位置
+        radius: 1500, //半径
+      },
+      options,
+    );
+
+    const circles = [circle1, circle2, circle3];
+    this.setState({
+      mapCircles: circles,
+      mapCenter: center,
+      mapZoom: 15,
+      mapNeedClear: true,
+    });
+  };
+
   render() {
-    const {initedMap} = this.state;
+    const {poiList = [], currentAdcode = 100000, mapCenter, mapNeedClear, mapZoom = 4, mapCircles} = this.state;
     return (
       <Layout style={{width: '100%', height: '100%'}}>
         <Header style={{background: '#fff', paddingTop: '10px', borderBottom: '1px solid #615a5a42'}}>
@@ -111,30 +245,23 @@ class PointManager extends React.Component {
             </Form.Item>
           </div>
         </Header>
-        <Layout>
+        <Layout style={{width: '100%', height: '100%'}}>
           <Content>
-            {initedMap && (
-              <Map
-                style={{width: '100%', height: '100%'}}
-                options={{center: [116.480983, 39.989628], mapStyle: 'amap://styles/ab2c0d8d125f8d8556e453149622a5a2'}}
-                events={{}}
-              >
-                <Marker
-                  refer={(entity) => this.setState({carEntity: entity})}
-                  options={{
-                    position: [116.480983, 39.989628],
-                    icon: 'https://webapi.amap.com/images/car.png',
-                    //offset: this.state.carOffset,
-                    autoRotation: true,
-                  }}
-                  // events={{
-                  //   moving: this._carMoving,
-                  // }}
-                />
-              </Map>
-            )}
+            <AMap center={mapCenter} currentAdcode={currentAdcode} zoom={mapZoom} clean={mapNeedClear}>
+              {mapCircles &&
+                mapCircles.length &&
+                mapCircles.map((c) => {
+                  return <Circle key={c.id} options={c} />;
+                })}
+            </AMap>
           </Content>
-          <Sider theme="light" width="25%"></Sider>
+          <Sider theme="light" width="25%" style={{height: '100%', overflow: 'auto'}}>
+            <SearchResultList
+              poiList={poiList}
+              onPageChange={this.onPoiListPageChange}
+              onItemSelected={this.onPoiListItemSelected}
+            />
+          </Sider>
         </Layout>
       </Layout>
     );

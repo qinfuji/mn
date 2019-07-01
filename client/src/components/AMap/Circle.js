@@ -19,6 +19,7 @@ export class Circle extends Component {
   }
 
   componentDidMount() {
+    debug(__com__, 'componentDidMount', this.props.children, this._entity);
     let {__map__, options, events, children} = this.props;
     let opts = {...(options || {}), map: __map__};
     this._entity = createCircle(opts, events);
@@ -28,6 +29,7 @@ export class Circle extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    debug(__com__, 'componentDidUpdate', this.props.children, this._entity);
     let {__map__, options, events, children} = this.props;
     let opts = {...(options || {}), map: __map__};
     if (!this._entity) {
@@ -47,6 +49,7 @@ export class Circle extends Component {
   }
 
   componentWillUnmount() {
+    debug(__com__, 'componentWillMount', this.props.children, this._entity);
     if (this._entity) {
       this._entity.setMap(null);
       this._entity = null;
