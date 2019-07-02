@@ -3,11 +3,12 @@ import {connect} from 'dva';
 import Marker from '@/components/AMap/Marker';
 import Polygon from '@/components/AMap/Polygon';
 import Circle from '@/components/AMap/Circle';
-import {Layout, Form, Row, Col, Select, Button, Input, Icon} from 'antd';
+import {Layout, Form, Modal, Select, Button, Input, Icon} from 'antd';
 import localData from '../../utils/adcode.json';
 import SearchResultList from './searchResultList';
 import CreatePointer from './createPoint';
 import AMap from './Map';
+import {getCodeInfo} from '../../utils/adcodeUtils';
 const {Header, Content, Footer, Sider} = Layout;
 
 const FormItem = Form.Item;
@@ -50,6 +51,14 @@ var CircleOptions = {
   bubble: true,
 };
 
+const PolygonOptions = {
+  strokeWeight: 2,
+  strokeOpacity: 0.2,
+  fillColor: '#ee2200',
+  fillOpacity: 0.1,
+  strokeStyle: 'solid',
+};
+
 @Form.create()
 class PointManager extends React.Component {
   constructor(props) {
@@ -68,6 +77,7 @@ class PointManager extends React.Component {
       mapNeedClear: false,
       mapActionMode: null,
       mapEvents: [],
+      currentPointer: null,
       currentSelectedFance: null,
     };
   }
@@ -270,18 +280,42 @@ class PointManager extends React.Component {
       },
       events: {
         dragend: (dragEvent) => {
-          const {lnglat, pixel, target} = dragEvent;
-          const _marker = {...marker, options: {...options}};
-          const _circle = {...circle, options: {...options}};
-          _marker.options.position = [lnglat.lng, lnglat.lat];
-          _circle.options.center = [lnglat.lng, lnglat.lat];
-          this.setState({
-            mapMarkers: [_marker],
-            mapCircles: [_circle],
-            mapZoom: 15,
-            mapNeedClear: false,
-            mapCenter: [lnglat.lng, lnglat.lat],
-            pointLnglat: [lnglat.lng, lnglat.lat],
+          const {target} = dragEvent;
+          const _lnglat = target.getPosition();
+          const _marker = {
+            ...marker,
+            options: {...marker.options},
+          };
+          const _circle = {
+            ...circle,
+            options: {
+              ...circle.options,
+            },
+          };
+          const position = [_lnglat.lng, _lnglat.lat];
+          _marker.options.position = position;
+          _circle.options.center = position;
+
+          const geocoder = new window.AMap.Geocoder();
+          geocoder.getAddress(position, (status, result) => {
+            const state = {
+              mapMarkers: [_marker],
+              mapCircles: [_circle],
+              mapZoom: 15,
+              mapNeedClear: false,
+              mapCenter: position,
+            };
+            if (status === 'complete' && result.info === 'OK') {
+              const adcode = result.regeocode.addressComponent.adcode;
+              const adCodeInfo = getCodeInfo(adcode);
+              var refAddress = result.regeocode.formattedAddress; //返回地址描述
+              this.setState({
+                ...state,
+                currentPointer: {...(this.state.currentPointer || {}), adCodeInfo, refAddress, lnglat: position},
+              });
+            } else {
+              this.setState(state);
+            }
           });
         },
       },
@@ -297,13 +331,26 @@ class PointManager extends React.Component {
       },
     };
 
-    this.setState({
-      mapMarkers: [marker],
-      mapCircles: [circle],
-      mapZoom: 15,
-      mapNeedClear: true,
-      mapCenter: center,
-      pointLnglat: center,
+    const geocoder = new window.AMap.Geocoder();
+    geocoder.getAddress(center, (status, result) => {
+      const state = {
+        mapMarkers: [marker],
+        mapCircles: [circle],
+        mapZoom: 15,
+        mapNeedClear: true,
+        mapCenter: center,
+      };
+      if (status === 'complete' && result.info === 'OK') {
+        const adcode = result.regeocode.addressComponent.adcode;
+        const adCodeInfo = getCodeInfo(adcode);
+        var refAddress = result.regeocode.formattedAddress; //返回地址描述
+        this.setState({
+          ...state,
+          currentPointer: {...(this.state.currentPointer || {}), adCodeInfo, refAddress, lnglat: center},
+        });
+      } else {
+        this.setState(state);
+      }
     });
   };
 
@@ -311,14 +358,10 @@ class PointManager extends React.Component {
     if (lnglat) {
       const m = Math.ceil(Math.random() * 10);
       this.setState({
-        mapCenter: [lnglat[0] + m / 100000, lnglat[1]],
+        mapCenter: [lnglat[0], lnglat[1]],
         mapActionMode: MAP_ACTION_CREATE_MARKER,
         mapDrawMode: null,
-      });
-    } else {
-      this.setState({
-        mapActionMode: MAP_ACTION_CREATE_MARKER,
-        mapDrawMode: null,
+        mapNeedClear: false,
       });
     }
   };
@@ -329,30 +372,37 @@ class PointManager extends React.Component {
     const _polygon = {
       id,
       options: {
+        ...PolygonOptions,
         id,
         path,
         editable: {
           events: {
             adjust: (e) => {
-              this.setState({
-                currentSelectedFance: {
-                  id,
-                  path,
-                },
-              });
+              this.setFancePolygon(center, e.target);
             },
           },
         },
       },
     };
     polygon.getMap().remove(polygon);
+
+    const inPolygon = window.AMap.GeometryUtil.isPointInPolygon(center, path);
+    if (!inPolygon) {
+      Modal.warning({
+        title: '点址不在围栏里内！',
+      });
+    }
+
     this.setState({
       mapPolygons: [_polygon],
       mapActionMode: null,
       mapDrawMode: false,
-      currentSelectedFance: {
-        id,
-        path,
+      currentPointer: {
+        ...this.state.currentPointer,
+        fance: {
+          id,
+          path,
+        },
       },
     });
   };
@@ -370,9 +420,23 @@ class PointManager extends React.Component {
         mapPolygons: ret,
         mapActionMode: null,
         mapDrawMode: false,
-        currentSelectedFance: null,
+        currentPointer: {
+          ...this.state.currentPointer,
+          fance: null,
+        },
       });
     }
+  };
+
+  pointerInfoChange = (values) => {
+    console.log(values);
+    this.setState({
+      currentPointer: {
+        ...this.state.currentPointer,
+        ...values,
+      },
+      mapNeedClear: false,
+    });
   };
 
   //建立围栏
@@ -403,10 +467,9 @@ class PointManager extends React.Component {
       mapCircles,
       mapMarkers,
       mapPolygons,
-      pointLnglat,
+      currentPointer,
       mapDrawMode,
       mapActionMode,
-      currentSelectedFance,
     } = this.state;
     return (
       <Layout style={{width: '100%', height: '100%'}}>
@@ -464,11 +527,11 @@ class PointManager extends React.Component {
             )}
             {rightViewMode === RIGHT_VIEW_CREATE && (
               <CreatePointer
-                fance={currentSelectedFance}
+                pointer={currentPointer}
                 onRemoveFance={this.onRemoveCurrentFance}
-                lnglat={pointLnglat}
                 onCreateFance={this.onCreateFance}
                 onRelocation={this.onRelocation}
+                onChange={this.pointerInfoChange}
               />
             )}
           </Sider>

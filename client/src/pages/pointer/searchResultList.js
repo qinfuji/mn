@@ -2,6 +2,10 @@ import React from 'react';
 import {List, Pagination, Spin} from 'antd';
 
 class SearchResultList extends React.Component {
+  componentWillUnmount() {
+    console.log('SearchResultList componentWillUnmount');
+  }
+
   render() {
     const {
       poiList: {pois, count, pageIndex, pageSize},

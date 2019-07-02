@@ -21,6 +21,19 @@ const MAP_DRAW_MODE_RECTANGLE = 'rectangle';
 const xdebug = console.log;
 // const xdebug = () => {};
 
+export function generateUUID() {
+  var d = new Date().getTime();
+  if (window.performance && typeof window.performance.now === 'function') {
+    d += performance.now(); //use high-precision timer if available
+  }
+  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = (d + Math.random() * 16) % 16 | 0;
+    d = Math.floor(d / 16);
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+  return uuid;
+}
+
 export const loadMap = (config = {}) => {
   return new Promise((resolve, reject) => {
     if (window.AMap) {
@@ -105,13 +118,21 @@ export const loadUI = (name) => {
 ////////////////////////////////////////////////////////////
 // 工具方法
 ////////////////////////////////////////////////////////////
-const commonUpdate = (entity, newOptions, newEvents, oldOptions, oldEvents, operators, __func__ = 'commonUpdate') => {
+const commonUpdate = (
+  entity,
+  newOptions,
+  newEvents,
+  oldOptions,
+  oldEvents,
+  operators,
+  __func__ = 'commonUpdate',
+  hasChangeOperation,
+) => {
   // const __func__ = 'commonUpdate';
   if (!entity) {
     xdebug(__func__, 'fail! no entity!');
     return false;
   }
-
   // 找到改变的属性集合,包含添加,删除及修改的属性,删除的置为null
   let props = {};
   if (newOptions !== oldOptions) {
@@ -119,8 +140,14 @@ const commonUpdate = (entity, newOptions, newEvents, oldOptions, oldEvents, oper
       forOwn(oldOptions, (value, key) => {
         // 找到改变的旧属性,用新属性取代
         let newValue = newOptions && newOptions[key];
-        if (!isEqual(newValue, value)) {
-          if (!(isNil(newValue) && isNil(value))) props[key] = newValue;
+        if (hasChangeOperation && hasChangeOperation[key]) {
+          if (hasChangeOperation[key](value, newValue)) {
+            props[key] = newValue;
+          }
+        } else {
+          if (!isEqual(newValue, value)) {
+            if (!(isNil(newValue) && isNil(value))) props[key] = newValue;
+          }
         }
       });
     newOptions &&
@@ -132,7 +159,6 @@ const commonUpdate = (entity, newOptions, newEvents, oldOptions, oldEvents, oper
         }
       });
   }
-  console.log('----->props', props);
   // 找到改变的事件集合,包含添加,删除及修改的事件处理函数,删除的置为null
   let events = {};
   if (newEvents !== oldEvents) {
@@ -153,30 +179,6 @@ const commonUpdate = (entity, newOptions, newEvents, oldOptions, oldEvents, oper
         }
       });
   }
-
-  // let operators = {
-  //   map: v => entity.setMap(v),
-  //   position: v => entity.setPosition(v),
-  //   offset: v => entity.setOffset(v),
-  //   icon: v => entity.setIcon(v),
-  //   content: v => entity.setContent(v),
-  //   topWhenClick: null,
-  //   bubble: null,
-  //   draggable: v => entity.setDraggable(v),
-  //   raiseOnDrag: null,
-  //   cursor: v => entity.setCursor(v),
-  //   visible: null,
-  //   zIndex: v => entity.setzIndex(v),
-  //   angle: v => entity.setAngle(v),
-  //   autoRotation: null,
-  //   animation: v => entity.setAnimation(v),
-  //   shadow: v => entity.setShadow(v),
-  //   title: v => entity.setTitle(v),
-  //   clickable: v => entity.setClickable(v),
-  //   shape: v => entity.setShape(v),
-  //   extData: v => entity.setExtData(v),
-  //   label: v => entity.setLabel(v)
-  // };
 
   forOwn(props, (value, key) => {
     if (value !== null && typeof value !== 'undefined') {
@@ -310,7 +312,25 @@ export const updateMap = (map, newOptions, newEvents, oldOptions, oldEvents) => 
       createMouseTool(v, map);
     },
   };
-  return commonUpdate(map, newOptions, newEvents, oldOptions, oldEvents, operators, 'updateMap');
+
+  let hasChangeOperation = {
+    zoom: (oldValue, newValue) => {
+      if (oldValue === newValue && map.getZoom() !== newValue) {
+        return true;
+      } else if (oldValue === newValue) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+
+    center: (oldValue, newValue) => {
+      //总是处理
+      return true;
+    },
+  };
+
+  return commonUpdate(map, newOptions, newEvents, oldOptions, oldEvents, operators, 'updateMap', hasChangeOperation);
 };
 
 function createMouseTool(drawMode, map) {
@@ -351,10 +371,10 @@ function createMouseTool(drawMode, map) {
     });
   } else if (drawMode.mode === MAP_DRAW_MODE_POLYGON) {
     mouseTool.polygon({
-      strokeWeight: 6,
+      strokeWeight: 1,
       strokeOpacity: 0.2,
       fillColor: '#1791fc',
-      fillOpacity: 0.4,
+      fillOpacity: 0.1,
       strokeStyle: 'solid',
       ...(drawMode.options || {}),
     });
@@ -576,7 +596,7 @@ export const createPolygon = (options, events) => {
   }
   let entity = new window.AMap.Polygon(options);
   if (options.editable) {
-    createPolyEditor(options.map, entity, options.editable);
+    createPolyEditor(options.map, entity, options.editable, options.__id__);
   }
   forOwn(events, (value, key) => {
     entity.on(key, value);
@@ -603,32 +623,32 @@ export const updatePolygon = (entity, newOptions, newEvents, oldOptions, oldEven
     strokeDasharray: null,
     options: (v) => entity.setOptions(v),
     editable: (v) => {
-      createPolyEditor(newOptions.map, entity, v);
+      createPolyEditor(newOptions.map, entity, v, newOptions.__id__);
     },
   };
   return commonUpdate(entity, newOptions, newEvents, oldOptions, oldEvents, operators, 'updatePolygon');
 };
 
-export const destroyPolygon = (entity) => {
-  if (window[entity] && window[entity].polyEditor) {
-    window[entity].polyEditor.close();
-    window[entity].polyEditor = null;
-    window[entity] = null;
+export const destroyPolygon = (uid) => {
+  if (window[uid] && window[uid].polyEditor) {
+    window[uid].polyEditor.close();
+    window[uid].polyEditor = null;
+    window[uid] = null;
   }
 };
 
-function createPolyEditor(map, entity, editable) {
-  if (!editable && window[entity] && window[entity].polyEditor) {
-    window[entity].polyEditor.close();
-    window[entity].polyEditor = null;
-  } else if (editable && (!window[entity] || !window[entity].polyEditor)) {
-    if (!window[entity]) {
-      window[entity] = {};
+function createPolyEditor(map, entity, editable, uid) {
+  if (!editable && window[uid] && window[uid].polyEditor) {
+    window[uid].polyEditor.close();
+    window[uid].polyEditor = null;
+  } else if (editable && (!window[uid] || !window[uid].polyEditor)) {
+    if (!window[uid]) {
+      window[uid] = {};
     }
-    window[entity].polyEditor = new window.AMap.PolyEditor(map, entity);
-    window[entity].polyEditor.open();
+    window[uid].polyEditor = new window.AMap.PolyEditor(map, entity);
+    window[uid].polyEditor.open();
     forOwn(editable.events || [], (value, key) => {
-      window[entity].polyEditor.on(key, value);
+      window[uid].polyEditor.on(key, value);
     });
   }
 }

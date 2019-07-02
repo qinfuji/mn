@@ -1,9 +1,9 @@
 import React, {Component, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {createPolygon, updatePolygon, destroyPolygon} from './api';
+import {createPolygon, updatePolygon, destroyPolygon, generateUUID} from './api';
 const __com__ = 'Polygon';
-//const debug = console.log;
-const debug = () => {};
+const debug = console.log;
+//const debug = () => {};
 
 export class Polygon extends Component {
   static propTypes = {
@@ -16,6 +16,7 @@ export class Polygon extends Component {
     super();
     this.refElement = null;
     this._entity = null;
+    this.__uid__ = generateUUID();
     debug(__com__, 'constructor', this._entity);
   }
 
@@ -23,7 +24,7 @@ export class Polygon extends Component {
     debug(__com__, 'componentDidMount', this._entity);
     let {__map__, options, events, children} = this.props;
     //let opts = { ...(options || {}), map: __map__, content: children };
-    let opts = {...(options || {}), map: __map__};
+    let opts = {...(options || {}), map: __map__, __id__: this.__uid__};
     this._entity = createPolygon(opts, events);
     if (this._entity) {
       if (this.props.refer) this.props.refer(this._entity);
@@ -34,9 +35,10 @@ export class Polygon extends Component {
     debug(__com__, 'componentDidUpdate', this._entity);
     let {__map__, options, events, children} = this.props;
     //let opts = { ...(options || {}), map: __map__, content: children };
-    let opts = {...(options || {}), map: __map__};
+    let opts = {...(options || {}), map: __map__, __id__: this.__uid__};
     if (!this._entity) {
       this._entity = createPolygon(opts, events);
+      this._entity.__uid__ = generateUUID();
       if (this._entity) {
         if (this.props.refer) this.props.refer(this._entity);
       }
@@ -54,7 +56,7 @@ export class Polygon extends Component {
   componentWillUnmount() {
     debug(__com__, 'componentWillUnmount', this._entity);
     if (this._entity) {
-      destroyPolygon(this._entity);
+      destroyPolygon(this.__uid__);
       this._entity.setMap(null);
       this._entity = null;
       if (this.props.refer) this.props.refer(this._entity);
