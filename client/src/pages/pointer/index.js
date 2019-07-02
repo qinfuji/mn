@@ -1,6 +1,7 @@
 import React from 'react';
 import {connect} from 'dva';
 import Marker from '@/components/AMap/Marker';
+import Polygon from '@/components/AMap/Polygon';
 import Circle from '@/components/AMap/Circle';
 import {Layout, Form, Row, Col, Select, Button, Input, Icon} from 'antd';
 import localData from '../../utils/adcode.json';
@@ -29,8 +30,25 @@ function generateUUID() {
   return uuid;
 }
 
-const MODEL_CREATE = 'createPointer';
-const MODEL_POI_LIST = 'poiList';
+const RIGHT_VIEW_CREATE = 'createPointer';
+const RIGHT_VIEW_POI_LIST = 'poiList';
+
+const MAP_ACTION_CREATE_MARKER = 'createMarker';
+const MAP_ACTION_DRAW = 'mapDraw';
+
+const MAP_DRAW_MODE_MARKET = 'marker';
+const MAP_DRAW_MODE_POLYLINE = 'polyline';
+const MAP_DRAW_MODE_POLYGON = 'polygon';
+const MAP_DRAW_MODE_CIRCLE = 'circle';
+
+var CircleOptions = {
+  strokeColor: '#F33', //线颜色
+  strokeOpacity: 0.05, //线透明度
+  strokeWeight: 0.05, //线粗细度
+  fillColor: '#ee2200', //填充颜色
+  fillOpacity: 0.05, //填充透明度
+  bubble: true,
+};
 
 @Form.create()
 class PointManager extends React.Component {
@@ -48,7 +66,9 @@ class PointManager extends React.Component {
       mapPolygons: [],
       mapZoom: 4,
       mapNeedClear: false,
-      rightMode: null,
+      mapActionMode: null,
+      mapEvents: [],
+      currentSelectedFance: null,
     };
   }
 
@@ -118,7 +138,7 @@ class PointManager extends React.Component {
         }
         this.setState({
           poiList: result.poiList,
-          rightMode: MODEL_POI_LIST,
+          rightViewMode: RIGHT_VIEW_POI_LIST,
         });
         return resolve(result);
       });
@@ -192,41 +212,34 @@ class PointManager extends React.Component {
 
   onPoiListItemSelected = (item) => {
     const location = item.location;
-    var options = {
-      strokeColor: '#F33', //线颜色
-      strokeOpacity: 0.05, //线透明度
-      strokeWeight: 0.05, //线粗细度
-      fillColor: '#ee2200', //填充颜色
-      fillOpacity: 0.05, //填充透明度
-      bubble: true,
-    };
+
     const center = [location.lng, location.lat];
-    const circle1 = Object.assign(
-      {
-        id: generateUUID(),
+    const circle1 = {
+      id: generateUUID(),
+      options: {
+        ...CircleOptions,
         center, // 圆心位置
         radius: 20, //半径
       },
-      options,
-    );
+    };
 
-    const circle2 = Object.assign(
-      {
-        id: generateUUID(),
+    const circle2 = {
+      id: generateUUID(),
+      options: {
+        ...CircleOptions,
         center, // 圆心位置
         radius: 500, //半径
       },
-      options,
-    );
+    };
 
-    const circle3 = Object.assign(
-      {
-        id: generateUUID(),
+    const circle3 = {
+      id: generateUUID(),
+      options: {
+        ...CircleOptions,
         center, // 圆心位置
         radius: 1500, //半径
       },
-      options,
-    );
+    };
 
     const circles = [circle1, circle2, circle3];
     this.setState({
@@ -239,36 +252,161 @@ class PointManager extends React.Component {
 
   createPointer = () => {
     this.setState({
-      rightMode: MODEL_CREATE,
+      mapActionMode: MAP_ACTION_CREATE_MARKER,
+      rightViewMode: RIGHT_VIEW_CREATE,
     });
   };
 
-  createPointerMarker = (e) => {
+  createPointerMarker = (e, options = {}) => {
     const lnglat = e.lnglat;
     const marker = {
       id: generateUUID(),
-      type: 'new',
-      position: [lnglat.lng, lnglat.lat],
-      offset: new window.AMap.Pixel(-13, -30),
-      draggable: true,
-      cursor: 'move',
+      options: {
+        type: 'new',
+        position: [lnglat.lng, lnglat.lat],
+        offset: new window.AMap.Pixel(-13, -30),
+        draggable: true,
+        cursor: 'move',
+      },
+      events: {
+        dragend: (dragEvent) => {
+          const {lnglat, pixel, target} = dragEvent;
+          const _marker = {...marker, options: {...options}};
+          const _circle = {...circle, options: {...options}};
+          _marker.options.position = [lnglat.lng, lnglat.lat];
+          _circle.options.center = [lnglat.lng, lnglat.lat];
+          this.setState({
+            mapMarkers: [_marker],
+            mapCircles: [_circle],
+            mapZoom: 15,
+            mapNeedClear: false,
+            mapCenter: [lnglat.lng, lnglat.lat],
+            pointLnglat: [lnglat.lng, lnglat.lat],
+          });
+        },
+      },
+    };
+    const center = [lnglat.lng, lnglat.lat];
+    const circle = {
+      id: generateUUID(),
+      options: {
+        ...CircleOptions,
+        center, // 圆心位置
+        radius: 1500, //半径
+        editable: true,
+      },
     };
 
     this.setState({
       mapMarkers: [marker],
+      mapCircles: [circle],
+      mapZoom: 15,
+      mapNeedClear: true,
+      mapCenter: center,
+      pointLnglat: center,
+    });
+  };
+
+  onRelocation = (lnglat) => {
+    if (lnglat) {
+      const m = Math.ceil(Math.random() * 10);
+      this.setState({
+        mapCenter: [lnglat[0] + m / 100000, lnglat[1]],
+        mapActionMode: MAP_ACTION_CREATE_MARKER,
+        mapDrawMode: null,
+      });
+    } else {
+      this.setState({
+        mapActionMode: MAP_ACTION_CREATE_MARKER,
+        mapDrawMode: null,
+      });
+    }
+  };
+
+  setFancePolygon = (center, polygon) => {
+    const id = generateUUID();
+    const path = polygon.getPath();
+    const _polygon = {
+      id,
+      options: {
+        id,
+        path,
+        editable: {
+          events: {
+            adjust: (e) => {
+              this.setState({
+                currentSelectedFance: {
+                  id,
+                  path,
+                },
+              });
+            },
+          },
+        },
+      },
+    };
+    polygon.getMap().remove(polygon);
+    this.setState({
+      mapPolygons: [_polygon],
+      mapActionMode: null,
+      mapDrawMode: false,
+      currentSelectedFance: {
+        id,
+        path,
+      },
+    });
+  };
+
+  onRemoveCurrentFance = (id) => {
+    const {mapPolygons} = this.state;
+    if (mapPolygons && mapPolygons.length) {
+      const ret = mapPolygons.reduce((ret, polygon) => {
+        if (polygon.id !== id) {
+          ret.push(polygon);
+        }
+        return ret;
+      }, []);
+      this.setState({
+        mapPolygons: ret,
+        mapActionMode: null,
+        mapDrawMode: false,
+        currentSelectedFance: null,
+      });
+    }
+  };
+
+  //建立围栏
+  onCreateFance = (lnglat) => {
+    this.setState({
+      mapActionMode: MAP_ACTION_DRAW,
+      mapDrawMode: {
+        mode: MAP_DRAW_MODE_POLYGON,
+        options: {},
+        events: [
+          (e) => {
+            this.setFancePolygon(lnglat, e.obj);
+          },
+        ],
+      },
+      mapNeedClear: false,
     });
   };
 
   render() {
     const {
       poiList = [],
-      rightMode,
+      rightViewMode,
       currentAdcode = 100000,
       mapCenter,
       mapNeedClear,
       mapZoom = 4,
       mapCircles,
       mapMarkers,
+      mapPolygons,
+      pointLnglat,
+      mapDrawMode,
+      mapActionMode,
+      currentSelectedFance,
     } = this.state;
     return (
       <Layout style={{width: '100%', height: '100%'}}>
@@ -286,35 +424,53 @@ class PointManager extends React.Component {
           <Content>
             <AMap
               events={{
-                click: this.createPointerMarker,
+                click: mapActionMode === MAP_ACTION_CREATE_MARKER ? this.createPointerMarker : null,
               }}
-              center={mapCenter}
               currentAdcode={currentAdcode}
-              zoom={mapZoom}
               clean={mapNeedClear}
+              options={{
+                center: mapCenter,
+                drawMode: mapDrawMode,
+                zoom: mapZoom,
+              }}
             >
               {mapCircles &&
                 mapCircles.length &&
                 mapCircles.map((c) => {
-                  return <Circle key={c.id} options={c} />;
+                  return <Circle key={c.id} options={c.options} events={c.events} />;
                 })}
 
               {mapMarkers &&
                 mapMarkers.length &&
-                mapMarkers.map((c) => {
-                  return <Marker key={c.id} options={c} />;
+                mapMarkers.map((m) => {
+                  return <Marker key={m.id} options={m.options} events={m.events} />;
+                })}
+
+              {mapPolygons &&
+                mapPolygons.length &&
+                mapPolygons.map((p) => {
+                  console.log(p);
+                  return <Polygon key={p.id} options={p.options} events={p.events} />;
                 })}
             </AMap>
           </Content>
-          <Sider theme="light" width={rightMode ? '25%' : '1px'} style={{height: '100%', overflow: 'auto'}}>
-            {rightMode === MODEL_POI_LIST && (
+          <Sider theme="light" width={rightViewMode ? '25%' : '1px'} style={{height: '100%', overflow: 'auto'}}>
+            {rightViewMode === RIGHT_VIEW_POI_LIST && (
               <SearchResultList
                 poiList={poiList}
                 onPageChange={this.onPoiListPageChange}
                 onItemSelected={this.onPoiListItemSelected}
               />
             )}
-            {rightMode === MODEL_CREATE && <CreatePointer />}
+            {rightViewMode === RIGHT_VIEW_CREATE && (
+              <CreatePointer
+                fance={currentSelectedFance}
+                onRemoveFance={this.onRemoveCurrentFance}
+                lnglat={pointLnglat}
+                onCreateFance={this.onCreateFance}
+                onRelocation={this.onRelocation}
+              />
+            )}
           </Sider>
         </Layout>
       </Layout>

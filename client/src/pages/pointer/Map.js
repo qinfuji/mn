@@ -53,6 +53,8 @@ class Amap extends React.Component {
         'AMap.ToolBar',
         'AMap.Geocoder',
         'AMap.MouseTool',
+        'AMap.CircleEditor',
+        'AMap.PolyEditor',
       ]);
       await loadAmpLocaApi(); //加载loca api
       this.setState({initedMap: true});
@@ -126,8 +128,10 @@ class Amap extends React.Component {
     if (nextProps.clean) {
       this.map.clearMap();
     }
-
-    this.switch2AreaNode(nextProps.currentAdcode);
+    //console.log(this.props.c);
+    if (this.props.currentAdcode !== nextProps.currentAdcode) {
+      this.switch2AreaNode(nextProps.currentAdcode);
+    }
   };
 
   switch2AreaNode = (adcode, callback) => {
@@ -153,15 +157,14 @@ class Amap extends React.Component {
 
   render() {
     const {initedMap} = this.state;
-    const {zoom, center, events} = this.props;
+    const {options, events} = this.props;
     return (
       initedMap && (
         <Map
           refer={this.setMapInstance}
           style={{width: '100%', height: '100%'}}
           options={{
-            zoom: zoom,
-            center: center,
+            ...options,
             mapStyle: 'amap://styles/ab2c0d8d125f8d8556e453149622a5a2',
           }}
           events={events}

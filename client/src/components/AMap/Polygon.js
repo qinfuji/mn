@@ -1,6 +1,6 @@
 import React, {Component, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {createPolygon, updatePolygon} from './api';
+import {createPolygon, updatePolygon, destroyPolygon} from './api';
 const __com__ = 'Polygon';
 //const debug = console.log;
 const debug = () => {};
@@ -54,8 +54,8 @@ export class Polygon extends Component {
   componentWillUnmount() {
     debug(__com__, 'componentWillUnmount', this._entity);
     if (this._entity) {
+      destroyPolygon(this._entity);
       this._entity.setMap(null);
-      // delete this._entity;
       this._entity = null;
       if (this.props.refer) this.props.refer(this._entity);
     }

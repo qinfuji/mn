@@ -11,14 +11,22 @@ class CreateAppraise extends React.Component {
   };
 
   render() {
-    const {getFieldDecorator} = this.props.form;
+    const {
+      form: {getFieldDecorator},
+      lnglat,
+    } = this.props;
+    console.log('====================>', lnglat);
     return (
       <div className="pointerCreate">
         <Form onSubmit={this.onSubmit}>
           <Form.Item label="类别">{getFieldDecorator('type', {})(<Input />)}</Form.Item>
           <Form.Item label="名称">{getFieldDecorator('name', {})(<Input />)}</Form.Item>
           <Form.Item label="详细地址">{getFieldDecorator('address', {})(<Input />)}</Form.Item>
-          <Form.Item label="经纬度">{getFieldDecorator('latlng', {})(<Input />)}</Form.Item>
+          <Form.Item label="经纬度">
+            {getFieldDecorator('latlng', {
+              value: lnglat ? lnglat.join(',') : '',
+            })(<Input />)}
+          </Form.Item>
           <Form.Item label="围栏">{getFieldDecorator('fance', {})(<Input />)}</Form.Item>
           <Form.Item label="标签(业态)">{getFieldDecorator('label', {})(<Input />)}</Form.Item>
         </Form>

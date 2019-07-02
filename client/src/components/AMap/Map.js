@@ -97,7 +97,6 @@ export class Map extends Component {
       'layerCount:' + (this._entity && this._entity.getLayers().length),
     );
     if (this._entity) {
-      //   this._entity.clearMap();
       this._entity.destroy();
       //   delete this._entity;
       this._entity = null;

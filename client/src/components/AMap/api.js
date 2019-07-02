@@ -12,6 +12,12 @@ const DEFAULT_CONFIG = {
   protocol: 'http',
 };
 
+const MAP_DRAW_MODE_MARKET = 'marker';
+const MAP_DRAW_MODE_POLYLINE = 'polyline';
+const MAP_DRAW_MODE_POLYGON = 'polygon';
+const MAP_DRAW_MODE_CIRCLE = 'circle';
+const MAP_DRAW_MODE_RECTANGLE = 'rectangle';
+
 const xdebug = console.log;
 // const xdebug = () => {};
 
@@ -126,6 +132,7 @@ const commonUpdate = (entity, newOptions, newEvents, oldOptions, oldEvents, oper
         }
       });
   }
+  console.log('----->props', props);
   // 找到改变的事件集合,包含添加,删除及修改的事件处理函数,删除的置为null
   let events = {};
   if (newEvents !== oldEvents) {
@@ -172,7 +179,7 @@ const commonUpdate = (entity, newOptions, newEvents, oldOptions, oldEvents, oper
   // };
 
   forOwn(props, (value, key) => {
-    if (value) {
+    if (value !== null && typeof value !== 'undefined') {
       let func = operators[key];
       if (func) {
         func(value);
@@ -224,6 +231,37 @@ export const createMap = (dom, options, events) => {
     return null;
   }
   let map = new window.AMap.Map(dom, {...(options || {})});
+  if (options.drawMode && (!window[map] || !window[map].mouseTool)) {
+    const mouseTool = (window[map].mouseTool = new window.AMap.MouseTool(map));
+    if (options.drawMode.mode === MAP_DRAW_MODE_CIRCLE) {
+      mouseTool.polyline({
+        strokeColor: '#FF33FF',
+        strokeWeight: 6,
+        strokeOpacity: 0.2,
+        fillColor: '#1791fc',
+        fillOpacity: 0.4,
+        strokeStyle: 'solid',
+        ...(options.drawMode.options || {}),
+      });
+    } else if (options.drawMode.mode === MAP_DRAW_MODE_CIRCLE) {
+      mouseTool.circle({
+        strokeColor: '#FF33FF',
+        strokeWeight: 6,
+        strokeOpacity: 0.2,
+        fillColor: '#1791fc',
+        fillOpacity: 0.4,
+        strokeStyle: 'solid',
+        ...(options.drawMode.options || {}),
+      });
+    }
+    if (options.drawMode.events && options.drawMode.events.length) {
+      mouseTool.on('draw', (type, obj) => {
+        for (let i = 0; i < options.drawMode.events.length; i++) {
+          options.drawMode.events[i](type, obj);
+        }
+      });
+    }
+  }
   forOwn(events, (value, key) => {
     xdebug(__func__, 'event on ' + key);
     map.on(key, value);
@@ -268,9 +306,78 @@ export const updateMap = (map, newOptions, newEvents, oldOptions, oldEvents) => 
     buildAnimation: null,
     skyColor: null,
     preloadMode: null,
+    drawMode: (v) => {
+      createMouseTool(v, map);
+    },
   };
   return commonUpdate(map, newOptions, newEvents, oldOptions, oldEvents, operators, 'updateMap');
 };
+
+function createMouseTool(drawMode, map) {
+  //每次刷新，重建一个，暂时没有想到好的办法
+  if (window[map] && window[map].mouseTool) {
+    window[map].mouseTool.close();
+    window[map].mouseTool = null;
+    return;
+  }
+  if (!drawMode) {
+    return;
+  }
+
+  let mouseTool = window[map] && window[map].mouseTool ? window[map].mouseTool : null;
+  if (!mouseTool) {
+    window[map] = {};
+    mouseTool = window[map].mouseTool = new window.AMap.MouseTool(map);
+  }
+  if (drawMode.mode === MAP_DRAW_MODE_POLYLINE) {
+    mouseTool.polyline({
+      strokeColor: '#FF33FF',
+      strokeWeight: 6,
+      strokeOpacity: 0.2,
+      fillColor: '#1791fc',
+      fillOpacity: 0.4,
+      strokeStyle: 'solid',
+      ...(drawMode.options || {}),
+    });
+  } else if (drawMode.mode === MAP_DRAW_MODE_CIRCLE) {
+    mouseTool.circle({
+      strokeColor: '#FF33FF',
+      strokeWeight: 6,
+      strokeOpacity: 0.2,
+      fillColor: '#1791fc',
+      fillOpacity: 0.4,
+      strokeStyle: 'solid',
+      ...(drawMode.options || {}),
+    });
+  } else if (drawMode.mode === MAP_DRAW_MODE_POLYGON) {
+    mouseTool.polygon({
+      strokeWeight: 6,
+      strokeOpacity: 0.2,
+      fillColor: '#1791fc',
+      fillOpacity: 0.4,
+      strokeStyle: 'solid',
+      ...(drawMode.options || {}),
+    });
+  } else if (drawMode.mode === MAP_DRAW_MODE_RECTANGLE) {
+    mouseTool.rectangle({
+      strokeColor: 'red',
+      strokeOpacity: 0.5,
+      strokeWeight: 6,
+      fillColor: 'blue',
+      fillOpacity: 0.5,
+      strokeStyle: 'solid',
+      ...(drawMode.options || {}),
+    });
+  }
+
+  if (drawMode.events && drawMode.events.length) {
+    mouseTool.on('draw', (e) => {
+      for (let i = 0; i < drawMode.events.length; i++) {
+        drawMode.events[i](e);
+      }
+    });
+  }
+}
 
 ////////////////////////////////////////////////////////////
 // Marker
@@ -468,6 +575,9 @@ export const createPolygon = (options, events) => {
     return null;
   }
   let entity = new window.AMap.Polygon(options);
+  if (options.editable) {
+    createPolyEditor(options.map, entity, options.editable);
+  }
   forOwn(events, (value, key) => {
     entity.on(key, value);
   });
@@ -492,10 +602,36 @@ export const updatePolygon = (entity, newOptions, newEvents, oldOptions, oldEven
     strokeStyle: null,
     strokeDasharray: null,
     options: (v) => entity.setOptions(v),
+    editable: (v) => {
+      createPolyEditor(newOptions.map, entity, v);
+    },
   };
-
   return commonUpdate(entity, newOptions, newEvents, oldOptions, oldEvents, operators, 'updatePolygon');
 };
+
+export const destroyPolygon = (entity) => {
+  if (window[entity] && window[entity].polyEditor) {
+    window[entity].polyEditor.close();
+    window[entity].polyEditor = null;
+    window[entity] = null;
+  }
+};
+
+function createPolyEditor(map, entity, editable) {
+  if (!editable && window[entity] && window[entity].polyEditor) {
+    window[entity].polyEditor.close();
+    window[entity].polyEditor = null;
+  } else if (editable && (!window[entity] || !window[entity].polyEditor)) {
+    if (!window[entity]) {
+      window[entity] = {};
+    }
+    window[entity].polyEditor = new window.AMap.PolyEditor(map, entity);
+    window[entity].polyEditor.open();
+    forOwn(editable.events || [], (value, key) => {
+      window[entity].polyEditor.on(key, value);
+    });
+  }
+}
 
 ////////////////////////////////////////////////////////////
 // Circle
@@ -520,6 +656,10 @@ export const createCircle = (options, events) => {
     return null;
   }
   let entity = new window.AMap.Circle(options);
+  // if (options.editable) {
+  //   var polyEditor = new window.AMap.CircleEditor(options.map, entity);
+  //   polyEditor.open();
+  // }
   forOwn(events, (value, key) => {
     entity.on(key, value);
   });
@@ -544,6 +684,7 @@ export const updateCircle = (entity, newOptions, newEvents, oldOptions, oldEvent
     extData: (v) => entity.setExtData(v),
     strokeDasharray: null,
     options: (v) => entity.setOptions(v),
+    editable: (v) => {},
   };
 
   return commonUpdate(entity, newOptions, newEvents, oldOptions, oldEvents, operators, 'updateCircle');
@@ -572,6 +713,7 @@ export const createPolyline = (options, events) => {
     return null;
   }
   let entity = new window.AMap.Polyline(options);
+
   forOwn(events, (value, key) => {
     entity.on(key, value);
   });
