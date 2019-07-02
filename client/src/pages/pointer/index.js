@@ -429,7 +429,6 @@ class PointManager extends React.Component {
   };
 
   pointerInfoChange = (values) => {
-    console.log(values);
     this.setState({
       currentPointer: {
         ...this.state.currentPointer,
