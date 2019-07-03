@@ -3,7 +3,6 @@ package com.mn.modules.api;
 import com.github.jsonzou.jmockdata.JMockData;
 import com.github.jsonzou.jmockdata.MockConfig;
 import com.mn.MNBIApplication;
-import com.mn.modules.api.entity.ChancePoint;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

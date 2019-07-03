@@ -3,11 +3,12 @@ import {connect} from 'dva';
 import Marker from '@/components/AMap/Marker';
 import Polygon from '@/components/AMap/Polygon';
 import Circle from '@/components/AMap/Circle';
+import {loadMap, loadPlugin, loadAmpLocaApi, loadAmpUIApi, loadUI} from '@/components/AMap/api';
+import Map from '@/components/AMap/Map';
 import {Layout, Form, Modal, Select, Button, Input, Icon} from 'antd';
 import localData from '../../utils/adcode.json';
 import SearchResultList from './searchResultList';
 import CreatePointer from './createPoint';
-import AMap from './Map';
 import {getCodeInfo} from '../../utils/adcodeUtils';
 const {Header, Content, Footer, Sider} = Layout;
 
@@ -59,59 +60,210 @@ const PolygonOptions = {
   strokeStyle: 'solid',
 };
 
+var colors = [
+  '#3366cc',
+  '#dc3912',
+  '#ff9900',
+  '#109618',
+  '#990099',
+  '#0099c6',
+  '#dd4477',
+  '#66aa00',
+  '#b82e2e',
+  '#316395',
+  '#994499',
+  '#22aa99',
+  '#aaaa11',
+  '#6633cc',
+  '#e67300',
+  '#8b0707',
+  '#651067',
+  '#329262',
+  '#5574a6',
+  '#3b3eac',
+];
+
+@connect(({pointer}) => ({
+  pointer,
+}))
 @Form.create()
 class PointManager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       initedMap: false,
-      province: '',
-      city: '',
-      district: '',
       mapCenter: null,
-      currentAdcode: '',
       mapCircles: [],
       mapMarkers: [],
       mapPolygons: [],
       mapZoom: 4,
       mapNeedClear: false,
-      mapActionMode: null,
-      mapEvents: [],
+      mapActionMode: MAP_ACTION_CREATE_MARKER,
       currentPointer: null,
-      currentSelectedFance: null,
     };
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    setTimeout(async () => {
+      await loadMap(); //加载地图API
+      console.log(window.AMap.Scale);
+      // this.scale = new window.AMap.Scale({
+      //   visible: true,
+      // });
+      await loadAmpUIApi(); //加载UI api
+      const uis = await loadUI(['ui/geo/DistrictExplorer', 'ui/misc/PositionPicker', 'ui/misc/PointSimplifier']);
+      this.DistrictExplorer = uis[0];
+      this.PositionPicker = uis[1];
+      this.PointSimplifier = uis[2];
+      await loadPlugin([
+        'AMap.PlaceSearch',
+        'AMap.Geolocation',
+        'AMap.Scale',
+        'AMap.ToolBar',
+        'AMap.Geocoder',
+        'AMap.MouseTool',
+        'AMap.CircleEditor',
+        'AMap.PolyEditor',
+      ]);
+      await loadAmpLocaApi(); //加载loca api
+      this.setState({initedMap: true});
+    });
+  }
 
-  itemLayout = {
-    labelCol: {span: 9},
-    wrapperCol: {span: 15},
+  setMapInstance = (map) => {
+    const {currentAdCode = 100000} = this.props;
+    this.map = map;
+    this.districtExplorer = window.districtExplorer = new this.DistrictExplorer({
+      eventSupport: true, //打开事件支持
+      map: map,
+    });
+    this.switch2AreaNode(currentAdCode);
+  };
+
+  renderAreaPolygons = (areaNode) => {
+    //更新地图视野
+    this.map.setBounds(areaNode.getBounds(), null, null, true);
+    //清除已有的绘制内容
+    this.districtExplorer.clearFeaturePolygons();
+    //绘制子区域
+    this.districtExplorer.renderSubFeatures(areaNode, (feature, i) => {
+      var fillColor = colors[i % colors.length];
+      var strokeColor = colors[colors.length - 1 - (i % colors.length)];
+      return {
+        cursor: 'default',
+        bubble: true,
+        strokeColor: strokeColor, //线颜色
+        strokeOpacity: 1, //线透明度
+        strokeWeight: 1, //线宽
+        fillColor: fillColor, //填充色
+        fillOpacity: 0.35, //填充透明度
+      };
+    });
+
+    //绘制父区域
+    this.districtExplorer.renderParentFeature(areaNode, {
+      cursor: 'default',
+      bubble: true,
+      strokeColor: 'black', //线颜色
+      strokeOpacity: 1, //线透明度
+      strokeWeight: 1, //线宽
+      fillColor: areaNode.getSubFeatures().length ? null : colors[0], //填充色
+      fillOpacity: 0.35, //填充透明度
+    });
+  };
+
+  loadAreaNode = (adcode, callback) => {
+    this.districtExplorer.loadAreaNode(adcode, (error, areaNode) => {
+      if (error) {
+        if (callback) {
+          callback(error);
+        }
+        console.error(error);
+        return;
+      }
+      if (callback) {
+        callback(null, areaNode);
+      }
+    });
+  };
+
+  refreshAreaNode = (areaNode) => {
+    this.districtExplorer.setHoverFeature(null);
+    this.renderAreaPolygons(areaNode);
+  };
+
+  switch2AreaNode = (adcode, callback) => {
+    if (this.currentAreaNode && '' + this.currentAreaNode.getAdcode() === '' + adcode) {
+      return;
+    }
+    this.loadAreaNode(adcode, (error, areaNode) => {
+      if (error) {
+        if (callback) {
+          callback(error);
+        }
+        return;
+      }
+      this.currentAreaNode = areaNode;
+      //设置当前使用的定位用节点
+      this.districtExplorer.setAreaNodesForLocating([this.currentAreaNode]);
+      this.refreshAreaNode(areaNode);
+      if (callback) {
+        callback(null, areaNode);
+      }
+    });
   };
 
   provinceChange = (value) => {
     const {form} = this.props;
     form.setFieldsValue({city: null, district: null});
-    if (value)
+    if (value) {
+      this.switch2AreaNode(value);
       this.setState({
-        currentAdcode: value,
+        mapCircles: [],
+        mapMarkers: [],
+        mapPolygons: [],
+        rightViewMode: null,
+        mapZoom: this.map.getZoom(),
+        currentPointer: null,
+        mapDrawMode: null,
+        mapActionMode: MAP_ACTION_CREATE_MARKER,
       });
+    }
   };
 
   cityChange = (value) => {
     const {form} = this.props;
     form.setFieldsValue({district: null});
-    if (value)
+    if (value) {
+      this.switch2AreaNode(value);
       this.setState({
-        currentAdcode: value,
+        mapCircles: [],
+        mapMarkers: [],
+        mapPolygons: [],
+        rightViewMode: null,
+        mapZoom: this.map.getZoom(),
+        currentPointer: null,
+        mapDrawMode: null,
+        mapActionMode: MAP_ACTION_CREATE_MARKER,
       });
+    }
   };
 
   districtChange = (value) => {
-    if (value)
+    if (value) {
+      this.switch2AreaNode(value);
+
       this.setState({
-        currentAdcode: value,
+        mapCircles: [],
+        mapMarkers: [],
+        mapPolygons: [],
+        rightViewMode: null,
+        mapZoom: this.map.getZoom(),
+        currentPointer: null,
+        mapDrawMode: null,
+        mapActionMode: MAP_ACTION_CREATE_MARKER,
       });
+    }
   };
 
   onSearch = async (e) => {
@@ -121,7 +273,9 @@ class PointManager extends React.Component {
 
   keywordSearch = ({pageIndex = 1, pageSize = 20, ...reset}) => {
     const {form} = this.props;
-    const address = form.getFieldValue('address');
+    if (!this.addressEle) return;
+    const address = this.addressEle.input.value;
+
     const province = form.getFieldValue('province');
     const city = form.getFieldValue('city');
     const district = form.getFieldValue('district');
@@ -140,6 +294,7 @@ class PointManager extends React.Component {
       autoOptions.city = limitAdcode;
       autoOptions.citylimit = true;
     }
+
     var placeSearch = new window.AMap.PlaceSearch(autoOptions);
     return new Promise((resolve, reject) => {
       placeSearch.search(address, (status, result) => {
@@ -149,11 +304,35 @@ class PointManager extends React.Component {
         this.setState({
           poiList: result.poiList,
           rightViewMode: RIGHT_VIEW_POI_LIST,
+          mapZoom: this.map.getZoom(),
+          center: this.map.getCenter(),
+          mapDrawMode: null,
+          currentPointer: null,
+          mapActionMode: MAP_ACTION_CREATE_MARKER,
         });
         return resolve(result);
       });
     });
   };
+
+  onRevokePointer = () => {
+    this.setState({
+      rightViewMode: null,
+      currentPointer: null,
+      mapCircles: [],
+      mapMarkers: [],
+      mapPolygons: [],
+      mapActionMode: MAP_ACTION_CREATE_MARKER,
+    });
+  };
+
+  onSavePointer = () => {};
+
+  onSubmitPointer = () => {};
+
+  onDeletePointer = () => {};
+
+  onUpdatePointer = () => {};
 
   renderSearch = () => {
     const {getFieldDecorator, getFieldValue} = this.props.form;
@@ -162,12 +341,12 @@ class PointManager extends React.Component {
     const citys = localData.city[province] || [];
     const districts = localData.district[city] || [];
     return (
-      <Form layout="inline" onSubmit={this.onSearch}>
+      <Form layout="inline">
         <Form.Item label="省">
           {getFieldDecorator('province', {
             initialValue: province || 100000,
           })(
-            <Select allowClear placeholder="请选择" style={{width: 150}} onChange={this.provinceChange}>
+            <Select size="small" allowClear placeholder="请选择" style={{width: 100}} onChange={this.provinceChange}>
               {localData.province.map((o) => {
                 return (
                   <Option key={o.key} value={o.key}>
@@ -181,7 +360,7 @@ class PointManager extends React.Component {
 
         <Form.Item label="市">
           {getFieldDecorator('city', {})(
-            <Select allowClear placeholder="请选择" style={{width: 150}} onChange={this.cityChange}>
+            <Select size="small" allowClear placeholder="请选择" style={{width: 100}} onChange={this.cityChange}>
               {citys.map((o) => {
                 return (
                   <Option key={o.key} value={o.key}>
@@ -195,7 +374,7 @@ class PointManager extends React.Component {
 
         <Form.Item label="区县">
           {getFieldDecorator('district', {})(
-            <Select allowClear placeholder="请选择" style={{width: 150}} onChange={this.districtChange}>
+            <Select size="small" allowClear placeholder="请选择" style={{width: 100}} onChange={this.districtChange}>
               {districts.map((o) => {
                 return (
                   <Option key={o.key} value={o.key}>
@@ -206,9 +385,17 @@ class PointManager extends React.Component {
             </Select>,
           )}
         </Form.Item>
-        <Form.Item label="地址">{getFieldDecorator('address', {})(<Input></Input>)}</Form.Item>
+        <Form.Item label="地址">
+          <Input
+            size="small"
+            ref={(ele) => {
+              this.addressEle = ele;
+            }}
+            onChange={() => {}}
+          ></Input>
+        </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" size="small" onClick={this.onSearch}>
             查询
           </Button>
         </Form.Item>
@@ -222,7 +409,6 @@ class PointManager extends React.Component {
 
   onPoiListItemSelected = (item) => {
     const location = item.location;
-
     const center = [location.lng, location.lat];
     const circle1 = {
       id: generateUUID(),
@@ -251,12 +437,14 @@ class PointManager extends React.Component {
       },
     };
 
+    this.map.clearMap();
     const circles = [circle1, circle2, circle3];
     this.setState({
       mapCircles: circles,
       mapCenter: center,
       mapZoom: 15,
-      mapNeedClear: true,
+      mapDrawMode: null,
+      currentPointer: {},
     });
   };
 
@@ -282,6 +470,20 @@ class PointManager extends React.Component {
         dragend: (dragEvent) => {
           const {target} = dragEvent;
           const _lnglat = target.getPosition();
+
+          const {
+            currentPointer: {fance},
+          } = this.state;
+
+          if (fance) {
+            const inPolygon = window.AMap.GeometryUtil.isPointInPolygon(_lnglat, fance.path);
+            if (!inPolygon) {
+              Modal.warning({
+                title: '点址不在围栏里内！',
+              });
+            }
+          }
+
           const _marker = {
             ...marker,
             options: {...marker.options},
@@ -304,6 +506,9 @@ class PointManager extends React.Component {
               mapZoom: 15,
               mapNeedClear: false,
               mapCenter: position,
+              rightViewMode: RIGHT_VIEW_CREATE,
+              mapActionMode: null,
+              mapDrawMode: null,
             };
             if (status === 'complete' && result.info === 'OK') {
               const adcode = result.regeocode.addressComponent.adcode;
@@ -330,15 +535,17 @@ class PointManager extends React.Component {
         editable: true,
       },
     };
-
+    this.map.clearMap();
     const geocoder = new window.AMap.Geocoder();
     geocoder.getAddress(center, (status, result) => {
       const state = {
         mapMarkers: [marker],
         mapCircles: [circle],
         mapZoom: 15,
-        mapNeedClear: true,
         mapCenter: center,
+        rightViewMode: RIGHT_VIEW_CREATE,
+        mapActionMode: null,
+        mapDrawMode: null,
       };
       if (status === 'complete' && result.info === 'OK') {
         const adcode = result.regeocode.addressComponent.adcode;
@@ -346,7 +553,7 @@ class PointManager extends React.Component {
         var refAddress = result.regeocode.formattedAddress; //返回地址描述
         this.setState({
           ...state,
-          currentPointer: {...(this.state.currentPointer || {}), adCodeInfo, refAddress, lnglat: center},
+          currentPointer: {adCodeInfo, refAddress, lnglat: center},
         });
       } else {
         this.setState(state);
@@ -359,14 +566,12 @@ class PointManager extends React.Component {
       const m = Math.ceil(Math.random() * 10);
       this.setState({
         mapCenter: [lnglat[0], lnglat[1]],
-        mapActionMode: MAP_ACTION_CREATE_MARKER,
         mapDrawMode: null,
-        mapNeedClear: false,
       });
     }
   };
 
-  setFancePolygon = (center, polygon) => {
+  setFancePolygon = (polygon) => {
     const id = generateUUID();
     const path = polygon.getPath();
     const _polygon = {
@@ -378,7 +583,7 @@ class PointManager extends React.Component {
         editable: {
           events: {
             adjust: (e) => {
-              this.setFancePolygon(center, e.target);
+              this.setFancePolygon(e.target);
             },
           },
         },
@@ -386,7 +591,11 @@ class PointManager extends React.Component {
     };
     polygon.getMap().remove(polygon);
 
-    const inPolygon = window.AMap.GeometryUtil.isPointInPolygon(center, path);
+    const {
+      currentPointer: {lnglat},
+    } = this.state;
+
+    const inPolygon = window.AMap.GeometryUtil.isPointInPolygon(lnglat, path);
     if (!inPolygon) {
       Modal.warning({
         title: '点址不在围栏里内！',
@@ -439,7 +648,7 @@ class PointManager extends React.Component {
   };
 
   //建立围栏
-  onCreateFance = (lnglat) => {
+  onCreateFance = () => {
     this.setState({
       mapActionMode: MAP_ACTION_DRAW,
       mapDrawMode: {
@@ -447,7 +656,7 @@ class PointManager extends React.Component {
         options: {},
         events: [
           (e) => {
-            this.setFancePolygon(lnglat, e.obj);
+            this.setFancePolygon(e.obj);
           },
         ],
       },
@@ -459,62 +668,58 @@ class PointManager extends React.Component {
     const {
       poiList = [],
       rightViewMode,
-      currentAdcode = 100000,
-      mapCenter,
-      mapNeedClear,
-      mapZoom = 4,
-      mapCircles,
-      mapMarkers,
-      mapPolygons,
-      currentPointer,
-      mapDrawMode,
-      mapActionMode,
+      mapCenter, //地图中心
+      mapNeedClear, //地图在刷新是是否清除
+      mapZoom = 4, //地图缩放比例
+      mapCircles, //地图的圆形覆盖物
+      mapMarkers, //标记
+      mapPolygons, //多边形
+      currentPointer, //当前创建的点址数据
+      mapDrawMode, //绘图模式开启
+      mapActionMode, //开启创建标记时间
+      initedMap, //地图初始化完成
     } = this.state;
     return (
       <Layout style={{width: '100%', height: '100%'}}>
-        <Header style={{background: '#fff', paddingTop: '10px', borderBottom: '1px solid #615a5a42'}}>
+        <Header>
           <div style={{float: 'left'}}>{this.renderSearch()}</div>
-          <div style={{float: 'right'}}>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" onClick={this.createPointer}>
-                新建点址
-              </Button>
-            </Form.Item>
-          </div>
         </Header>
         <Layout style={{width: '100%', height: '100%'}}>
           <Content>
-            <AMap
-              events={{
-                click: mapActionMode === MAP_ACTION_CREATE_MARKER ? this.createPointerMarker : null,
-              }}
-              currentAdcode={currentAdcode}
-              clean={mapNeedClear}
-              options={{
-                center: mapCenter,
-                drawMode: mapDrawMode,
-                zoom: mapZoom,
-              }}
-            >
-              {mapCircles &&
-                mapCircles.length &&
-                mapCircles.map((c) => {
-                  return <Circle key={c.id} options={c.options} events={c.events} />;
-                })}
+            {initedMap && (
+              <Map
+                refer={this.setMapInstance}
+                style={{width: '100%', height: '100%'}}
+                events={{
+                  click: mapActionMode === MAP_ACTION_CREATE_MARKER ? this.createPointerMarker : null,
+                }}
+                options={{
+                  center: mapCenter,
+                  drawMode: mapDrawMode,
+                  zoom: mapZoom,
+                  clear: mapNeedClear,
+                }}
+              >
+                {mapCircles &&
+                  mapCircles.length &&
+                  mapCircles.map((c) => {
+                    return <Circle key={c.id} options={c.options} events={c.events} />;
+                  })}
 
-              {mapMarkers &&
-                mapMarkers.length &&
-                mapMarkers.map((m) => {
-                  return <Marker key={m.id} options={m.options} events={m.events} />;
-                })}
+                {mapMarkers &&
+                  mapMarkers.length &&
+                  mapMarkers.map((m) => {
+                    return <Marker key={m.id} options={m.options} events={m.events} />;
+                  })}
 
-              {mapPolygons &&
-                mapPolygons.length &&
-                mapPolygons.map((p) => {
-                  console.log(p);
-                  return <Polygon key={p.id} options={p.options} events={p.events} />;
-                })}
-            </AMap>
+                {mapPolygons &&
+                  mapPolygons.length &&
+                  mapPolygons.map((p) => {
+                    console.log(p);
+                    return <Polygon key={p.id} options={p.options} events={p.events} />;
+                  })}
+              </Map>
+            )}
           </Content>
           <Sider theme="light" width={rightViewMode ? '25%' : '1px'} style={{height: '100%', overflow: 'auto'}}>
             {rightViewMode === RIGHT_VIEW_POI_LIST && (
@@ -531,6 +736,11 @@ class PointManager extends React.Component {
                 onCreateFance={this.onCreateFance}
                 onRelocation={this.onRelocation}
                 onChange={this.pointerInfoChange}
+                onRevoke={this.onRevokePointer}
+                onSave={this.onSavePointer}
+                onDelete={this.onDeletePointer}
+                onUpdate={this.onUpdatePointer}
+                onSubmit={this.onSavePointer}
               />
             )}
           </Sider>

@@ -36,6 +36,28 @@ class CreatePointer extends React.Component {
     });
   };
 
+  //撤销
+  onRevoke = () => {
+    const {onRevoke} = this.props;
+    if (onRevoke) {
+      onRevoke();
+    }
+  };
+
+  //更新
+  onUpdate = (pointer) => {
+    const {onRevoke} = this.props;
+    if (onRevoke) {
+      onRevoke();
+    }
+  };
+
+  //删除
+  onDelete = (pointer) => {};
+
+  //保存
+  onSave = (pointer) => {};
+
   render() {
     const {
       form: {getFieldDecorator},
@@ -115,13 +137,25 @@ class CreatePointer extends React.Component {
           <Form.Item label="标签(业态)">{getFieldDecorator('label', {})(<Input />)}</Form.Item>
         </Form>
         <div style={{marginTop: '40px', display: 'flex', justifyContent: 'flex-end'}}>
-          <Button type="primary" onClick={this.save}>
+          {pointer && !pointer.id && (
+            <Button size="small" type="primary" onClick={this.onRevoke}>
+              放弃
+            </Button>
+          )}
+          &nbsp;
+          <Button size="small" type="primary" onClick={this.save}>
             保存
           </Button>
           &nbsp;
-          <Button type="primary" onClick={this.submit}>
+          <Button size="small" type="primary" onClick={this.submit}>
             保存并提交
           </Button>
+          &nbsp;
+          {pointer && pointer.id && (
+            <Button size="small" type="primary" onClick={this.onDelete}>
+              删除
+            </Button>
+          )}
         </div>
       </div>
     );

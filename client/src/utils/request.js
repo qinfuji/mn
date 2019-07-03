@@ -1,8 +1,20 @@
 import * as fetch from 'isomorphic-fetch';
-import {Toast} from 'antd-mobile';
-import hash from 'hash.js';
 import Config from '@config';
-import {cleanCurrentUserStore, getCurrentUserInfo, getCurrentUserToken} from './userStore';
+import {notification} from 'antd';
+
+function getQueryString(name) {
+  var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+  var r = window.location.search.substr(1).match(reg);
+  if (r != null) return unescape(r[2]);
+  return null;
+}
+
+function _getAuthInfo() {
+  return {
+    userAccount: getQueryString('userAccount'),
+    token: getQueryString('token'),
+  };
+}
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -29,48 +41,16 @@ const checkStatus = (response) => {
 
   // 系统错误
   const errortext = response.message || codeMessage[response.status] || response.statusText;
-  Toast.fail(errortext, 3);
+  notification.error({
+    description: errortext,
+  });
   const error = new Error(errortext);
   error.name = response.status;
   error.response = response;
   //如果是认证授权错误，删除当前的用户存储
-  if (response.status === 401) {
-    cleanCurrentUserStore();
-  }
   throw error;
 };
 
-const cachedSave = (response, hashcode) => {
-  /**
-   * Clone a response data and store it in sessionStorage
-   * Does not support data other than json, Cache only json
-   */
-  const contentType = response.headers.get('Content-Type');
-  if (contentType && contentType.match(/application\/json/i)) {
-    // All data is saved as text
-    response
-      .clone()
-      .text()
-      .then((content) => {
-        sessionStorage.setItem(hashcode, content);
-        sessionStorage.setItem(`${hashcode}:timestamp`, Date.now());
-      });
-  }
-  return response;
-};
-
-// function progress({ loaded, total }) {
-//   // elProgress.innerHTML = Math.round((loaded / total) * 100) + '%';
-//   console.log(Math.round((loaded / total) * 100) + '%');
-// }
-
-/**
- * Requests a URL, returning a promise.
- *
- * @param  {string} url       The URL we want to request
- * @param  {object} [option] The options we want to pass to "fetch"
- * @return {object}           An object containing either "data" or "err"
- */
 async function request(url, option) {
   if (!/^https?:\/\//.test(url)) {
     url = Config.HOST + url;
@@ -78,15 +58,6 @@ async function request(url, option) {
   const options = {
     ...option,
   };
-  /**
-   * Produce fingerprints based on url and parameters
-   * Maybe url has the same parameters
-   */
-  const fingerprint = url + (options.body ? JSON.stringify(options.body) : '');
-  const hashcode = hash
-    .sha256()
-    .update(fingerprint)
-    .digest('hex');
 
   const defaultOptions = {
     //credentials: 'include',
@@ -102,15 +73,14 @@ async function request(url, option) {
     newOptions.method === 'DELETE' ||
     newOptions.method === 'GET'
   ) {
-    const userInfo = getCurrentUserInfo() || {};
-    const token = getCurrentUserToken();
+    var authInfo = _getAuthInfo();
     if (!(newOptions.body instanceof FormData)) {
       newOptions.headers = {
         Accept: 'application/json',
         'Content-Type': 'application/json; charset=utf-8',
         ...newOptions.headers,
-        jwtToken: token,
-        username: userInfo.talentNo,
+        token: authInfo.token,
+        userAccount: authInfo.userAccount,
       };
       newOptions.body = JSON.stringify(newOptions.body);
     } else {
@@ -118,38 +88,36 @@ async function request(url, option) {
       newOptions.headers = {
         Accept: 'application/json',
         ...newOptions.headers,
-        jwtToken: token,
-        username: userInfo.talentNo,
+        token: authInfo.token,
+        userAccount: authInfo.userAccount,
       };
     }
   }
-  const expirys = options.expirys && 60;
-  // options.expirys !== false, return the cache,
-  if (options.expirys !== false) {
-    const cached = sessionStorage.getItem(hashcode);
-    const whenCached = sessionStorage.getItem(`${hashcode}:timestamp`);
-    if (cached !== null && whenCached !== null) {
-      const age = (Date.now() - whenCached) / 1000;
-      if (age < expirys) {
-        const response = new Response(new Blob([cached]));
-        return response.json();
-      }
-      sessionStorage.removeItem(hashcode);
-      sessionStorage.removeItem(`${hashcode}:timestamp`);
-    }
-  }
+
   try {
     const response = await fetch(url, newOptions);
     await checkStatus(response);
-    await cachedSave(response, hashcode);
     const json = await response.json();
     if (json.code !== '0') {
       // 处理业务异常
-      Toast.fail(json.message, 2);
-      return;
+      notification.error({
+        description: json.message,
+      });
+      const error = new Error(json.message);
+      error.name = json.code;
+      error.response = json;
+      throw error;
     }
     return json;
-  } catch (e) {}
+  } catch (e) {
+    const status = e.name;
+    if (status === 401) {
+      // 退出到登录页面
+      window.g_app._store.dispatch({
+        type: 'login/logout',
+      });
+    }
+  }
 }
 
 export default request;

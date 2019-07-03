@@ -2,7 +2,9 @@ package com.mn.modules.api.interceptor;
 
 import com.mn.common.exception.RRException;
 import com.mn.modules.api.annotation.CheckToken;
+import com.mn.modules.api.remote.AuthService;
 import com.mn.modules.api.utils.JwtUtils;
+import com.mn.modules.api.vo.UserInfo;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 public class TokenInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private JwtUtils jwtUtils;
-    @Value("${mnbi.app.appid}")
-    private String AppId;
+
+    private AuthService authService;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         CheckToken annotation;
@@ -45,15 +48,16 @@ public class TokenInterceptor extends HandlerInterceptorAdapter {
             throw new RRException(jwtUtils.getHeader() + "不能为空", HttpStatus.UNAUTHORIZED.value());
         }
 
-        Claims claims = jwtUtils.getClaimByToken(token);
-        if(claims == null || jwtUtils.isTokenExpired(claims.getExpiration())){
-            throw new RRException(jwtUtils.getHeader() + "失效", HttpStatus.UNAUTHORIZED.value());
-        }
-        if (!claims.getSubject().equals(AppId)){
-            throw new RRException("appId错误", HttpStatus.UNAUTHORIZED.value());
-        }
+//        Claims claims = jwtUtils.getClaimByToken(token);
+//        if(claims == null || jwtUtils.isTokenExpired(claims.getExpiration())){
+//            throw new RRException(jwtUtils.getHeader() + "失效", HttpStatus.UNAUTHORIZED.value());
+//        }
+//        if (!claims.getSubject().equals(AppId)){
+//            throw new RRException("appId错误", HttpStatus.UNAUTHORIZED.value());
+//        }
 
-        request.setAttribute("appId" , claims.getSubject());
+        UserInfo userInfo =  authService.getUserInfo(token);
+        request.setAttribute("userInfo" , userInfo);
 
         return true;
     }

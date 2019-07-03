@@ -7,9 +7,10 @@ const app = dva({
 });
 app.use(createLoading());
 window.g_app = app;
-// app.model({
-//   namespace: 'course',
-//   ...require('./models/course').default,
-// });
+
+app.model({
+  namespace: 'pointer',
+  ...require('./models/pointer').default,
+});
 
 export default app;

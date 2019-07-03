@@ -8,14 +8,22 @@ export default [
     routes: [
       {
         path: '/',
-        redirect: '/pointAddress',
+        redirect: '/listPointAddress',
         exact: true,
       },
 
       {
-        path: '/pointAddress',
+        path: '/createPointAddress',
         component: dynamic({
           loader: () => import('./pages/pointer'),
+        }),
+        exact: true,
+      },
+
+      {
+        path: '/listPointAddress',
+        component: dynamic({
+          loader: () => import('./pages/list'),
         }),
         exact: true,
       },

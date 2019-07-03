@@ -324,6 +324,10 @@ export const updateMap = (map, newOptions, newEvents, oldOptions, oldEvents) => 
       }
     },
 
+    drawMode: (v) => {
+      return true;
+    },
+
     center: (oldValue, newValue) => {
       //总是处理
       return true;

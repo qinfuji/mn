@@ -27,3 +27,13 @@ code {
 .pointerCreate .ant-form-item {
   margin-bottom: 2px;
 }
+
+#root .ant-layout-header {
+  height: auto !important;
+  padding: 5px 15px;
+  line-height: 24px;
+  width: 100%;
+  overflow: hidden;
+
+  background: #fff;
+}
