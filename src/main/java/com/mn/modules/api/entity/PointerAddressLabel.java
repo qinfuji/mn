@@ -13,11 +13,11 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
-@TableName("pointer_label_t")
+@TableName("pointer_address_label_t")
 @Data
 @ToString()
 @ApiModel("点址的标签表")
-public class PointerLabels extends LngLat{
+public class PointerAddressLabel {
 
 
     @TableId(type= IdType.AUTO)
@@ -26,15 +26,15 @@ public class PointerLabels extends LngLat{
     /**
      * 标签名称
      */
-    @TableField("label")
-    @ApiModelProperty("标签名称")
-    @NotNull(groups = {AddGroup.class})
-    String label;
+    @TableField("label_id")
+    @ApiModelProperty("标签名称id")
+    @NotNull(groups = {AddGroup.class}, message = "标签名称id必须填写")
+    Integer labelId;
 
     /**
      * 点址id
      */
     @TableField("pointer_address_id")
-    @NotNull(groups = {AddGroup.class})
+    @NotNull(groups = {AddGroup.class} , message = "点址id必须填写")
     String pointerAddressId;
 }

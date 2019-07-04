@@ -10,7 +10,7 @@ public class RestResult<T> {
     private String msg = "";
 
     public static RestResult ok = new RestResult();
-    public static RestResult fail = new RestResult().code(-1);
+    public static RestResult fail = new RestResult().code(500);
 
 
     public static RestResult build() {

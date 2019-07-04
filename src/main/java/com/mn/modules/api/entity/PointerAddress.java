@@ -10,25 +10,21 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
-@TableName("pointer_t")
+@TableName("pointer_address_t")
 @Data
 @ToString()
 @ApiModel
 public class PointerAddress extends GeographyPoint{
 
-
-
-
     @TableId(type= IdType.UUID)
-    @NotNull(groups = UpdateGroup.class)
+    @NotNull(groups = UpdateGroup.class , message = "ID不能为空")
     String id;
 
     /**
      * 数据所有者
      */
-    @TableField("appId")
-    @ApiModelProperty("接入用户appid")
-    @NotNull(groups = {AddGroup.class} )
+    @TableField("user_id")
+    @ApiModelProperty("接入用户userId")
     String userId;
 
 
@@ -40,7 +36,7 @@ public class PointerAddress extends GeographyPoint{
      * 状态
      */
     @ApiModelProperty("点址状态")
-    @TableField(value = "state" , fill = FieldFill.INSERT, update="save")
+    @TableField(value = "state")
     String state;
 
 
@@ -49,7 +45,7 @@ public class PointerAddress extends GeographyPoint{
      */
     @TableField("type")
     @ApiModelProperty("点址类型")
-    @NotNull(groups = {AddGroup.class} )
+    @NotNull(groups = {AddGroup.class} ,message = "点址类型不能为空" )
     String type;
 
 
@@ -58,10 +54,12 @@ public class PointerAddress extends GeographyPoint{
      */
     @TableField("organization_id")
     @ApiModelProperty("组织机构id")
-    @NotNull(groups = {AddGroup.class} )
+    @NotNull(groups = {AddGroup.class} , message = "组织机构ID名称不能为空")
     String organizationId;
 
 
     @Version
+    @TableField(value = "version" , fill = FieldFill.INSERT_UPDATE)
     private Integer version;
+
 }

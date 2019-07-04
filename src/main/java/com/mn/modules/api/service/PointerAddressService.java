@@ -3,6 +3,7 @@ package com.mn.modules.api.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.mn.modules.api.entity.PointerAddress;
 import com.mn.modules.api.qo.PointerAddressQuery;
+import com.mn.modules.api.vo.UserInfo;
 
 public interface PointerAddressService {
 
@@ -12,13 +13,9 @@ public interface PointerAddressService {
     String AREA_SCOPE_CITY = "city";
     String AREA_SCOPE_DISTRICT = "district";
 
-    /**
-     * 无效状态
-     */
-    String POINTER_ADDRESS_STATUS_INVALID = "-1";
 
     /**
-     * 机会点
+     * 点址
      */
     String TYPPE_CHANCE = "chance";
     /**
@@ -47,46 +44,51 @@ public interface PointerAddressService {
     /**
      * 已评估
      */
-    String STATUS_ESTIMATE_FINISH = "estimateFinish";
+    String STATUS_ESTIMATE_FINISH = "estimateFinished";
 
     /**
      * 已完成
      */
-    String STATUS_ALL_FINISH = "allFinish";
+    String STATUS_ALL_FINISH = "allFinished";
 
     /**
-     * 创建机会点
-     * @param pointerAddress 机会点对象
-     * @return 创建后的机会点
+     * 已删除
+     */
+    String STATUS_DELETE = "deleted";
+
+    /**
+     * 创建点址
+     * @param pointerAddress 点址对象
+     * @return 创建后的点址
      */
     PointerAddress createPointerAddress(PointerAddress pointerAddress);
 
     /**
-     * 查询机会点
-     * @param id 机会点id
+     * 查询点址
+     * @param id 点址id
      * @return
      */
     PointerAddress queryPointerAddress(String id);
     /**
-     * 更新机会点
+     * 更新点址
      * @param pointerAddress
-     * @return 更新后的机会点
+     * @return 更新后的点址
      */
     PointerAddress updatePointerAddress(PointerAddress pointerAddress);
 
 
     /**
-     * 使机会点无效
-     * @param id
+     * 使点址无效
+     * @param pointerAddress
      * @return
      */
-    boolean invalidPointerAddress(String id);
+    boolean invalidPointerAddress(PointerAddress pointerAddress);
 
     /**
-     * 按行政区域查询用户的机会点
+     * 按行政区域查询用户的点址
      * @param qo
-     * @param userId   用户Id
-     * @return 机会点分页列表
+     * @param userInfo
+     * @return 点址分页列表
      */
-    IPage<PointerAddress> getPointerAddressList(PointerAddressQuery qo , String userId);
+    IPage<PointerAddress> getPointerAddressList(PointerAddressQuery qo , UserInfo userInfo);
 }

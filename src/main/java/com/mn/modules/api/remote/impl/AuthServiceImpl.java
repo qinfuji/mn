@@ -22,6 +22,10 @@ public class AuthServiceImpl  implements AuthService {
 
     @Override
     public UserInfo getUserInfo(String token) {
-        return null;
+        UserInfo u = new UserInfo();
+        u.setId("xxxxxxx");
+        u.setUserName("qinfuji");
+        u.setOrganizationId("organizationId");
+        return u;
     }
 }

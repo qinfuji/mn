@@ -1,6 +1,7 @@
 package com.mn.modules.api.service;
 
 import com.mn.modules.api.entity.EstimateTask;
+import com.mn.modules.api.vo.UserInfo;
 
 public interface EstimateTaskService {
 
@@ -12,27 +13,24 @@ public interface EstimateTaskService {
      /**
       * 创建评估任务
       * @param task
-      * @param userId
       * @return
       */
-     EstimateTask create(EstimateTask task , String userId);
+     EstimateTask create(EstimateTask task);
 
      /**
       * 修改评估任务
       * @param id
       * @param task
-      * @param userId
       * @return
       */
-     EstimateTask update(Integer id ,  EstimateTask task , String userId);
+     EstimateTask update(Integer id ,  EstimateTask task);
 
      /**
       * 删除
       * @param id 任务主键
-      * @param userId
       * @return
       */
-     EstimateTask delete(Integer id , String userId);
+     int delete(Integer id);
 
 
      /**

@@ -26,9 +26,9 @@ public class GeographyPoint extends Base {
     /**
      * 商业类型， 例如学校，写字楼
      */
-    @TableField("type")
-    @NotNull(message = "类型必须选择" , groups = {AddGroup.class})
-    String type;
+    @TableField(exist=false)
+    @NotNull(message = "业态(分类标签)" , groups = {AddGroup.class})
+    String labels;
     /**
      * shape中心经度
      */

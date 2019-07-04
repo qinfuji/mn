@@ -3,6 +3,7 @@ package com.mn.modules.api;
 import com.github.jsonzou.jmockdata.JMockData;
 import com.github.jsonzou.jmockdata.MockConfig;
 import com.mn.MNBIApplication;
+import com.mn.modules.api.entity.PointerAddress;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,14 +18,4 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(classes = MNBIApplication.class)
 @Transactional
 public class BaseTest {
-
-    protected final MockConfig CHANCE_MOCK_CONFIG = new MockConfig()
-            .globalConfig().excludes("id","estimateResults");
-
-
-
-    public ChancePoint getTempChancePoint(){
-        ChancePoint cp = new ChancePoint();
-        return JMockData.mock(ChancePoint.class, CHANCE_MOCK_CONFIG);
-    }
 }

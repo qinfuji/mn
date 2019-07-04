@@ -2,10 +2,12 @@ package com.mn.modules.api.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.mn.common.validator.group.AddGroup;
+import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import java.lang.annotation.Inherited;
+import java.util.Date;
 
+@Data
 public class Base {
 
     /**
@@ -19,8 +21,8 @@ public class Base {
     /**
      * 创建时间
      */
-    @TableField(value = "created_time", fill = FieldFill.INSERT_UPDATE, update="NOW()")
-    String createdTime;
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
+    Date createdTime;
     /**
      * 最后修改用户
      */
@@ -34,6 +36,6 @@ public class Base {
     /**
      * 最后修改用户名
      */
-    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE, update="NOW()")
-    String lastUpdsatedUserName;
+    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
+    Date lastUpdatedTime;
 }

@@ -36,7 +36,9 @@
 
 
     <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
-        select * from pointer_t
+        <![CDATA[
+        select * from pointer_address_t where state <> 'deleted'
+        ]]>
     </select>
 
 </mapper>

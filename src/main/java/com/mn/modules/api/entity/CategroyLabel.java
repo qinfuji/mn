@@ -1,26 +1,31 @@
 package com.mn.modules.api.entity;
 
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+import com.mn.common.validator.group.AddGroup;
 import com.mn.common.validator.group.UpdateGroup;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
 /**
  * 分类标签
  */
+@TableName("categroy_label_t")
+@Data
+@ToString()
+@ApiModel("点址评估结果对象")
 public class CategroyLabel {
 
     /**
      * 标签Id
      */
-    @TableId(type= IdType.UUID)
+    @TableId(type= IdType.AUTO)
     @NotNull(groups = UpdateGroup.class)
-    String id;
+    Integer id;
 
     /**
      * 父id
@@ -34,5 +39,14 @@ public class CategroyLabel {
      */
     @ApiModelProperty("标签名称")
     @TableField(value = "label")
+    @NotNull(groups = AddGroup.class , message = "标签名称必须填写")
     String label;
+
+    /**
+     * 标签状态
+     */
+    @ApiModelProperty("标签状态")
+    @TableField(value = "label")
+    @NotNull(groups = AddGroup.class , message = "标签名称必须填写")
+    Integer state;
 }

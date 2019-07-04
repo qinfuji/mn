@@ -1,33 +1,75 @@
-CREATE TABLE `chance_point_t` (
-  `id` varchar(36) NOT NULL,
-  `shop_id` varchar(30) DEFAULT NULL,
-  `appId` varchar(30) DEFAULT NULL,
-  `status` varchar(10) DEFAULT '1',
-  `name` varchar(45) NOT NULL,
-  `address` varchar(45) NOT NULL,
-  `type` varchar(20) DEFAULT NULL,
-  `lng` decimal(10,6) NOT NULL,
-  `lat` decimal(10,6) NOT NULL,
-  `fence_data` text,
-  `province` varchar(20) DEFAULT NULL,
-  `province_name` varchar(20) DEFAULT NULL,
-  `city` varchar(20) DEFAULT NULL,
-  `city_name` varchar(20) DEFAULT NULL,
-  `district` varchar(20) DEFAULT NULL,
-  `district_name` varchar(20) DEFAULT NULL,
-  `created_time` datetime DEFAULT NULL,
-  `updated_time` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `pointer_address_t` (
+  `id` VARCHAR(32) NOT NULL,
+  `user_id` VARCHAR(45) NULL,
+  `code` VARCHAR(45) NULL,
+  `state` VARCHAR(10) NULL,
+  `type` VARCHAR(10) NOT NULL,
+  `organization_id` VARCHAR(45) NULL,
+  `version` INT NOT NULL DEFAULT 1,
+  `name` VARCHAR(45) NOT NULL,
+  `address` VARCHAR(200) NOT NULL,
+  `lng` DECIMAL(10,6) NOT NULL,
+  `lat` DECIMAL(10,6) NOT NULL,
+  `fence_data` TEXT NULL,
+  `province` VARCHAR(45) NOT NULL,
+  `province_name` VARCHAR(45) NOT NULL,
+  `city` VARCHAR(45) NOT NULL,
+  `city_name` VARCHAR(45) NOT NULL,
+  `district` VARCHAR(45) NOT NULL,
+  `district_name` VARCHAR(45) NOT NULL,
+  `created_user_id` VARCHAR(45) NULL,
+  `created_user_name` VARCHAR(45) NULL,
+  `created_time` DATETIME NOT NULL,
+  `last_updated_user_id` VARCHAR(45) NULL,
+  `last_updated_user_name` VARCHAR(45) NULL,
+  `updated_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`));
 
 
-CREATE TABLE `analysis_result_t` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `chance_id` varchar(36) NOT NULL,
-  `title` varchar(45) DEFAULT NULL,
-  `result` json NOT NULL,
-  `created_time` datetime DEFAULT NULL,
-  `updated_time` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `estimate_task_t` (
+  `id` VARCHAR(32) NOT NULL,
+  `filter_labels` VARCHAR(200) NULL COMMENT '标签过滤列表',
+  `hot_fances` TEXT NULL COMMENT '热力围栏数据',
+  `fance_hot_date` DATE NULL COMMENT '围栏热力数据采集时间',
+  `fance_hot_condition` VARCHAR(45) NULL COMMENT '围栏热力数据采集条件',
+  `distance` INT NULL COMMENT '辐射距离,单位米',
+  `observe_id` VARCHAR(45) NULL COMMENT '测控点id',
+  `state` VARCHAR(10) NULL COMMENT '任务状态',
+  `exec_state` INT NULL COMMENT '任务执行状态 ',
+  `pointer_address_id` VARCHAR(45) NOT NULL COMMENT '点址id',
+  `version` VARCHAR(45) NOT NULL,
+  `created_user_id` VARCHAR(45) NULL,
+  `created_user_name` VARCHAR(45) NULL,
+  `created_time` DATETIME NOT NULL,
+  `last_updated_user_id` VARCHAR(45) NULL,
+  `last_updated_user_name` VARCHAR(45) NULL,
+  `updated_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`));
+
+
+  CREATE TABLE `estimate_result_t` (
+    `id` VARCHAR(32) NOT NULL,
+    `fance` TEXT NULL COMMENT '址最终产生的围栏数据',
+    `fance_hot_datas` TEXT NULL COMMENT '用户定义的围栏热力数据',
+    `observer_rate_flow` VARCHAR(45) NULL COMMENT '测控点流量',
+    `radiation_distance` VARCHAR(45) NULL COMMENT '评估辐射距离',
+    `radiation_area` VARCHAR(45) NULL COMMENT '评估辐射面积',
+    `pointer_address_id` VARCHAR(45) NOT NULL COMMENT '点址id',
+    `estimate_task_id` VARCHAR(45) NOT NULL COMMENT '评估任务id',
+    PRIMARY KEY (`id`));
+
+
+CREATE TABLE `pointer_address_label_t` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `label_id` INT NOT NULL COMMENT '标签id',
+  `pointer_address_id` VARCHAR(45) NOT NULL COMMENT '点址id',
+  PRIMARY KEY (`id`));
+
+
+ CREATE TABLE `categroy_label_t` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `parent_id` INT NULL COMMENT '父标签id',
+   `state` INT(1) NOT NULL COMMENT '标签状态',
+   `label` VARCHAR(45) NOT NULL COMMENT '标签名称',
+   PRIMARY KEY (`id`));
+

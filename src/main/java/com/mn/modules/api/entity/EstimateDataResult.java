@@ -13,11 +13,11 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
-@TableName("estimate_result_t")
+@TableName("estimate_data_result_t")
 @Data
 @ToString()
-@ApiModel("点址评估结果对象")
-public class EstimateResult {
+@ApiModel("点址评估任务结果对象")
+public class EstimateDataResult {
 
 
     @TableId(type= IdType.UUID)
@@ -42,7 +42,7 @@ public class EstimateResult {
      */
     @ApiModelProperty("测控点流量")
     @TableField("observer_rate_flow")
-    String  observerRateFlow;
+    Integer  observerRateFlow;
 
 
     /**
