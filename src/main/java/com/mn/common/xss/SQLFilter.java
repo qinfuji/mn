@@ -1,7 +1,6 @@
 package com.mn.common.xss;
 
 import com.mn.common.exception.RRException;
-import com.mn.common.exception.RRException;
 import org.apache.commons.lang.StringUtils;
 
 /**

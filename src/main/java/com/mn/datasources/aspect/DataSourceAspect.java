@@ -1,6 +1,5 @@
 package com.mn.datasources.aspect;
 
-import com.mn.datasources.annotation.DataSource;
 import com.mn.datasources.DataSourceNames;
 import com.mn.datasources.DynamicDataSource;
 import com.mn.datasources.annotation.DataSource;

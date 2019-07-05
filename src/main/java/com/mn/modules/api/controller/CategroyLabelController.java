@@ -7,7 +7,6 @@ import com.mn.common.validator.group.UpdateGroup;
 import com.mn.modules.api.entity.CategroyLabel;
 import com.mn.modules.api.service.CategroyLabelService;
 import com.mn.modules.api.vo.RestResult;
-import com.mn.modules.api.vo.UserInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;

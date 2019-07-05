@@ -8,7 +8,6 @@ import com.mn.common.validator.group.UpdateGroup;
 import com.mn.modules.api.annotation.CheckToken;
 import com.mn.modules.api.entity.EstimateTask;
 import com.mn.modules.api.entity.PointerAddress;
-import com.mn.modules.api.qo.PointerAddressQuery;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.vo.RestResult;

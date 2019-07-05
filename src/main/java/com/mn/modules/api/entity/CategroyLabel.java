@@ -1,7 +1,10 @@
 package com.mn.modules.api.entity;
 
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.mn.common.validator.group.AddGroup;
 import com.mn.common.validator.group.UpdateGroup;
 import io.swagger.annotations.ApiModel;

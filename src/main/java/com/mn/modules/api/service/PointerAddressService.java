@@ -5,8 +5,6 @@ import com.mn.modules.api.entity.PointerAddress;
 import com.mn.modules.api.qo.PointerAddressQuery;
 import com.mn.modules.api.vo.UserInfo;
 
-import java.util.List;
-
 public interface PointerAddressService {
 
 

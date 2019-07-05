@@ -5,15 +5,12 @@ import com.mn.modules.api.annotation.CheckToken;
 import com.mn.modules.api.remote.AuthService;
 import com.mn.modules.api.utils.JwtUtils;
 import com.mn.modules.api.vo.UserInfo;
-import io.jsonwebtoken.Claims;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

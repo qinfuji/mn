@@ -1,7 +1,6 @@
 package com.mn.common.exception;
 
 import com.mn.common.utils.R;
-import com.mn.common.utils.R;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.slf4j.Logger;

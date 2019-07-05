@@ -2,7 +2,6 @@ package com.mn.modules.api.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mn.modules.api.entity.EstimateTask;
-import com.mn.modules.api.vo.UserInfo;
 
 public interface EstimateTaskService extends IService<EstimateTask> {
 
