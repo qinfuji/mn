@@ -37,6 +37,7 @@ CREATE TABLE `estimate_task_t` (
   `state` VARCHAR(10) NULL COMMENT '任务状态',
   `exec_state` INT NULL COMMENT '任务执行状态 ',
   `pointer_address_id` VARCHAR(45) NOT NULL COMMENT '点址id',
+  `estimate_result_data_id` VARCHAR(45) NOT NULL COMMENT '数据表id',
   `version` VARCHAR(45) NOT NULL,
   `created_user_id` VARCHAR(45) NULL,
   `created_user_name` VARCHAR(45) NULL,
@@ -54,8 +55,6 @@ CREATE TABLE `estimate_task_t` (
     `observer_rate_flow` VARCHAR(45) NULL COMMENT '测控点流量',
     `radiation_distance` VARCHAR(45) NULL COMMENT '评估辐射距离',
     `radiation_area` VARCHAR(45) NULL COMMENT '评估辐射面积',
-    `pointer_address_id` VARCHAR(45) NOT NULL COMMENT '点址id',
-    `estimate_task_id` VARCHAR(45) NOT NULL COMMENT '评估任务id',
     PRIMARY KEY (`id`));
 
 

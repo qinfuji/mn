@@ -5,6 +5,8 @@ import com.mn.modules.api.entity.PointerAddress;
 import com.mn.modules.api.qo.PointerAddressQuery;
 import com.mn.modules.api.vo.UserInfo;
 
+import java.util.List;
+
 public interface PointerAddressService {
 
 
@@ -91,4 +93,7 @@ public interface PointerAddressService {
      * @return 点址分页列表
      */
     IPage<PointerAddress> getPointerAddressList(PointerAddressQuery qo , UserInfo userInfo);
+
+
+
 }

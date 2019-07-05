@@ -19,30 +19,33 @@ public class MapHelper {
         return d * Math.PI / 180.0;
     }
 
+
     /**
-     * 计算两个坐标点之间的距离
+     * 用haversine公式计算球面两点间的距离.
+     * https://www.cnblogs.com/softfair/p/distance_of_two_latitude_and_longitude_points.html
      *
      * @param firstLatitude   第一个坐标的纬度
      * @param firstLongitude  第一个坐标的经度
      * @param secondLatitude  第二个坐标的纬度
      * @param secondLongitude 第二个坐标的经度
-     * @return 返回两点之间的距离，单位：公里/千米
+     * @return 返回两点之间的距离，单位：公里、千米
      */
     public static double getDistance(double firstLatitude, double firstLongitude,
                                      double secondLatitude, double secondLongitude) {
+        //经纬度转换成弧度
         double firstRadLat = rad(firstLatitude);
         double firstRadLng = rad(firstLongitude);
         double secondRadLat = rad(secondLatitude);
         double secondRadLng = rad(secondLongitude);
-
-        double a = firstRadLat - secondRadLat;
-        double b = firstRadLng - secondRadLng;
+        //差值
+        double a = Math.abs(firstRadLat - secondRadLat);
+        double b = Math.abs(firstRadLng - secondRadLng);
         double cal = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) + Math.cos(firstRadLat)
                 * Math.cos(secondRadLat) * Math.pow(Math.sin(b / 2), 2))) * EarthRadius;
         double result = Math.round(cal * 10000d) / 10000d;
-        // result = result * 1000;  //单位米
         return result;
     }
+
 
     /**
      * 计算两个坐标点之间的距离
@@ -63,7 +66,8 @@ public class MapHelper {
 
     /**
      *
-     * 这是利用:纬度间距1度=111.1km 的关系计算的；经度1度=111.1cosA (A为计算经度之处的纬度，比如在北纬60度处计算经度1度的距离，就是111.1Xcos60=111.1/2km)
+     * 这是利用:纬度间距1度=111.1km 的关系计算的；经度1度=111.1cosA
+     * (A为计算经度之处的纬度，比如在北纬60度处计算经度1度的距离，就是111.1 * cos60=111.1/2km)
      *
      * @param polygons
      * @return 平方千米

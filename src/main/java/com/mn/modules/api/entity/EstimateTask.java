@@ -61,7 +61,7 @@ public class EstimateTask extends Base{
     @ApiModelProperty("辐射距离")
     @TableField("distance")
     @NotNull(groups = {AddGroup.class})
-    double distance;
+    Double distance;
 
     /**
      * 测控点数据
@@ -75,7 +75,7 @@ public class EstimateTask extends Base{
      * 当前数据状态
      */
     @ApiModelProperty("任务状态")
-    String state;
+    Integer state;
 
     /**
      * 任务执行阶段状态， 任务状态分为3个部分，1、通过到访数据计算围栏， 2、通过到访数据计算命中的已有围栏， 3、获取命中围栏人口数据 4、获取用户标记的热力图数据
@@ -96,7 +96,11 @@ public class EstimateTask extends Base{
     @NotNull(groups = {AddGroup.class})
     String pointerAddressId;
 
+    @ApiModelProperty("评估结果数据id")
+    @TableField("estimate_result_data_id")
+    String  resultDataId;
+
     @Version
-    @TableField(value="version", fill = FieldFill.INSERT_UPDATE, update="%s+1")
+    @TableField(value="version", fill = FieldFill.INSERT_UPDATE)
     private Integer version;
 }

@@ -1,28 +1,36 @@
 package com.mn.modules.api.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mn.modules.api.BaseTest;
 import com.mn.modules.api.entity.PointerAddress;
+import com.mn.modules.api.entity.PointerAddressLabel;
 import com.mn.modules.api.interceptor.TestTokenInterceptor;
 import com.mn.modules.api.qo.PointerAddressQuery;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.vo.UserInfo;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
-import java.util.List;
 
 public class TestPointerAddressDao extends BaseTest {
 
     @Autowired
     private PointerAddressDao pointerAddressDao;
 
+    @Autowired
+    PointerAddressLabelsDao pointerAddressLabelsDao;
 
-    @Test
-    public void testQueryWithLabel() {
+    UserInfo userInfo;
+
+    {
+        userInfo = new UserInfo();
+        userInfo.setOrganizationId("xxx");
+    }
+
+    private PointerAddress getTmpPointerAddress() {
 
         PointerAddress pointerAddress = new PointerAddress();
         pointerAddress.setAddress("北京市朝阳区");
@@ -41,14 +49,77 @@ public class TestPointerAddressDao extends BaseTest {
         pointerAddress.setOrganizationId(TestTokenInterceptor.organizationId);
         pointerAddress.setCreatedTime(new Date());
         pointerAddress.setLastUpdatedTime(new Date());
+        pointerAddress.setOrganizationId(this.userInfo.getOrganizationId());
+        return pointerAddress;
+    }
 
+    @Test
+    public void testQuery() {
+
+        PointerAddress pointerAddress = getTmpPointerAddress();
+        pointerAddressDao.insert(pointerAddress);
+        PointerAddressQuery qo = new PointerAddressQuery();
+        IPage page = new Page(1, 20);
+        IPage<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(page, qo, userInfo);
+        Assert.assertNotEquals(null, ret);
+        Assert.assertEquals(1, ret.getTotal());
+    }
+
+
+    @Test
+    public void testQueryWithLngLat() {
+
+        PointerAddress pointerAddress = getTmpPointerAddress();
         pointerAddressDao.insert(pointerAddress);
 
         PointerAddressQuery qo = new PointerAddressQuery();
-        UserInfo userInfo = new UserInfo();
-        List<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(qo, userInfo);
-
-        Assert.assertEquals(1, ret.size());
+        qo.setDistance(15);  //15公里范围
+        qo.setLat("1.1");
+        qo.setLng("1.1");
+        IPage page = new Page(1, 20);
+        IPage<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(page, qo, userInfo);
+        Assert.assertNotEquals(null, ret);
+        Assert.assertEquals(1, ret.getTotal());
     }
 
+    @Test
+    public void testQueryWithLngLatAndLabels() {
+
+        PointerAddress pointerAddress = getTmpPointerAddress();
+        pointerAddress.setLabels("1");
+        pointerAddressDao.insert(pointerAddress);
+        PointerAddressLabel pal = new PointerAddressLabel();
+        pal.setPointerAddressId(pointerAddress.getId());
+        pal.setLabelId(1);
+        pointerAddressLabelsDao.insert(pal);
+
+        pointerAddress = getTmpPointerAddress();
+        pointerAddress.setLabels("2");
+        pointerAddressDao.insert(pointerAddress);
+        pal = new PointerAddressLabel();
+        pal.setPointerAddressId(pointerAddress.getId());
+        pal.setLabelId(2);
+        pointerAddressLabelsDao.insert(pal);
+
+        pointerAddress = getTmpPointerAddress();
+        pointerAddress.setLabels("3");
+        pointerAddressDao.insert(pointerAddress);
+        pal = new PointerAddressLabel();
+        pal.setPointerAddressId(pointerAddress.getId());
+        pal.setLabelId(3);
+        pointerAddressLabelsDao.insert(pal);
+
+        PointerAddressQuery qo = new PointerAddressQuery();
+        qo.setLabels("1,2");
+        qo.setDistance(15);  //15公里范围
+        qo.setLat("1.1");
+        qo.setLng("1.1");
+        IPage page = new Page(1, 1);
+        IPage<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(page, qo, userInfo);
+        Assert.assertNotEquals(null, ret);
+        Assert.assertEquals(2, ret.getTotal());
+        Assert.assertEquals(1, ret.getRecords().size());
+        Assert.assertEquals(2, ret.getPages());
+
+    }
 }

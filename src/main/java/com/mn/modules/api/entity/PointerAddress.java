@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 
 @TableName("pointer_address_t")
 @Data
-@ToString()
+@ToString(callSuper = true)
 @ApiModel
 public class PointerAddress extends GeographyPoint{
 

@@ -28,8 +28,7 @@ public class CategroyLabelController {
 
     @PostMapping("/create")
     @ApiOperation("创建分类标签")
-    public RestResult<CategroyLabel> create(@RequestBody CategroyLabel categroyLabel,
-                                            @RequestAttribute UserInfo userInfo) {
+    public RestResult<CategroyLabel> create(@RequestBody CategroyLabel categroyLabel) {
         try{
             ValidatorUtils.validateEntity(categroyLabel, AddGroup.class);
             categroyLabelService.save(categroyLabel);
@@ -44,9 +43,12 @@ public class CategroyLabelController {
 
     @PutMapping("/update/{id}")
     @ApiOperation("修改分类标签")
-    public RestResult<CategroyLabel> update(@RequestBody CategroyLabel categroyLabel,
-                                            @RequestAttribute UserInfo userInfo) {
+    public RestResult<CategroyLabel> update(@RequestBody CategroyLabel categroyLabel , @PathVariable Integer id) {
         try{
+            CategroyLabel dbCategroyLabel = categroyLabelService.getById(id);
+            if(dbCategroyLabel == null){
+                 return RestResult.fail.msg("标签不存在");
+            }
             ValidatorUtils.validateEntity(categroyLabel, UpdateGroup.class);
             categroyLabelService.updateById(categroyLabel);
             return RestResult.build(categroyLabel);
@@ -60,7 +62,7 @@ public class CategroyLabelController {
 
     @GetMapping("/query")
     @ApiOperation("查询")
-    public RestResult<CategroyLabel> update(@RequestParam String parentId) {
+    public RestResult<CategroyLabel> query(@RequestParam String parentId) {
         try{
             List<CategroyLabel> ret;
             if(!"".equals(parentId) && parentId != null){
@@ -79,9 +81,9 @@ public class CategroyLabelController {
         }
     }
 
-    @GetMapping("/{id}/state/${value}")
+    @GetMapping("/{id}/state/{value}")
     @ApiOperation("修改状态")
-    public RestResult<CategroyLabel> update(@PathVariable Integer id , @PathVariable Integer value) {
+    public RestResult<CategroyLabel> updateState(@PathVariable Integer id , @PathVariable Integer value) {
         try{
             CategroyLabel categroyLabel = new CategroyLabel();
             categroyLabel.setId(id);

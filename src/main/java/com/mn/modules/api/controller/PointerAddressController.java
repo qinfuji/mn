@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/pointerAddress")
 @Api("点址管理")
@@ -84,12 +86,18 @@ public class PointerAddressController {
     }
 
 
-    @PostMapping("/list/{scope}")
+    @PostMapping("/list")
     @ApiOperation("查询点址")
     @CheckToken
     public RestResult<IPage<PointerAddress>> queryList(
             @RequestAttribute UserInfo userInfo,
             @RequestBody PointerAddressQuery qo) {
+        if(qo.getPageIndex() == null){
+            qo.setPageIndex(1);
+        }
+        if(qo.getPageSize() == null){
+            qo.setPageSize(40);
+        }
         IPage<PointerAddress> ret = service.getPointerAddressList(qo, userInfo);
         return RestResult.build(ret);
     }

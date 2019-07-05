@@ -347,4 +347,14 @@ public class GeometryUtil {
             throw new IllegalArgumentException("参数不能为空，且多边形点数大于3");
         }
     }
+
+
+    /**
+     * 距离计算公式
+     *
+     * 第一点经纬度：lng1 lat1
+     * 第二点经纬度：lng2 lat2
+     *
+     * round(6378.138*2*asin(sqrt(pow(sin( (lat1*pi()/180-lat2*pi()/180)/2),2)+cos(lat1*pi()/180)*cos(lat2*pi()/180)* pow(sin( (lng1*pi()/180-lng2*pi()/180)/2),2)))*1000)
+     */
 }

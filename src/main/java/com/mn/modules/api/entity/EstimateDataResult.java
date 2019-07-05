@@ -60,17 +60,5 @@ public class EstimateDataResult {
     @TableField("radiation_area")
     String radiationArea;
 
-    /**
-     * 点址id
-     */
-    @ApiModelProperty("点址id")
-    @TableField("pointer_address_id")
-    String pointerAddressId;
 
-    /**
-     * 评估任务id
-     */
-    @ApiModelProperty("评估任务id")
-    @TableField("estimate_task_id")
-    String estimateTaskId;
 }

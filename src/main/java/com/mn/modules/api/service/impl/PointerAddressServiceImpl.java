@@ -13,6 +13,8 @@ import com.mn.modules.api.vo.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class PointerAddressServiceImpl implements PointerAddressService {
@@ -23,6 +25,8 @@ public class PointerAddressServiceImpl implements PointerAddressService {
 
     @Autowired
     private PointerAddressLabelsDao pointerAddressLabelsDao;
+
+
 
 
     public PointerAddressServiceImpl() {
@@ -53,7 +57,16 @@ public class PointerAddressServiceImpl implements PointerAddressService {
 
     @Override
     public PointerAddress queryPointerAddress(String id) {
-        return pointerAddressDao.selectById(id);
+        PointerAddress pa =  pointerAddressDao.selectById(id);
+        QueryWrapper<PointerAddressLabel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pointer_address_id" , pa.getId());
+        List<PointerAddressLabel> pointerAddressLabelList = pointerAddressLabelsDao.selectList(queryWrapper);
+        String labels = "";
+        for(PointerAddressLabel pointerAddressLabel : pointerAddressLabelList){
+             labels += pointerAddressLabel.getLabelId();
+        }
+        pa.setLabels(labels);
+        return pa;
     }
 
     @Override
@@ -63,7 +76,7 @@ public class PointerAddressServiceImpl implements PointerAddressService {
         if(!"".equals(labels) && labels!=null){
             //首先删除所有标签，在创建
             QueryWrapper qw = new QueryWrapper<PointerAddress>();
-            qw.eq("pointerAddressId" , pointerAddress.getId());
+            qw.eq("pointer_address_id" , pointerAddress.getId());
             pointerAddressLabelsDao.delete(qw);
             String[] labelArray = labels.split(",");
 
@@ -74,7 +87,9 @@ public class PointerAddressServiceImpl implements PointerAddressService {
                 pointerAddressLabelsDao.insert(pal);
             }
         }
-        return pointerAddressDao.selectById(pointerAddress.getId());
+        PointerAddress ret =  pointerAddressDao.selectById(pointerAddress.getId());
+        ret.setLabels(labels);
+        return ret;
     }
 
     @Override
@@ -88,32 +103,8 @@ public class PointerAddressServiceImpl implements PointerAddressService {
     }
 
     @Override
-    public IPage<PointerAddress> getPointerAddressList(PointerAddressQuery qo, UserInfo userInfo) {
-
-        if("".equals(qo.getLabels()) || qo.getLabels()!=null){
-
-            QueryWrapper<PointerAddress> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("organizationId", userInfo.getOrganizationId());
-            if ("".equals(qo.getAddress()) && qo.getAddress() != null) {
-                queryWrapper.like("address", qo.getAddress());
-            }
-            //无效状态的不显示
-            queryWrapper.ne("state", STATUS_DELETE);
-            if ("".equals(qo.getScope()) && qo.getScope() != null) {
-                if (AREA_SCOPE_PROVINCE.equals(qo.getScope())) {
-                    queryWrapper.eq("province", qo.getAdcode());
-                } else if (AREA_SCOPE_CITY.equals(qo.getScope())) {
-                    queryWrapper.eq("city", qo.getAdcode());
-                } else if (AREA_SCOPE_DISTRICT.equals(qo.getScope())) {
-                    queryWrapper.eq("district", qo.getAdcode());
-                }
-            }
-            IPage pageParam = new Page(qo.getPageIndex(), qo.getPageSize());
-            IPage page = pointerAddressDao.selectPage(pageParam, queryWrapper);
-            return page;
-        }else{
-            pointerAddressDao.queryPointerAddressList(qo, userInfo);
-        }
-        return null;
+    public IPage<PointerAddress> getPointerAddressList( PointerAddressQuery qo, UserInfo userInfo) {
+           IPage page = new Page(qo.getPageIndex() , qo.getPageSize());
+           return pointerAddressDao.queryPointerAddressList(page ,qo, userInfo);
     }
 }
