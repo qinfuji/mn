@@ -5,6 +5,11 @@
 <mapper namespace="com.mn.modules.api.dao.PointerAddressDao">
 
     <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
+
+        <if test="qo.lat !=null and qo.lng !=null and qo.distance !=null">
+            select * from (
+        </if>
+
         <if test="qo.labels != null and qo.labels != ''">
             SELECT distinct pa.* FROM pointer_address_t pa right join pointer_address_label_t pal on pa.id =
             pal.pointer_address_id where 1=1
@@ -33,25 +38,24 @@
             and pa.district = #{qo.adcode}
         </if>
         <if test="qo.address != null">
-            and pa.address like  CONCAT('%',#{qo.adcode},'%')
+            and pa.address like CONCAT('%',#{qo.address},'%')
         </if>
         <if test="qo.labels != null and qo.labels != ''">
-            and pal.label_id in (#{qo.labels})
+            and pal.label_id in (${qo.labels})
         </if>
         <!--设置查询范围-->
         <if test="qo.lat !=null and qo.lng !=null and qo.distance !=null">
             <![CDATA[
-            and ROUND(
+            ) a where  ROUND(
             6378.137 * 2 *
             ASIN(
               SQRT(
-                  POW(SIN(ABS(#{qo.lat} * PI() / 180 - pa.lat * PI() / 180) / 2),2)
-                 +COS(#{qo.lat} * PI() / 180) * COS(pa.lat * PI() / 180)
-                 *POW(SIN(ABS(#{qo.lng} * PI() / 180 - pa.lng * PI() / 180) / 2),2)
+                  POW(SIN(ABS(#{qo.lat} * PI() / 180 - a.lat * PI() / 180) / 2),2)
+                 +COS(#{qo.lat} * PI() / 180) * COS(a.lat * PI() / 180)
+                 *POW(SIN(ABS(#{qo.lng} * PI() / 180 - a.lng * PI() / 180) / 2),2)
                  )) * 10000)/10000 <= #{qo.distance}
             ]]>
         </if>
-
     </select>
 
 </mapper>

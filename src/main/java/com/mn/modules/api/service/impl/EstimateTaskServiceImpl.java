@@ -75,7 +75,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         //计算完毕后，将数据写入结果对象，并更新
         String resultDataId = task.getResultDataId();
         EstimateDataResult edr = new EstimateDataResult();
-        edr.setFance(fence.toString());
+        edr.setFence(fence.toString());
         edr.setId(resultDataId);
         estimateDataResultDao.updateById(edr);
 
@@ -129,7 +129,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
     @Override
     public void execRequestFenceData(EstimateTask task) {
         List<Double[]> filteredFenceData = filterFences(task);
-        dataService.getFanceEstimateData(filteredFenceData);
+        dataService.getFenceEstimateData(filteredFenceData);
 
 
         task.setExecState(task.getExecState() | EXEC_STATUS_REQUESTED_FENCE_DATA);

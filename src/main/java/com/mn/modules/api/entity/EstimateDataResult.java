@@ -27,13 +27,13 @@ public class EstimateDataResult {
     /**
      * 点址最终产生的围栏数据
      */
-    @TableField("fance")
-    String fance;
+    @TableField("fence")
+    String fence;
 
     /**
      * 用户定义的围栏热力数据
      */
-    @TableField("fance_hot_datas")
+    @TableField("fence_hot_datas")
     String  fnacehotDatas;
 
 

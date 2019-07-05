@@ -37,22 +37,22 @@ public class EstimateTask extends Base{
      *  热力围栏列表
      */
     @ApiModelProperty("热力围栏数据")
-    @TableField("hot_fances")
-    String hotFances;
+    @TableField("hot_fences")
+    String hotFences;
 
     /**
      * 围栏热力数据时间
      */
     @ApiModelProperty("围栏热力数据采集时间")
-    @TableField("fance_hot_date")
-    String fancesHotDate;
+    @TableField("fence_hot_date")
+    String fencesHotDate;
 
     /**
      * 围栏热力条件
      */
     @ApiModelProperty("围栏热力数据采集条件")
-    @TableField("fance_hot_condition")
-    String fnaceHotCondition;
+    @TableField("fence_hot_condition")
+    String fenaceHotCondition;
 
 
     /**

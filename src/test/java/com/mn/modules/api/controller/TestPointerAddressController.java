@@ -71,7 +71,7 @@ public class TestPointerAddressController extends BaseTest {
         pointerAddress.setProvinceName("100000");
         pointerAddress.setDistrict("100000");
         pointerAddress.setDistrictName("100000");
-        pointerAddress.setLabels("商业中心");
+        pointerAddress.setLabels("1");
 
         MvcResult result = mockMvc.perform(post("/api/pointerAddress/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -108,7 +108,7 @@ public class TestPointerAddressController extends BaseTest {
         pointerAddress.setProvinceName("100000");
         pointerAddress.setDistrict("100000");
         pointerAddress.setDistrictName("100000");
-        pointerAddress.setLabels("商业中心");
+        pointerAddress.setLabels("2");
         pointerAddress.setOrganizationId(TestTokenInterceptor.organizationId);
         pointerAddress.setCreatedTime(new Date());
         pointerAddress.setLastUpdatedTime(new Date());
@@ -116,7 +116,7 @@ public class TestPointerAddressController extends BaseTest {
         dao.insert(pointerAddress);
 
         PointerAddress pointerAddress1 = new PointerAddress();
-        pointerAddress1.setLabels("测试Label");
+        pointerAddress1.setLabels("1");
         pointerAddress1.setId(pointerAddress.getId());
         pointerAddress1.setVersion(pointerAddress.getVersion());
 
@@ -132,7 +132,7 @@ public class TestPointerAddressController extends BaseTest {
         Assert.assertEquals(0 ,jo.getInteger("code").intValue()) ;
         PointerAddress cp =  jo.getObject("data" , PointerAddress.class);
         Assert.assertEquals( Integer.valueOf(2) , cp.getVersion());
-        Assert.assertEquals( "测试Label" , cp.getLabels());
+        Assert.assertEquals( "1" , cp.getLabels());
         Assert.assertEquals( pointerAddress.getAddress() , cp.getAddress());
 
     }
@@ -154,7 +154,7 @@ public class TestPointerAddressController extends BaseTest {
         pointerAddress.setProvinceName("100000");
         pointerAddress.setDistrict("100000");
         pointerAddress.setDistrictName("100000");
-        pointerAddress.setLabels("商业中心");
+        pointerAddress.setLabels("2");
         pointerAddress.setOrganizationId(TestTokenInterceptor.organizationId);
         pointerAddress.setCreatedTime(new Date());
         pointerAddress.setLastUpdatedTime(new Date());

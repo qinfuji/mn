@@ -29,9 +29,9 @@ CREATE TABLE `pointer_address_t` (
 CREATE TABLE `estimate_task_t` (
   `id` VARCHAR(32) NOT NULL,
   `filter_labels` VARCHAR(200) NULL COMMENT '标签过滤列表',
-  `hot_fances` TEXT NULL COMMENT '热力围栏数据',
-  `fance_hot_date` DATE NULL COMMENT '围栏热力数据采集时间',
-  `fance_hot_condition` VARCHAR(45) NULL COMMENT '围栏热力数据采集条件',
+  `hot_fences` TEXT NULL COMMENT '热力围栏数据',
+  `fence_hot_date` DATE NULL COMMENT '围栏热力数据采集时间',
+  `fence_hot_condition` VARCHAR(45) NULL COMMENT '围栏热力数据采集条件',
   `distance` INT NULL COMMENT '辐射距离,单位米',
   `observe_id` VARCHAR(45) NULL COMMENT '测控点id',
   `state` VARCHAR(10) NULL COMMENT '任务状态',
@@ -50,8 +50,8 @@ CREATE TABLE `estimate_task_t` (
 
   CREATE TABLE `estimate_result_t` (
     `id` VARCHAR(32) NOT NULL,
-    `fance` TEXT NULL COMMENT '址最终产生的围栏数据',
-    `fance_hot_datas` TEXT NULL COMMENT '用户定义的围栏热力数据',
+    `fence` TEXT NULL COMMENT '址最终产生的围栏数据',
+    `fence_hot_datas` TEXT NULL COMMENT '用户定义的围栏热力数据',
     `observer_rate_flow` VARCHAR(45) NULL COMMENT '测控点流量',
     `radiation_distance` VARCHAR(45) NULL COMMENT '评估辐射距离',
     `radiation_area` VARCHAR(45) NULL COMMENT '评估辐射面积',

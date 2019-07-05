@@ -1,5 +1,6 @@
 package com.mn.modules.api.dao;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mn.modules.api.BaseTest;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
+import java.util.List;
 
 public class TestPointerAddressDao extends BaseTest {
 
@@ -88,33 +90,37 @@ public class TestPointerAddressDao extends BaseTest {
         PointerAddress pointerAddress = getTmpPointerAddress();
         pointerAddress.setLabels("1");
         pointerAddressDao.insert(pointerAddress);
-        PointerAddressLabel pal = new PointerAddressLabel();
-        pal.setPointerAddressId(pointerAddress.getId());
-        pal.setLabelId(1);
-        pointerAddressLabelsDao.insert(pal);
+        PointerAddressLabel pal1 = new PointerAddressLabel();
+        pal1.setPointerAddressId(pointerAddress.getId());
+        pal1.setLabelId(1);
+        pointerAddressLabelsDao.insert(pal1);
 
-        pointerAddress = getTmpPointerAddress();
-        pointerAddress.setLabels("2");
-        pointerAddressDao.insert(pointerAddress);
-        pal = new PointerAddressLabel();
-        pal.setPointerAddressId(pointerAddress.getId());
-        pal.setLabelId(2);
-        pointerAddressLabelsDao.insert(pal);
+        PointerAddress pointerAddress1 = getTmpPointerAddress();
+        pointerAddress1.setLabels("2");
+        pointerAddressDao.insert(pointerAddress1);
+        PointerAddressLabel pal2 = new PointerAddressLabel();
+        pal2.setPointerAddressId(pointerAddress1.getId());
+        pal2.setLabelId(2);
+        pointerAddressLabelsDao.insert(pal2);
 
-        pointerAddress = getTmpPointerAddress();
-        pointerAddress.setLabels("3");
-        pointerAddressDao.insert(pointerAddress);
-        pal = new PointerAddressLabel();
-        pal.setPointerAddressId(pointerAddress.getId());
-        pal.setLabelId(3);
-        pointerAddressLabelsDao.insert(pal);
+        PointerAddress pointerAddress3 = getTmpPointerAddress();
+        pointerAddress3.setLabels("3");
+        pointerAddressDao.insert(pointerAddress3);
+        PointerAddressLabel pal3 = new PointerAddressLabel();
+        pal3.setPointerAddressId(pointerAddress3.getId());
+        pal3.setLabelId(3);
+        pointerAddressLabelsDao.insert(pal3);
 
         PointerAddressQuery qo = new PointerAddressQuery();
         qo.setLabels("1,2");
         qo.setDistance(15D);  //15公里范围
         qo.setLat("1.1");
         qo.setLng("1.1");
+        qo.setAddress("北京");
+        qo.setScope("city");
+        qo.setAdcode("100000");
         IPage page = new Page(1, 1);
+
         IPage<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(page, qo, userInfo);
         Assert.assertNotEquals(null, ret);
         Assert.assertEquals(2, ret.getTotal());
