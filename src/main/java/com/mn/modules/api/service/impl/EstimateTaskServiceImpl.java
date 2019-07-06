@@ -47,6 +47,16 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
     @Autowired
     DataService dataService;
 
+    public EstimateTaskServiceImpl() {
+    }
+
+    public EstimateTaskServiceImpl(ObservePointService observePointService, EstimateTaskDao estimateTaskDao , PointerAddressDao pointerAddressDao, EstimateDataResultDao estimateDataResultDao, DataService dataService) {
+        this.observePointService = observePointService;
+        this.pointerAddressDao = pointerAddressDao;
+        this.estimateDataResultDao = estimateDataResultDao;
+        this.dataService = dataService;
+        this.baseMapper = estimateTaskDao;
+    }
 
     @Override
     public EstimateTask createEstimate(EstimateTask estimateTask) {
@@ -87,7 +97,22 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         //计算完毕后，将数据写入结果对象，并更新
         String resultDataId = task.getResultDataId();
         EstimateDataResult edr = new EstimateDataResult();
-        edr.setFence(fence.toString());
+
+        String fanceString = "";
+        if(fence != null && fence.size()>=3){
+            for (int i = 0; i < fence.size(); i++) {
+                LngLat lngLat = fence.get(i);
+                if(lngLat == null) {
+                    continue;
+                }
+                fanceString += (lngLat.getLng().toString()+","+lngLat.getLat());
+                if(i < fence.size()-1){
+                    fanceString +=";";
+                }
+            }
+        }
+        System.out.println(fanceString);
+        edr.setFence(fanceString);
         edr.setId(resultDataId);
         estimateDataResultDao.updateById(edr);
 
@@ -174,13 +199,11 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
                 //判断到访点是否在围栏中
                 boolean isIn = GeometryUtil.isPtInPoly(lnglat , target);
                 if(isIn){
-                    throw new RuntimeException("no impl");
+                    ret.add(target);
                 }
             });
         });
-
         return ret;
-
     }
 
     /**

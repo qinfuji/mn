@@ -4,7 +4,7 @@
 
 <mapper namespace="com.mn.modules.api.dao.PointerAddressDao">
 
-    <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
+    <select id="queryPointerAddressList1" resultType="com.mn.modules.api.entity.PointerAddress">
 
         <if test="qo.lat !=null and qo.lng !=null and qo.distance !=null">
             select * from (
@@ -56,6 +56,11 @@
                  )) * 10000)/10000 <= #{qo.distance}
             ]]>
         </if>
+    </select>
+
+
+    <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
+        select * from pointer_address_t
     </select>
 
 </mapper>

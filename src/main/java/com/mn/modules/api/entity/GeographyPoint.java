@@ -9,7 +9,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotNull;
 
 @Data
-@ToString(includeFieldNames = true , callSuper = true)
+@ToString(callSuper = true)
 public class GeographyPoint extends Base {
     /**
      * 名称
@@ -45,8 +45,9 @@ public class GeographyPoint extends Base {
     /**
      * 围栏数据
      */
-    @TableField("fence_data")
+    @TableField("fence")
     String fence; //围栏
+
     /**
      * 省份
      */

@@ -535,12 +535,84 @@ class PointManager extends React.Component {
         editable: true,
       },
     };
+
+    const polygon = {
+      id: generateUUID(),
+      options: {
+        path: [
+          [116.525975, 40.008548],
+          [116.541252, 40.007102],
+          [116.545415, 40.007332],
+          [116.546016, 40.009962],
+          [116.544943, 40.022583],
+          [116.54181, 40.024128],
+          [116.525202, 40.023996],
+          [116.521253, 40.023668],
+          [116.519794, 40.0214],
+          [116.520352, 40.017883],
+          [116.5234, 40.010751],
+        ],
+      },
+    };
+
+    const polygon1 = {
+      id: generateUUID(),
+      options: {
+        path: [[116.541252, 40.009896], [116.541252, 40.007102], [116.545415, 40.007332], [116.546016, 40.009962]],
+      },
+    };
+
+    const polygon2 = {
+      id: generateUUID(),
+      options: {
+        path: [
+          [116.5234, 40.010751],
+          [116.525932, 40.010701],
+          [116.525975, 40.008548],
+          [116.530996, 40.008581],
+          [116.531039, 40.012394],
+          [116.523228, 40.01223],
+        ],
+      },
+    };
+
+    const polygon3 = {
+      id: generateUUID(),
+      options: {
+        path: [
+          [116.519794, 40.0214],
+          [116.520352, 40.017883],
+          [116.526146, 40.018343],
+          [116.525717, 40.021269],
+          [116.525202, 40.023996],
+          [116.521253, 40.023668],
+          [116.523571, 40.021466],
+        ],
+      },
+    };
+
+    const polygon4 = {
+      id: generateUUID(),
+      options: {
+        path: [
+          [116.536961, 40.022353],
+          [116.537347, 40.017916],
+          [116.544471, 40.017883],
+          [116.544943, 40.022583],
+          [116.54181, 40.024128],
+          [116.541209, 40.021959],
+          [116.541209, 40.021959],
+        ],
+      },
+    };
+
     this.map.clearMap();
     const geocoder = new window.AMap.Geocoder();
     geocoder.getAddress(center, (status, result) => {
       const state = {
         mapMarkers: [marker],
         mapCircles: [circle],
+        mapPolygons: [polygon, polygon1, polygon2, polygon3, polygon4],
         mapZoom: 15,
         mapCenter: center,
         rightViewMode: RIGHT_VIEW_CREATE,

@@ -47,7 +47,7 @@ public class TestPointerAddressDao extends BaseTest {
         pointerAddress.setProvinceName("100000");
         pointerAddress.setDistrict("100000");
         pointerAddress.setDistrictName("100000");
-        pointerAddress.setLabels("商业中心");
+        pointerAddress.setLabels("1,3");
         pointerAddress.setOrganizationId(TestTokenInterceptor.organizationId);
         pointerAddress.setCreatedTime(new Date());
         pointerAddress.setLastUpdatedTime(new Date());
@@ -56,15 +56,20 @@ public class TestPointerAddressDao extends BaseTest {
     }
 
     @Test
-    public void testQuery() {
+    public void testQueryPointerAddressList() {
 
         PointerAddress pointerAddress = getTmpPointerAddress();
+        pointerAddress.setFence("asdasdasd");
+        pointerAddress.setAddress("asdasdasdasdasd");
         pointerAddressDao.insert(pointerAddress);
         PointerAddressQuery qo = new PointerAddressQuery();
         IPage page = new Page(1, 20);
         IPage<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(page, qo, userInfo);
         Assert.assertNotEquals(null, ret);
         Assert.assertEquals(1, ret.getTotal());
+        System.out.print(ret.getRecords().get(0));
+        Assert.assertNotEquals(null , ret.getRecords().get(0).getFence());
+
     }
 
 
@@ -78,6 +83,7 @@ public class TestPointerAddressDao extends BaseTest {
         qo.setDistance(15D);  //15公里范围
         qo.setLat("1.1");
         qo.setLng("1.1");
+
         IPage page = new Page(1, 20);
         IPage<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(page, qo, userInfo);
         Assert.assertNotEquals(null, ret);

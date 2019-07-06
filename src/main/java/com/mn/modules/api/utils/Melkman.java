@@ -106,6 +106,7 @@ public class Melkman {
                     + pointArray[D[i]].getLat());
             resultPoints[index++] = pointArray[D[i]];
         }
+        System.out.println("------->>>>>"+resultPoints.length);
         return resultPoints;
     }
 

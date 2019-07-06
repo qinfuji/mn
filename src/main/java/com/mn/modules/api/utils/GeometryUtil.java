@@ -188,8 +188,8 @@ public class GeometryUtil {
      * @return
      */
     public static boolean isPtInPolygon(LngLat point, List<LngLat> polygon) {
-        assertParams(point, polygon);
 
+        assertParams(point, polygon);
         int iSum, iIndex;
         double dLon1, dLon2, dLat1, dLat2, dLon;
         int size = polygon.size();
@@ -208,7 +208,7 @@ public class GeometryUtil {
             }
             // 以下语句判断A点是否在边的两端点的水平平行线之间，在则可能有交点，开始判断交点是否在左射线上
             Double pointLng = point.getLng();
-            Double pointLat = point.getLng();
+            Double pointLat = point.getLat();
 
             if (((pointLat >= dLat1) && (pointLat < dLat2))
                     || ((pointLat >= dLat2) && (pointLat < dLat1))) {
@@ -274,7 +274,6 @@ public class GeometryUtil {
         for (int i = 1; i <= N; ++i) {
             if (p.equals(p1)) {
                 //p is an vertex
-                // TODO
                 return boundOrVertex;
             }
             //right vertex
