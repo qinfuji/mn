@@ -10,15 +10,15 @@ import java.util.List;
  * @author zl
  */
 public class Melkman {
-    private Point[] pointArray;//坐标数组
+    private LngLat[] pointArray;//坐标数组
     private final int N;//数据个数
     private int D[]; // 数组索引
 
-    public Melkman(List<Point> pList) {
-        this.pointArray = new Point[pList.size()];
+    public Melkman(List<LngLat> pList) {
+        this.pointArray = new LngLat[pList.size()];
         N = pList.size();
         int k = 0;
-        for (Point p : pList) {
+        for (LngLat p : pList) {
             pointArray[k++] = p;
         }
         D = new int[2 * N];
@@ -29,13 +29,13 @@ public class Melkman {
      *
      * @return 所求凸包点
      */
-    public Point[] getTubaoPoint() {
+    public LngLat[] getTubaoPoint() {
         // 获得最小的Y，作为P0点
-        float minY = pointArray[0].getY();
+        Double minY = pointArray[0].getLat();
         int j = 0;
         for (int i = 1; i < N; i++) {
-            if (pointArray[i].getY() < minY) {
-                minY = pointArray[i].getY();
+            if (pointArray[i].getLat() < minY) {
+                minY = pointArray[i].getLat();
                 j = i;
             }
         }
@@ -99,11 +99,11 @@ public class Melkman {
         }
 
         // 凸包构造完成，D数组里bot+1至top-1内就是凸包的序列(头尾是同一点)
-        Point[] resultPoints = new Point[top - bot - 1];
+        LngLat[] resultPoints = new LngLat[top - bot - 1];
         int index = 0;
         for (i = bot + 1; i < top - 1; i++) {
-            System.out.println(pointArray[D[i]].getX() + ","
-                    + pointArray[D[i]].getY());
+            System.out.println(pointArray[D[i]].getLng() + ","
+                    + pointArray[D[i]].getLat());
             resultPoints[index++] = pointArray[D[i]];
         }
         return resultPoints;
@@ -114,11 +114,11 @@ public class Melkman {
      *
      * @return 大于0则左转
      */
-    private float isLeft(Point o, Point a, Point b) {
-        float aoX = a.getX() - o.getX();
-        float aoY = a.getY() - o.getY();
-        float baX = b.getX() - a.getX();
-        float baY = b.getY() - a.getY();
+    private Double isLeft(LngLat o, LngLat a, LngLat b) {
+        Double aoX = a.getLng() - o.getLng();
+        Double aoY = a.getLat() - o.getLat();
+        Double baX = b.getLng() - a.getLng();
+        Double baY = b.getLat() - a.getLat();
 
         return aoX * baY - aoY * baX;
     }
@@ -130,23 +130,22 @@ public class Melkman {
      * @param j
      */
     private void swap(int i, int j) {
-        Point tempPoint = new Point();
-        tempPoint.setX(pointArray[j].getX());
-        tempPoint.setY(pointArray[j].getY());
+        LngLat tempPoint = new LngLat();
+        tempPoint.setLng(pointArray[j].getLng());
+        tempPoint.setLat(pointArray[j].getLat());
         tempPoint.setArCos(pointArray[j].getArCos());
 
-        pointArray[j].setX(pointArray[i].getX());
-        pointArray[j].setY(pointArray[i].getY());
+        pointArray[j].setLng(pointArray[i].getLng());
+        pointArray[j].setLat(pointArray[i].getLat());
         pointArray[j].setArCos(pointArray[i].getArCos());
 
-        pointArray[i].setX(tempPoint.getX());
-        pointArray[i].setY(tempPoint.getY());
+        pointArray[i].setLng(tempPoint.getLng());
+        pointArray[i].setLat(tempPoint.getLat());
         pointArray[i].setArCos(tempPoint.getArCos());
     }
 
     /**
      * 快速排序
-     *
      * @param top
      * @param bot
      */
@@ -161,7 +160,6 @@ public class Melkman {
 
     /**
      * 移动起点，左侧为小，右侧为大
-     *
      * @param top
      * @param bot
      * @return 移动后的位置
@@ -195,52 +193,13 @@ public class Melkman {
      */
     private double angle(int i) {
         double j, k, m, h;
-        j = pointArray[i].getX() - pointArray[0].getX();
-        k = pointArray[i].getY() - pointArray[0].getY();
+        j = pointArray[i].getLng() - pointArray[0].getLng();
+        k = pointArray[i].getLat() - pointArray[0].getLat();
         m = Math.sqrt(j * j + k * k); // 得到顶点i 到第一顶点的线段长度
         if (k < 0) {
             j = (-1) * Math.abs(j);
         }
-
         h = Math.acos(j / m); // 得到该线段与x轴的角度
         return h;
-    }
-
-    public static void main(String args[]) {
-        // File file = new File("G:/yl.txt");
-        File file = new File("G:/data.txt");
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        List<Point> pointList = new ArrayList<Point>();
-        String str = null;
-        try {
-            str = br.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        while (str != null) {
-            String[] s = str.split("\\t", 2);
-            float x = Float.parseFloat(s[0].trim());
-            float y = Float.parseFloat(s[1].trim());
-            Point p = new Point();
-            p.setX(x);
-            p.setY(y);
-            // System.out.println("文件数据：" + x + ", " + y);
-            pointList.add(p);
-            try {
-                str = br.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        System.out.println("数据个数：" + pointList.size());
-
-        Melkman m = new Melkman(pointList);
-        m.getTubaoPoint();
     }
 }

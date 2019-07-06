@@ -5,5 +5,6 @@ import lombok.Data;
 
 @Data
 public class ObserverPointData  extends LngLat {
-
+     Double lng;
+     Double lat;
 }

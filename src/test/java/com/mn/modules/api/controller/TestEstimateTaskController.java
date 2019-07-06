@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -177,5 +178,55 @@ public class TestEstimateTaskController extends BaseTest {
         Assert.assertEquals(0 ,jo.getInteger("code").intValue()) ;
         dbet =  jo.getObject("data" , EstimateTask.class);
         Assert.assertNotEquals(null ,dbet) ;
+    }
+
+    @Test
+    public void testDelete() throws Exception{
+        PointerAddress pa = getTmpPointerAddress();
+        pointerAddressService.createPointerAddress(pa);
+        EstimateTask et = new EstimateTask();
+        et.setPointerAddressId(pa.getId());
+        et.setFilterLabels("1,2,3");
+        et.setObserveId("1");
+        et.setDistance(3d);
+
+        MvcResult submitResult =  mockMvc.perform(post("/api/estimateTask/submit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSONObject.toJSONString(et)).header("token" , getToken()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn();
+
+        String responseString = submitResult.getResponse().getContentAsString();
+
+        JSONObject jo =  JSONObject.parseObject(responseString);
+        Assert.assertEquals(0 ,jo.getInteger("code").intValue()) ;
+        EstimateTask dbet =  jo.getObject("data" , EstimateTask.class);
+
+        MvcResult result = mockMvc.perform(delete("/api/estimateTask/delete/"+dbet.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSONObject.toJSONString(et)).header("token" , getToken()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn();
+
+        jo = JSONObject.parseObject(result.getResponse().getContentAsString());
+        int code = jo.getInteger("code");
+        Assert.assertEquals(0 , code);
+
+        MvcResult validEtResponse = mockMvc.perform(get("/api/estimateTask/querybyPointerAddressId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("paId" , pa.getId())
+                .content(JSONObject.toJSONString(et)).header("token" , getToken()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn();
+        responseString = validEtResponse.getResponse().getContentAsString();
+        System.out.println(responseString);
+        jo =  JSONObject.parseObject(responseString);
+        Assert.assertEquals(0 ,jo.getInteger("code").intValue()) ;
+        dbet =  jo.getObject("data" , EstimateTask.class);
+        Assert.assertEquals(null ,dbet) ;
+
     }
 }

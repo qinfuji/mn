@@ -16,6 +16,7 @@ public class GeometryUtil {
 
     /**
      * 没有测试
+     *
      * @param pointX
      * @param pointY
      * @param MapUnits
@@ -186,7 +187,7 @@ public class GeometryUtil {
      * @param polygon 多边形的顶点
      * @return
      */
-    public static boolean isPtInPolygon(Point2D.Double point, List<Point2D.Double> polygon) {
+    public static boolean isPtInPolygon(LngLat point, List<LngLat> polygon) {
         assertParams(point, polygon);
 
         int iSum, iIndex;
@@ -195,24 +196,27 @@ public class GeometryUtil {
         iSum = 0;
         for (iIndex = 0; iIndex < size; iIndex++) {
             if (iIndex == size - 1) {
-                dLon1 = polygon.get(iIndex).getX();
-                dLat1 = polygon.get(iIndex).getY();
-                dLon2 = polygon.get(0).getX();
-                dLat2 = polygon.get(0).getY();
+                dLon1 = polygon.get(iIndex).getLng();
+                dLat1 = polygon.get(iIndex).getLat();
+                dLon2 = polygon.get(0).getLng();
+                dLat2 = polygon.get(0).getLat();
             } else {
-                dLon1 = polygon.get(iIndex).getX();
-                dLat1 = polygon.get(iIndex).getY();
-                dLon2 = polygon.get(iIndex + 1).getX();
-                dLat2 = polygon.get(iIndex + 1).getY();
+                dLon1 = polygon.get(iIndex).getLng();
+                dLat1 = polygon.get(iIndex).getLat();
+                dLon2 = polygon.get(iIndex + 1).getLng();
+                dLat2 = polygon.get(iIndex + 1).getLat();
             }
             // 以下语句判断A点是否在边的两端点的水平平行线之间，在则可能有交点，开始判断交点是否在左射线上
-            if (((point.y >= dLat1) && (point.y < dLat2))
-                    || ((point.y >= dLat2) && (point.y < dLat1))) {
+            Double pointLng = point.getLng();
+            Double pointLat = point.getLng();
+
+            if (((pointLat >= dLat1) && (pointLat < dLat2))
+                    || ((pointLat >= dLat2) && (pointLat < dLat1))) {
                 if (Math.abs(dLat1 - dLat2) > 0) {
                     //得到 A点向左射线与边的交点的x坐标：
-                    dLon = dLon1 - ((dLon1 - dLon2) * (dLat1 - point.y)) / (dLat1 - dLat2);
+                    dLon = dLon1 - ((dLon1 - dLon2) * (dLat1 - pointLat)) / (dLat1 - dLat2);
                     // 如果交点在A点左侧（说明是做射线与 边的交点），则射线与边的全部交点数加一：
-                    if (dLon < point.x) {
+                    if (dLon < pointLng) {
                         iSum++;
                     }
                 }
@@ -226,20 +230,20 @@ public class GeometryUtil {
      * @param polygon 多边形的顶点
      *                返回一个点是否在一个多边形区域内， 如果点位于多边形的顶点或边上，不算做点在多边形内，返回false
      */
-    public static boolean isPointInPoly(Point2D.Double point, List<Point2D.Double> polygon) {
+    public static boolean isPointInPoly(LngLat point, List<LngLat> polygon) {
         assertParams(point, polygon);
 
         java.awt.geom.GeneralPath p = new java.awt.geom.GeneralPath();
-        Point2D.Double first = polygon.get(0);
-        p.moveTo(first.x, first.y);
+        LngLat first = polygon.get(0);
+        p.moveTo(first.getLng(), first.getLat());
         int size = polygon.size();
         for (int i = 1; i < size; i++) {
-            Point2D.Double pa = polygon.get(i);
-            p.lineTo(pa.x, pa.y);
+            LngLat pa = polygon.get(i);
+            p.lineTo(pa.getLng(), pa.getLat());
         }
-        p.lineTo(first.x, first.y);
+        p.lineTo(first.getLng(), first.getLat());
         p.closePath();
-        return p.contains(point);
+        return p.contains(point.getLng(), point.getLat());
     }
 
     /**
@@ -249,7 +253,7 @@ public class GeometryUtil {
      * @param polygon 多边形的顶点
      * @return 点在多边形内返回true, 否则返回false
      */
-    public static boolean isPtInPoly(Point2D.Double point, List<Point2D.Double> polygon) {
+    public static boolean isPtInPoly(LngLat point, List<LngLat> polygon) {
         assertParams(point, polygon);
 
         int N = polygon.size();
@@ -260,9 +264,9 @@ public class GeometryUtil {
         //浮点类型计算时候与0比较时候的容差
         double precision = 2e-10;
         //neighbour bound vertices
-        Point2D.Double p1, p2;
+        LngLat p1, p2;
         //当前点
-        Point2D.Double p = point;
+        LngLat p = point;
 
         //left vertex
         p1 = polygon.get(0);
@@ -270,31 +274,31 @@ public class GeometryUtil {
         for (int i = 1; i <= N; ++i) {
             if (p.equals(p1)) {
                 //p is an vertex
+                // TODO
                 return boundOrVertex;
             }
-
             //right vertex
             p2 = polygon.get(i % N);
             //ray is outside of our interests
-            if (p.x < Math.min(p1.x, p2.x) || p.x > Math.max(p1.x, p2.x)) {
+            if (p.getLng() < Math.min(p1.getLng(), p2.getLng()) || p.getLng() > Math.max(p1.getLng(), p2.getLng())) {
                 p1 = p2;
                 //next ray left point
                 continue;
             }
 
             //ray is crossing over by the algorithm (common part of)
-            if (p.x > Math.min(p1.x, p2.x) && p.x < Math.max(p1.x, p2.x)) {
+            if (p.getLng() > Math.min(p1.getLng(), p2.getLng()) && p.getLng() < Math.max(p1.getLng(), p2.getLng())) {
                 //x is before of ray
-                if (p.y <= Math.max(p1.y, p2.y)) {
+                if (p.getLat() <= Math.max(p1.getLat(), p2.getLat())) {
                     //overlies on a horizontal ray
-                    if (p1.x == p2.x && p.y >= Math.min(p1.y, p2.y)) {
+                    if (p1.getLng().equals(p2.getLng()) && p.getLat() >= Math.min(p1.getLat(), p2.getLat())) {
                         return boundOrVertex;
                     }
 
                     //ray is vertical
-                    if (p1.y == p2.y) {
+                    if (p1.getLat().equals(p2.getLat())) {
                         //overlies on a vertical ray
-                        if (p1.y == p.y) {
+                        if (p1.getLat().equals(p.getLat())) {
                             return boundOrVertex;
                             //before ray
                         } else {
@@ -303,14 +307,13 @@ public class GeometryUtil {
                         //cross point on the left side
                     } else {
                         //cross point of y
-                        double xinters = (p.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x) + p1.y;
+                        double xinters = (p.getLng() - p1.getLng()) * (p2.getLat() - p1.getLat()) / (p2.getLng() - p1.getLng()) + p1.getLat();
                         //overlies on a ray
-                        if (Math.abs(p.y - xinters) < precision) {
+                        if (Math.abs(p.getLat() - xinters) < precision) {
                             return boundOrVertex;
                         }
-
                         //before ray
-                        if (p.y < xinters) {
+                        if (p.getLat() < xinters) {
                             ++intersectCount;
                         }
                     }
@@ -318,11 +321,11 @@ public class GeometryUtil {
                 //special case when ray is crossing through the vertex
             } else {
                 //p crossing over p2
-                if (p.x == p2.x && p.y <= p2.y) {
+                if (p.getLng().equals(p2.getLng()) && p.getLat() <= p2.getLat()) {
                     //next vertex
-                    Point2D.Double p3 = polygon.get((i + 1) % N);
+                    LngLat p3 = polygon.get((i + 1) % N);
                     //p.x lies between p1.x & p3.x
-                    if (p.x >= Math.min(p1.x, p3.x) && p.x <= Math.max(p1.x, p3.x)) {
+                    if (p.getLng() >= Math.min(p1.getLng(), p3.getLng()) && p.getLng() <= Math.max(p1.getLng(), p3.getLng())) {
                         ++intersectCount;
                     } else {
                         intersectCount += 2;
@@ -342,19 +345,10 @@ public class GeometryUtil {
         }
     }
 
-    private static void assertParams(Point2D.Double point, List<Point2D.Double> polygon) {
+    private static void assertParams(LngLat point, List<LngLat> polygon) {
         if (null == point || null == polygon || polygon.size() < POLYGON_MIN_SIZE) {
             throw new IllegalArgumentException("参数不能为空，且多边形点数大于3");
         }
     }
 
-
-    /**
-     * 距离计算公式
-     *
-     * 第一点经纬度：lng1 lat1
-     * 第二点经纬度：lng2 lat2
-     *
-     * round(6378.138*2*asin(sqrt(pow(sin( (lat1*pi()/180-lat2*pi()/180)/2),2)+cos(lat1*pi()/180)*cos(lat2*pi()/180)* pow(sin( (lng1*pi()/180-lng2*pi()/180)/2),2)))*1000)
-     */
 }
