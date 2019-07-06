@@ -60,7 +60,7 @@ public class EstimateTask extends Base{
      */
     @ApiModelProperty("辐射距离")
     @TableField("distance")
-    @NotNull(groups = {AddGroup.class})
+    @NotNull(groups = {AddGroup.class} , message="辐射距离必须填写")
     Double distance;
 
     /**
@@ -68,7 +68,7 @@ public class EstimateTask extends Base{
      */
     @ApiModelProperty("测控点id")
     @TableField("observe_id")
-    @NotNull(groups = {AddGroup.class} )
+    @NotNull(groups = {AddGroup.class} , message="测控点必须填写")
     String observeId;
 
     /**

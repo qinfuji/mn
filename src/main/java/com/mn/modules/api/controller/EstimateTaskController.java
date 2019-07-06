@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class EstimateTaskController {
 
 
-    private  static Logger logger = LoggerFactory.getLogger(EstimateTaskController.class);
+    private static Logger logger = LoggerFactory.getLogger(EstimateTaskController.class);
 
     @Autowired
     EstimateTaskService service;
@@ -38,26 +38,56 @@ public class EstimateTaskController {
     @CheckToken
     public RestResult<EstimateTask> create(@RequestBody EstimateTask estimateTask,
                                            @RequestAttribute UserInfo userInfo) {
-        try{
+        try {
 
-            ValidatorUtils.validateEntity(estimateTask, AddGroup.class);
-            PointerAddress ps = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
-            if(ps == null || ps.getOrganizationId() != userInfo.getOrganizationId()){
-                 return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
-            }
-            EstimateTask et =  service.getEstimateTaskWithPointerAddressId(ps.getId());
-            if(et != null){
-                return RestResult.fail.msg("当前点址已存在任务");
-            }
-            estimateTask.setExecState(EstimateTaskService.EXEC_STATUS_NULL); //初始没有任何执行过的任务
             estimateTask.setState(EstimateTaskService.STATUS_WAIT_COMMIT); //未提交状态
-            service.createEstimate(estimateTask);
-            return RestResult.build(estimateTask);
-        }catch(Exception e){
-            logger.error("创建点址任务失败" , e);
+            return _create(estimateTask, userInfo);
+        } catch (Exception e) {
+            logger.error("创建点址任务失败", e);
             return RestResult.fail.msg("创建点址失败");
         }
 
+    }
+
+    @PostMapping("/submit")
+    @ApiOperation("保存并提交评估任务")
+    @CheckToken
+    public RestResult<EstimateTask> submit(@RequestBody EstimateTask estimateTask,
+                                           @RequestAttribute UserInfo userInfo) {
+
+        estimateTask.setState(EstimateTaskService.STATUS_COMMITED);
+        if (estimateTask.getId() != null) {
+            ValidatorUtils.validateEntity(estimateTask, AddGroup.class);
+            PointerAddress ps = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
+            if (ps == null || userInfo == null || !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
+                return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
+            }
+            service.updateById(estimateTask);
+            return RestResult.build(estimateTask);
+        } else {
+            return _create(estimateTask, userInfo);
+        }
+    }
+
+
+    private RestResult<EstimateTask> _create(EstimateTask estimateTask, UserInfo userInfo) {
+        try {
+            ValidatorUtils.validateEntity(estimateTask, AddGroup.class);
+            PointerAddress ps = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
+            if (ps == null || userInfo == null || !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
+                return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
+            }
+            EstimateTask et = service.getEstimateTaskWithPointerAddressId(ps.getId());
+            if (et != null) {
+                return RestResult.fail.msg("当前点址已存在任务");
+            }
+            estimateTask.setExecState(EstimateTaskService.EXEC_STATUS_NULL); //初始没有任何执行过的任务
+            service.createEstimate(estimateTask);
+            return RestResult.build(estimateTask);
+        } catch (Exception e) {
+            logger.error("创建点址任务失败", e);
+            return RestResult.fail.msg("创建点址失败");
+        }
     }
 
     @PutMapping("/update/{id}")
@@ -69,14 +99,10 @@ public class EstimateTaskController {
 
 
         ValidatorUtils.validateEntity(estimateTask, UpdateGroup.class);
-        EstimateTask pa =  service.getById(id);
+        EstimateTask pa = service.getById(id);
         PointerAddress ps = pointerAddressService.queryPointerAddress(pa.getPointerAddressId());
-        if(ps == null || ps.getOrganizationId() != userInfo.getOrganizationId()){
+        if (ps == null || userInfo == null ||  !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
-        }
-
-        if (!userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
-            return RestResult.fail.msg("您无权操作该数据");
         }
         service.updateById(estimateTask);
         pa = service.getById(id);
@@ -86,11 +112,11 @@ public class EstimateTaskController {
     @DeleteMapping("/delete/{id}")
     @ApiOperation("删除点址评估任务")
     @CheckToken
-    public RestResult<Boolean> delete(@PathVariable String id , @RequestAttribute UserInfo userInfo) {
+    public RestResult<Boolean> delete(@PathVariable String id, @RequestAttribute UserInfo userInfo) {
 
-        EstimateTask pa =  service.getById(id);
+        EstimateTask pa = service.getById(id);
         PointerAddress ps = pointerAddressService.queryPointerAddress(pa.getPointerAddressId());
-        if(ps == null || ps.getOrganizationId() != userInfo.getOrganizationId()){
+        if (ps == null || userInfo == null ||  !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
         service.invalid(pa);
@@ -98,15 +124,17 @@ public class EstimateTaskController {
     }
 
 
-    @PostMapping("/querybyPointerAddressId")
+    @GetMapping("/querybyPointerAddressId")
     @ApiOperation("查询点址下的有效任务")
     @CheckToken
     public RestResult<IPage<PointerAddress>> querybyPointerAddressId(
             @RequestAttribute UserInfo userInfo,
             @RequestParam String paId) {
 
+
         PointerAddress ps = pointerAddressService.queryPointerAddress(paId);
-        if(ps == null || ps.getOrganizationId() != userInfo.getOrganizationId()){
+
+        if (ps == null || userInfo == null ||  !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
         EstimateTask ret = service.getEstimateTaskWithPointerAddressId(paId);

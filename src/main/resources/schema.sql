@@ -48,7 +48,7 @@ CREATE TABLE `estimate_task_t` (
   PRIMARY KEY (`id`));
 
 
-  CREATE TABLE `estimate_result_t` (
+  CREATE TABLE `estimate_data_result_t` (
     `id` VARCHAR(32) NOT NULL,
     `fence` TEXT NULL COMMENT '址最终产生的围栏数据',
     `fence_hot_datas` TEXT NULL COMMENT '用户定义的围栏热力数据',

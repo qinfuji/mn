@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mn.modules.api.controller.CategroyLabelController;
 import com.mn.modules.api.dao.EstimateDataResultDao;
 import com.mn.modules.api.dao.EstimateTaskDao;
 import com.mn.modules.api.dao.PointerAddressDao;
@@ -16,6 +17,8 @@ import com.mn.modules.api.remote.ObservePointService;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.vo.ObserverPointData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +27,7 @@ import java.util.List;
 @Component
 public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, EstimateTask> implements EstimateTaskService {
 
+    private  static Logger logger = LoggerFactory.getLogger(EstimateTaskServiceImpl.class);
 
     @Autowired
     ObservePointService observePointService;
@@ -52,11 +56,16 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
 
     @Override
     public EstimateTask getEstimateTaskWithPointerAddressId(String pointerAddressId) {
+
+        logger.debug("getEstimateTaskWithPointerAddressId pointerAddress id {}" , pointerAddressId);
         QueryWrapper<EstimateTask> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("pointer_address_id", pointerAddressId);
         queryWrapper.eq("state", STATUS_COMMITED);
         List<EstimateTask> ret = this.baseMapper.selectList(queryWrapper);
-        return ret.get(0);
+        if(ret != null && ret.size()>0){
+             return ret.get(0);
+        }
+        return null;
     }
 
     @Override
