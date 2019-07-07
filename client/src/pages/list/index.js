@@ -8,11 +8,11 @@ import StandardTable from '@/components/StandardTable';
 const {Header, Content, Footer, Sider} = Layout;
 const Option = Select.Option;
 
-@connect(({pointer}) => ({
-  pointer,
+@connect(({pointerAddress}) => ({
+  pointerAddress,
 }))
 @Form.create()
-class List extends React.Component {
+class PointerList extends React.Component {
   entryCreatePointer = () => {
     History.push('/createPointAddress');
   };
@@ -136,9 +136,20 @@ class List extends React.Component {
     },
   ];
 
+  componentDidMount() {
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'pointerAddress/fetch',
+      payload: {
+        pageSize: 40,
+        pageIndex: 1,
+      },
+    });
+  }
+
   render() {
     const {
-      pointer: {data},
+      pointerAddress: {data},
     } = this.props;
     console.log(this.props);
     return (
@@ -167,4 +178,4 @@ class List extends React.Component {
   }
 }
 
-export default List;
+export default PointerList;

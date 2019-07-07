@@ -1,6 +1,7 @@
 package com.mn.modules.api.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.mn.modules.api.entity.EstimateDataResult;
 import com.mn.modules.api.entity.EstimateTask;
 
 public interface EstimateTaskService extends IService<EstimateTask> {
@@ -57,6 +58,13 @@ public interface EstimateTaskService extends IService<EstimateTask> {
       */
      EstimateTask getEstimateTaskWithPointerAddressId(String pointerAddressId);
 
+
+     /**
+      * 得到当前任务的结果
+      * @param estimateTaskId
+      * @return
+      */
+     EstimateDataResult getEstimateDataResult(String estimateTaskId);
      /**
       * 删除当前任务
       * @param task

@@ -2,7 +2,7 @@ CREATE TABLE `pointer_address_t` (
   `id` VARCHAR(32) NOT NULL,
   `user_id` VARCHAR(45) NULL,
   `code` VARCHAR(45) NULL,
-  `state` VARCHAR(10) NULL,
+  `state` VARCHAR(40) NULL,
   `type` VARCHAR(10) NOT NULL,
   `organization_id` VARCHAR(45) NULL,
   `version` INT NOT NULL DEFAULT 1,

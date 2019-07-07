@@ -9,8 +9,8 @@ app.use(createLoading());
 window.g_app = app;
 
 app.model({
-  namespace: 'pointer',
-  ...require('./models/pointer').default,
+  namespace: 'pointerAddress',
+  ...require('./models/pointerAddress').default,
 });
 
 export default app;

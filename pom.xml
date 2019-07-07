@@ -239,12 +239,20 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--https://www.cnblogs.com/17th-trackwalker/p/10268927.html-->
         <dependency>
             <groupId>com.esri.geometry</groupId>
             <artifactId>esri-geometry-api</artifactId>
             <version>2.2.2</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/de.lmu.ifi.dbs.elki/elki-core-math -->
+        <!--https://github.com/elki-project/elki-->
+        <dependency>
+            <groupId>de.lmu.ifi.dbs.elki</groupId>
+            <artifactId>elki-core-math</artifactId>
+            <version>0.7.5</version>
+        </dependency>
 
 
         <!-- Junit 5 -->

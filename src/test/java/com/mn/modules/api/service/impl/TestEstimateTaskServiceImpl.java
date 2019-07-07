@@ -4,6 +4,7 @@ import com.mn.modules.api.BaseTest;
 import com.mn.modules.api.dao.EstimateDataResultDao;
 import com.mn.modules.api.dao.EstimateTaskDao;
 import com.mn.modules.api.dao.PointerAddressDao;
+import com.mn.modules.api.entity.EstimateDataResult;
 import com.mn.modules.api.entity.EstimateTask;
 import com.mn.modules.api.entity.PointerAddress;
 import com.mn.modules.api.interceptor.TestTokenInterceptor;
@@ -12,11 +13,10 @@ import com.mn.modules.api.remote.ObservePointService;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.vo.ObserverPointData;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
     @Autowired
     PointerAddressService pointerAddressService;
 
-    @Autowired
+    @Mock
     DataService dataService;
 
     @Autowired
@@ -41,6 +41,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
     @Mock
     ObservePointService observePointService;
 
+
     @Autowired
     EstimateTaskDao estimateTaskDao;
 
@@ -48,6 +49,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
     EstimateDataResultDao estimateDataResultDao;
 
     EstimateTaskService estimateTaskService;
+
 
     @BeforeEach
     @Before
@@ -111,7 +113,16 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         pa.setLng(116.539364);
         pa.setLat(40.020069);
         pa.setAddress("北京市朝阳区崔各庄镇朝林科技园");
-        pa.setFence("116.536961,40.022353;116.537347,40.017916;116.544471,40.017883;116.544943,40.022583;116.54181,40.024128;116.541209,40.021959;116.541209,40.021959");
+        //pa.setFence("116.536961,40.022353;116.537347,40.017916;116.544471,40.017883;116.544943,40.022583;116.54181,40.024128;116.541209,40.021959;116.541209,40.021959");
+        pa.setFence("116.536961,40.022353;116.537347,40.017916;116.544471,40.017883;116.544943,40.022583;116.54181,40.024128;116.541209,40.021959");
+        pa.setState(PointerAddressService.STATUS_NOT_ESTIMATE);
+        pointerAddressService.createPointerAddress(pa);
+
+        pa = getTmpPointerAddress();
+        pa.setLng(116.533873);
+        pa.setLat(40.02013);
+        pa.setAddress("北京市朝阳区崔各庄镇首都机场辅路");
+        pa.setFence("116.531598,40.022266;116.531384,40.018027;116.53619,40.018881;116.536319,40.019407");
         pa.setState(PointerAddressService.STATUS_NOT_ESTIMATE);
         pointerAddressService.createPointerAddress(pa);
 
@@ -140,6 +151,9 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         estimateTask.setObserveId("observerId");
         estimateTaskService.createEstimate(estimateTask);
 
+        PointerAddress pointerAddress = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
+        Assert.assertEquals(PointerAddressService.STATUS_WAIT_ESTIMATE , pointerAddress.getState());
+
 
         List<ObserverPointData> observerPointList = new ArrayList<>();
         ObserverPointData opd = new ObserverPointData();
@@ -158,9 +172,36 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         opd.setLng(116.539364);
         opd.setLat(40.020069);
         observerPointList.add(opd);
+        opd = new ObserverPointData();
+        opd.setLng(116.533873);
+        opd.setLat(40.02013);
+        observerPointList.add(opd);
 
         Mockito.when(observePointService.getObserveData(any())).thenReturn(observerPointList);
         estimateTaskService.execCalculateFence(estimateTask);
+
+        EstimateTask estimateTask1 = estimateTaskService.getById(estimateTask.getId());
+        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE , EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE&estimateTask1.getExecState());
+
+        EstimateDataResult edr = estimateTaskService.getEstimateDataResult(estimateTask1.getId());
+        System.out.println(edr.getFence());
+        Assert.assertNotNull(null , edr.getFence());
+
+
+
+        Mockito.when(dataService.getFenceEstimateData(any())).thenReturn(new ArrayList());
+        Mockito.when(dataService.getFenceHotData(any())).thenReturn(new ArrayList());
+        estimateTaskService.execRequestFenceData(estimateTask1);
+        estimateTaskService.execRequestUserFenceHotData(estimateTask1);
+
+
+        estimateTask1 = estimateTaskService.getById(estimateTask.getId());
+        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA&estimateTask1.getExecState());
+        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA&estimateTask1.getExecState());
+        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_FINISH_CODE , estimateTask1.getExecState().intValue());
+
+        pointerAddress = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
+        Assert.assertEquals(PointerAddressService.STATUS_ESTIMATE_FINISH , pointerAddress.getState());
     }
 
 }

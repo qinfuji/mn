@@ -39,7 +39,6 @@ public class PointerAddressServiceImpl implements PointerAddressService {
 
     @Override
     public PointerAddress createPointerAddress(PointerAddress pointerAddress) {
-        pointerAddress.setState(STATUS_WAIT_SUBMIT); //等待提交
         pointerAddressDao.insert(pointerAddress);
 
         String labels = pointerAddress.getLabels();
