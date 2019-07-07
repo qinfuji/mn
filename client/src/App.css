@@ -37,3 +37,11 @@ code {
 
   background: #fff;
 }
+
+.state {
+  color: #008000b5;
+}
+
+.operationBtn {
+  font-size: 12px;
+}

@@ -5,6 +5,7 @@ import moment from 'moment';
 import History from '../../core/history';
 import localData from '../../utils/adcode.json';
 import StandardTable from '@/components/StandardTable';
+import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 const {Header, Content, Footer, Sider} = Layout;
 const Option = Select.Option;
 
@@ -93,15 +94,19 @@ class PointerList extends React.Component {
     );
   }
 
+  enterCreatePointer = (id) => {
+    History.push('/createPointAddress/' + id);
+  };
+
   columns = [
-    {
+    /*{
       title: '序号',
       dataIndex: 'no',
     },
     {
       title: '编号',
       dataIndex: 'code',
-    },
+    },*/
     {
       title: '点址名称',
       dataIndex: 'name',
@@ -122,7 +127,23 @@ class PointerList extends React.Component {
       title: '状态',
       dataIndex: 'state',
       render: (val) => {
-        return val;
+        const status = PointerAddressConstant.status;
+        switch (val) {
+          case status.STATUS_WAIT_SUBMIT:
+            return <span className="state">等待提交</span>;
+          case status.STATUS_WAIT_ESTIMATE:
+            return <span className="state">待评估</span>;
+          case status.STATUS_NOT_ESTIMATE:
+            return <span className="state">未评估</span>;
+          case status.STATUS_ESTIMATE_FINISH:
+            return <span className="state">评估完成</span>;
+          case status.STATUS_ALL_FINISH:
+            return <span className="state">结论完成</span>;
+          case status.STATUS_DELETE:
+            return <span className="state">已删除</span>;
+          default:
+            return <span className="state">未知状态</span>;
+        }
       },
     },
     {
@@ -132,7 +153,49 @@ class PointerList extends React.Component {
     },
     {
       title: '操作',
-      render: (text, record) => text,
+      render: (text, record) => {
+        const status = PointerAddressConstant.status;
+        if (record.state === status.STATUS_WAIT_SUBMIT) {
+          return (
+            <React.Fragment>
+              <Button
+                className="operationBtn"
+                type="link"
+                size="small"
+                onClick={() => this.enterCreatePointer(record.id)}
+              >
+                修改点址
+              </Button>
+              <Button className="operationBtn" type="link" size="small">
+                删除
+              </Button>
+            </React.Fragment>
+          );
+        }
+        if (record.state === status.STATUS_NOT_ESTIMATE) {
+          return (
+            <Button type="link" size="small" style={{fontSize: 12}}>
+              '未评估'
+            </Button>
+          );
+        }
+        if (record.state === status.STATUS_WAIT_ESTIMATE) {
+          return (
+            <Button type="primary" size="small" style={{fontSize: 12}}>
+              待评估
+            </Button>
+          );
+        }
+        if (record.state === status.STATUS_ESTIMATE_FINISH) {
+          return '评估完成';
+        }
+        if (record.state === status.STATUS_ALL_FINISH) {
+          return '结论完成';
+        }
+        if (record.state === status.STATUS_DELETE) {
+          return '已删除';
+        }
+      },
     },
   ];
 
@@ -151,7 +214,7 @@ class PointerList extends React.Component {
     const {
       pointerAddress: {data},
     } = this.props;
-    console.log(this.props);
+    console.log(data);
     return (
       <Layout style={{width: '100%', height: '100%'}}>
         <Header>

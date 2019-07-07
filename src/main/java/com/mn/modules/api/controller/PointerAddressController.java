@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/pointerAddress")
+@RequestMapping("/api/pointerAddresses")
 @Api("点址管理")
 public class PointerAddressController {
 
@@ -45,7 +45,7 @@ public class PointerAddressController {
             return RestResult.build(ret);
         } catch (Exception e) {
             logger.error("创建点址失败", e);
-            return RestResult.fail.msg("创建点址失败");
+            return RestResult.fail.msg("创建点址失败! "+e.getMessage());
         }
 
     }
@@ -75,7 +75,7 @@ public class PointerAddressController {
             }
         } catch (Exception e) {
             logger.error("创建点址失败", e);
-            return RestResult.fail.msg("创建点址失败");
+            return RestResult.fail.msg("创建点址失败! "+e.getMessage());
         }
     }
 
@@ -90,7 +90,7 @@ public class PointerAddressController {
             return RestResult.build(ret);
         } catch (Exception e) {
             logger.error("创建点址失败", e);
-            return RestResult.fail.msg("创建点址失败");
+            return RestResult.fail.msg("创建点址失败! "+e.getMessage());
         }
     }
 

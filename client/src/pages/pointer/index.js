@@ -10,6 +10,7 @@ import localData from '../../utils/adcode.json';
 import SearchResultList from './searchResultList';
 import CreatePointer from './createPoint';
 import {getCodeInfo} from '../../utils/adcodeUtils';
+import {create, submit} from '../../services/pointer';
 const {Header, Content, Footer, Sider} = Layout;
 
 const FormItem = Form.Item;
@@ -326,9 +327,19 @@ class PointManager extends React.Component {
     });
   };
 
-  onSavePointer = () => {};
+  onSavePointer = async (pointer) => {
+    console.log(pointer);
+    const lnglat = pointer.lnglat.split(',');
+    pointer.lng = lnglat[0];
+    pointer.lat = lnglat[1];
 
-  onSubmitPointer = () => {};
+    const response = await create(pointer);
+    console.log(response);
+  };
+
+  onSubmitPointer = async (pointer) => {
+    console.log(pointer);
+  };
 
   onDeletePointer = () => {};
 
@@ -741,7 +752,7 @@ class PointManager extends React.Component {
                 onSave={this.onSavePointer}
                 onDelete={this.onDeletePointer}
                 onUpdate={this.onUpdatePointer}
-                onSubmit={this.onSavePointer}
+                onSubmit={this.onSubmitPointer}
               />
             )}
           </Sider>

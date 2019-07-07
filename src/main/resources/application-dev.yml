@@ -90,7 +90,7 @@ spring:
     #初始化表结构
     jdbc:
       #initialize-schema: always
-      initialize-schema: never
+      initialize-schema: always
 
 devtools:
   restart:

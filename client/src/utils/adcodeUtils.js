@@ -33,11 +33,11 @@ export function getCodeInfo(adcode) {
   }
 
   return {
-    districtCode,
-    districtLabel,
-    cityLabel,
-    cityCode,
-    provinceCode,
-    provinceLabel,
+    district: districtCode,
+    districtName: districtLabel,
+    cityName: cityLabel,
+    city: cityCode,
+    province: provinceCode,
+    provinceName: provinceLabel,
   };
 }

@@ -21,6 +21,14 @@ export default [
       },
 
       {
+        path: '/createPointAddress/:id',
+        component: dynamic({
+          loader: () => import('./pages/pointer'),
+        }),
+        exact: true,
+      },
+
+      {
         path: '/listPointAddress',
         component: dynamic({
           loader: () => import('./pages/list'),

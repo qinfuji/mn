@@ -20,19 +20,32 @@ const Option = Select.Option;
 })
 class CreatePointer extends React.Component {
   submit = (e) => {
-    const {onPointer} = this.props;
-  };
-
-  save = () => {
     const {
       form: {validateFields},
-      dispatch,
+      onSubmit,
       pointer: {adCodeInfo},
     } = this.props;
     validateFields((error, values) => {
       if (error) return;
       const reqParams = {...values, ...adCodeInfo};
-      console.log(reqParams);
+      if (onSubmit) {
+        onSubmit(reqParams);
+      }
+    });
+  };
+
+  save = () => {
+    const {
+      form: {validateFields},
+      onSave,
+      pointer: {adCodeInfo},
+    } = this.props;
+    validateFields((error, values) => {
+      if (error) return;
+      const reqParams = {...values, ...adCodeInfo};
+      if (onSave) {
+        onSave(reqParams);
+      }
     });
   };
 
@@ -134,7 +147,17 @@ class CreatePointer extends React.Component {
               />,
             )}
           </Form.Item>
-          <Form.Item label="标签(业态)">{getFieldDecorator('label', {})(<Input />)}</Form.Item>
+          <Form.Item label="标签(业态)">
+            {getFieldDecorator('labels', {
+              initialValue: pointer && pointer.labels ? pointer.labels : '',
+              rules: [{required: true, message: '请填写'}],
+            })(
+              <Select>
+                <Option value={1}>标签1</Option>
+                <Option value={2}>标签2</Option>
+              </Select>,
+            )}
+          </Form.Item>
         </Form>
         <div style={{marginTop: '40px', display: 'flex', justifyContent: 'flex-end'}}>
           {pointer && !pointer.id && (

@@ -39,8 +39,9 @@ const checkStatus = (response) => {
     return response;
   }
 
+  console.log(response);
   // 系统错误
-  const errortext = response.message || codeMessage[response.status] || response.statusText;
+  const errortext = response.msg || codeMessage[response.status] || response.statusText;
   notification.error({
     description: errortext,
   });
@@ -98,10 +99,10 @@ async function request(url, option) {
     const response = await fetch(url, newOptions);
     await checkStatus(response);
     const json = await response.json();
-    if (json.code !== '0') {
+    if (json.code !== 0) {
       // 处理业务异常
       notification.error({
-        description: json.message,
+        description: json.msg,
       });
       const error = new Error(json.message);
       error.name = json.code;
