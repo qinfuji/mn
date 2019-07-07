@@ -10,6 +10,7 @@ import localData from '../../utils/adcode.json';
 import SearchResultList from './searchResultList';
 import CreatePointer from './createPoint';
 import {getCodeInfo} from '../../utils/adcodeUtils';
+import History from '../../core/history';
 import {create, submit} from '../../services/pointer';
 const {Header, Content, Footer, Sider} = Layout;
 
@@ -334,7 +335,9 @@ class PointManager extends React.Component {
     pointer.lat = lnglat[1];
 
     const response = await create(pointer);
-    console.log(response);
+    if (response) {
+      History.push('/listPointAddress');
+    }
   };
 
   onSubmitPointer = async (pointer) => {
