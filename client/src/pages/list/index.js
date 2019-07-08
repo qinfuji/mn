@@ -119,14 +119,17 @@ class PointerList extends React.Component {
     },
     {
       title: '省',
+      width: '80px',
       dataIndex: 'provinceName',
     },
     {
       title: '市',
+      width: '120px',
       dataIndex: 'cityName',
     },
     {
       title: '区县',
+      width: '100px',
       dataIndex: 'districtName',
     },
     {
@@ -135,10 +138,12 @@ class PointerList extends React.Component {
     },
     {
       title: '状态',
+      width: '70px',
       sorter: true,
       dataIndex: 'state',
       render: (val) => {
-        return <span className="state">{PointerAddressConstant.statusLabels[val]}</span>;
+        const cn = 'state ' + val;
+        return <span className={cn}>{PointerAddressConstant.statusLabels[val]}</span>;
       },
     },
     {
