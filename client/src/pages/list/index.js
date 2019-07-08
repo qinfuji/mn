@@ -14,6 +14,8 @@ const Option = Select.Option;
 }))
 @Form.create()
 class PointerList extends React.Component {
+  state = {};
+
   entryCreatePointer = () => {
     History.push('/createPointAddress');
   };
@@ -73,16 +75,20 @@ class PointerList extends React.Component {
           {getFieldDecorator('address', {})(<Input size="small" style={{width: 100}}></Input>)}
         </Form.Item>
         <Form.Item label="状态">
-          {getFieldDecorator('estimateState', {})(
-            <Select style={{width: 80}} size="small">
-              <Option value={1}>未评估</Option>
-              <Option value={2}>待评估</Option>
-              <Option value={3}>已评估</Option>
+          {getFieldDecorator('state', {})(
+            <Select allowClear style={{width: 100}} size="small">
+              {Object.keys(PointerAddressConstant.statusLabels).map((key) => {
+                return (
+                  <Option key={key} value={key}>
+                    {PointerAddressConstant.statusLabels[key]}
+                  </Option>
+                );
+              })}
             </Select>,
           )}
         </Form.Item>
         <Form.Item>
-          <Button type="primary" size="small" onClick={this.onSearch}>
+          <Button type="primary" size="small" onClick={this.onSearchHandler}>
             查询
           </Button>
           &nbsp;&nbsp;
@@ -124,30 +130,20 @@ class PointerList extends React.Component {
       dataIndex: 'districtName',
     },
     {
+      title: '地址',
+      dataIndex: 'address',
+    },
+    {
       title: '状态',
+      sorter: true,
       dataIndex: 'state',
       render: (val) => {
-        const status = PointerAddressConstant.status;
-        switch (val) {
-          case status.STATUS_WAIT_SUBMIT:
-            return <span className="state">等待提交</span>;
-          case status.STATUS_WAIT_ESTIMATE:
-            return <span className="state">待评估</span>;
-          case status.STATUS_NOT_ESTIMATE:
-            return <span className="state">未评估</span>;
-          case status.STATUS_ESTIMATE_FINISH:
-            return <span className="state">评估完成</span>;
-          case status.STATUS_ALL_FINISH:
-            return <span className="state">结论完成</span>;
-          case status.STATUS_DELETE:
-            return <span className="state">已删除</span>;
-          default:
-            return <span className="state">未知状态</span>;
-        }
+        return <span className="state">{PointerAddressConstant.statusLabels[val]}</span>;
       },
     },
     {
       title: '创建时间',
+      sorter: true,
       dataIndex: 'createdTime',
       render: (val) => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
     },
@@ -157,12 +153,7 @@ class PointerList extends React.Component {
         const status = PointerAddressConstant.status;
         if (record.state === status.STATUS_WAIT_SUBMIT) {
           return (
-            <Button
-              className="operationBtn"
-              type="link"
-              size="small"
-              onClick={() => this.enterCreatePointer(record.id)}
-            >
+            <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
               点址管理
             </Button>
           );
@@ -170,17 +161,10 @@ class PointerList extends React.Component {
         if (record.state === status.STATUS_NOT_ESTIMATE) {
           return (
             <React.Fragment>
-              <Button
-                className="operationBtn"
-                type="link"
-                size="small"
-                onClick={() => this.enterCreatePointer(record.id)}
-              >
+              <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
                 点址管理
               </Button>
-              <Button type="link" size="small">
-                请求评估
-              </Button>
+              <Button size="small">请求评估</Button>
             </React.Fragment>
           );
         }
@@ -198,7 +182,7 @@ class PointerList extends React.Component {
           return '结论完成';
         }
         if (record.state === status.STATUS_DELETE) {
-          return '已删除';
+          return '';
         }
       },
     },
@@ -209,17 +193,76 @@ class PointerList extends React.Component {
     dispatch({
       type: 'pointerAddress/fetch',
       payload: {
-        pageSize: 40,
+        pageSize: 20,
         pageIndex: 1,
+        orderby: 'created_time desc',
       },
     });
   }
+
+  onSearchHandler = (e) => {
+    e.preventDefault();
+    const {dispatch, form} = this.props;
+    form.validateFields((err, fieldsValue) => {
+      if (err) return;
+      delete fieldsValue.password;
+      const values = {
+        ...fieldsValue,
+      };
+      if (values.district) {
+        values.scope = 'district';
+        values.adcode = values.district;
+      } else if (values.city) {
+        values.scope = 'city';
+        values.adcode = values.city;
+      } else if (values.province && values.province !== 100000) {
+        values.scope = 'province';
+        values.adcode = values.province;
+      }
+      values.orderby = 'created_time desc';
+
+      this.setState({
+        formValues: values,
+      });
+
+      dispatch({
+        type: 'pointerAddress/fetch',
+        payload: {
+          pageSize: 20,
+          pageIndex: 1,
+          ...values,
+        },
+      });
+    });
+  };
+
+  handleStandardTableChange = (pagination, filtersArg, sorter) => {
+    const {dispatch} = this.props;
+    const {formValues} = this.state;
+
+    const params = {
+      pageIndex: pagination.current,
+      pageSize: pagination.pageSize,
+      ...formValues,
+    };
+    if (sorter.field) {
+      const order = sorter.order.replace(/end$/g, '');
+      let sortField = sorter.field;
+      if (sorter.field === 'createdTime') {
+        sortField = 'created_time';
+      }
+      params.orderby = `${sortField} ${order}`;
+    }
+    dispatch({
+      type: 'pointerAddress/fetch',
+      payload: params,
+    });
+  };
 
   render() {
     const {
       pointerAddress: {data},
     } = this.props;
-    console.log(data);
     return (
       <Layout style={{width: '100%', height: '100%'}}>
         <Header>

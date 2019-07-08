@@ -1,10 +1,11 @@
 import React from 'react';
-import {Form, Input, Button, Icon, Tooltip, Select} from 'antd';
+import {Form, Input, Button, Icon, Tooltip, Select, Modal} from 'antd';
 
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
+const {confirm} = Modal;
 
 @Form.create({
   mapPropsToFields(props) {
@@ -60,7 +61,18 @@ class CreatePointer extends React.Component {
   };
 
   //删除
-  onDelete = (pointer) => {};
+  onDelete = () => {
+    const {onDelete, pointer} = this.props;
+    confirm({
+      title: '你确认要删除点址信息?',
+      onOk() {
+        if (onDelete) {
+          onDelete(pointer);
+        }
+      },
+      onCancel() {},
+    });
+  };
 
   //保存
   onSave = (pointer) => {};
@@ -72,8 +84,8 @@ class CreatePointer extends React.Component {
       onRelocation,
       onCreateFence,
       onRemoveFence,
+      onBack,
     } = this.props;
-    console.log(pointer);
     return (
       <div className="pointerCreate">
         <Form>
@@ -154,7 +166,7 @@ class CreatePointer extends React.Component {
             )}
           </Form.Item>
         </Form>
-        <div style={{marginTop: '40px', display: 'flex', justifyContent: 'flex-end'}}>
+        <div id="btnbar" style={{marginTop: '20px'}}>
           {pointer && !pointer.id && (
             <Button size="small" type="primary" onClick={this.onRevoke}>
               放弃
@@ -166,11 +178,9 @@ class CreatePointer extends React.Component {
               <Button size="small" type="primary" onClick={this.save}>
                 保存
               </Button>
-              &nbsp;
               <Button size="small" type="primary" onClick={this.submit}>
                 保存并提交
               </Button>
-              &nbsp;
             </React.Fragment>
           )}
           {pointer && pointer.id && (
@@ -178,6 +188,9 @@ class CreatePointer extends React.Component {
               删除
             </Button>
           )}
+          <Button size="small" type="primary" onClick={onBack}>
+            返回列表
+          </Button>
         </div>
       </div>
     );

@@ -11,7 +11,7 @@ import SearchResultList from './searchResultList';
 import CreatePointer from './createPoint';
 import {getCodeInfo} from '../../utils/adcodeUtils';
 import History from '../../core/history';
-import {create, submit, detail} from '../../services/pointer';
+import {create, submit, detail, remove} from '../../services/pointer';
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 const {Header, Content, Footer, Sider} = Layout;
 
@@ -102,6 +102,7 @@ class PointManager extends React.Component {
       mapNeedClear: false,
       mapActionMode: MAP_ACTION_CREATE_MARKER,
       currentPointer: {},
+      showSearchBar: true,
     };
   }
 
@@ -116,7 +117,6 @@ class PointManager extends React.Component {
       //请求机会点数据
       const response = await detail({id: params.id});
       const data = response.data;
-      console.log(data);
       const currentPointer = {
         adCodeInfo: {
           district: data.district,
@@ -149,6 +149,7 @@ class PointManager extends React.Component {
         },
         rightViewMode: RIGHT_VIEW_CREATE,
         mapPolygons: p ? [p] : [],
+        showSearchBar: false,
       });
     } else {
       const uis = await loadUI(['ui/geo/DistrictExplorer', 'ui/misc/PositionPicker', 'ui/misc/PointSimplifier']);
@@ -368,7 +369,16 @@ class PointManager extends React.Component {
     }
   };
 
-  onDeletePointer = () => {};
+  onBackList = () => {
+    History.push('/listPointAddress');
+  };
+
+  onDeletePointer = async (pointer) => {
+    const response = await remove(pointer);
+    if (response) {
+      History.push('/listPointAddress');
+    }
+  };
 
   renderSearch = () => {
     const {getFieldDecorator, getFieldValue} = this.props.form;
@@ -511,18 +521,7 @@ class PointManager extends React.Component {
         dragend: (dragEvent) => {
           const {target} = dragEvent;
           const _lnglat = target.getPosition();
-          const {
-            currentPointer: {fence},
-          } = this.state;
 
-          if (fence) {
-            const inPolygon = window.AMap.GeometryUtil.isPointInPolygon(_lnglat, fence.path);
-            if (!inPolygon) {
-              Modal.warning({
-                title: '点址不在围栏里内！',
-              });
-            }
-          }
           const _marker = {
             ...marker,
             options: {...marker.options},
@@ -571,7 +570,6 @@ class PointManager extends React.Component {
       },
     };
     const center = [lnglat.lng, lnglat.lat];
-    console.log(center);
     const circle = {
       id: generateUUID(),
       options: {
@@ -620,7 +618,6 @@ class PointManager extends React.Component {
   };
 
   createFencePolygon = (currentPointer) => {
-    console.log(currentPointer);
     const id = currentPointer.id || generateUUID();
     const fence = currentPointer.fence;
     if (!fence) return;
@@ -649,7 +646,7 @@ class PointManager extends React.Component {
                       mapActionMode: null,
                       mapDrawMode: false,
                       currentPointer: {
-                        ...currentPointer,
+                        ...pointerAddress,
                         fenceId: id,
                       },
                     });
@@ -708,15 +705,6 @@ class PointManager extends React.Component {
             currentPointer.fence = path.join(';');
             const _polygon = this.createFencePolygon(currentPointer);
             e.obj.getMap().remove(e.obj);
-            const {
-              currentPointer: {lnglat},
-            } = this.state;
-            const inPolygon = window.AMap.GeometryUtil.isPointInPolygon([lnglat.lng, lnglat.lat], path);
-            if (!inPolygon) {
-              Modal.warning({
-                title: '点址不在围栏里内！',
-              });
-            }
             this.setState({
               mapPolygons: [_polygon],
               mapActionMode: null,
@@ -746,12 +734,15 @@ class PointManager extends React.Component {
       currentPointer, //当前创建的点址数据
       mapDrawMode, //绘图模式开启
       mapActionMode, //开启创建标记时间
+      showSearchBar, //是否显示查询框
     } = this.state;
     return (
       <Layout style={{width: '100%', height: '100%'}}>
-        <Header>
-          <div style={{float: 'left'}}>{this.renderSearch()}</div>
-        </Header>
+        {showSearchBar && (
+          <Header>
+            <div style={{float: 'left'}}>{this.renderSearch()}</div>
+          </Header>
+        )}
         <Layout style={{width: '100%', height: '100%'}}>
           <Content>
             <Map
@@ -805,6 +796,7 @@ class PointManager extends React.Component {
                 onSave={this.onSavePointer}
                 onDelete={this.onDeletePointer}
                 onSubmit={this.onSubmitPointer}
+                onBack={this.onBackList}
               />
             )}
           </Sider>

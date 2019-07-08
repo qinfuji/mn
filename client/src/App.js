@@ -6,6 +6,8 @@ import Layout from './layouts/Layout';
 import history from './core/history';
 import dvaContainerProvider from './DvaContainer';
 import {loadMap, loadPlugin, loadAmpLocaApi, loadAmpUIApi, loadUI} from '@/components/AMap/api';
+import {LocaleProvider} from 'antd';
+import zh_CN from 'antd/lib/locale-provider/zh_CN';
 import dvaApp from './initDva';
 import './App.css';
 const DvaConainer = dvaContainerProvider(dvaApp);
@@ -40,9 +42,11 @@ class App extends React.Component {
     const {initedMap} = this.state;
     return initedMap ? (
       <DvaConainer>
-        <Layout>
-          <Router history={history}>{renderRoutes(routes, {})}</Router>
-        </Layout>
+        <LocaleProvider locale={zh_CN}>
+          <Layout>
+            <Router history={history}>{renderRoutes(routes, {})}</Router>
+          </Layout>
+        </LocaleProvider>
       </DvaConainer>
     ) : null;
   }

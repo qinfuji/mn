@@ -4,8 +4,11 @@
 
 <mapper namespace="com.mn.modules.api.dao.PointerAddressDao">
 
-    <select id="queryPointerAddressList1" resultType="com.mn.modules.api.entity.PointerAddress">
+    <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
 
+        <if test="qo.orderby!=null">
+            select * from (
+        </if>
         <if test="qo.lat !=null and qo.lng !=null and qo.distance !=null">
             select * from (
         </if>
@@ -18,9 +21,11 @@
         <if test="qo.labels == null">
             select * from pointer_address_t pa where 1=1
         </if>
+        <if test="qo.state != null">
         <![CDATA[
-             and pa.state <> 'deleted'
+             and pa.state = #{qo.state}
         ]]>
+        </if>
         <if test="userInfo != null and  userInfo.organizationId != null and userInfo.organizationId != ''">
             <![CDATA[
            and pa.organization_id = #{userInfo.organizationId}
@@ -56,11 +61,9 @@
                  )) * 10000)/10000 <= #{qo.distance}
             ]]>
         </if>
-    </select>
-
-
-    <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
-        select * from pointer_address_t
+        <if test="qo.orderby!=null">
+            ) b order by ${qo.orderby}
+        </if>
     </select>
 
 </mapper>

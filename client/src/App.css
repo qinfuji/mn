@@ -42,6 +42,20 @@ code {
   color: #008000b5;
 }
 
+.state.deleted {
+  color: #ff0000ba;
+}
+
 .operationBtn {
   font-size: 12px;
+}
+
+#btnbar .ant-btn {
+  margin-right: 8px;
+  margin-bottom: 12px;
+}
+
+table .ant-btn {
+  margin-right: 4px;
+  margin-bottom: 6px;
 }
