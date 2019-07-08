@@ -18,8 +18,8 @@ const MAP_DRAW_MODE_POLYGON = 'polygon';
 const MAP_DRAW_MODE_CIRCLE = 'circle';
 const MAP_DRAW_MODE_RECTANGLE = 'rectangle';
 
-const xdebug = console.log;
-// const xdebug = () => {};
+//const xdebug = console.log;
+const xdebug = () => {};
 
 export function generateUUID() {
   var d = new Date().getTime();

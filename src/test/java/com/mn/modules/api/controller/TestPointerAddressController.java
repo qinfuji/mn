@@ -73,7 +73,7 @@ public class TestPointerAddressController extends BaseTest {
         pointerAddress.setDistrictName("100000");
         pointerAddress.setLabels("1");
 
-        MvcResult result = mockMvc.perform(post("/api/pointerAddress/create")
+        MvcResult result = mockMvc.perform(post("/api/pointerAddress/createOrUpdate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject.toJSONString(pointerAddress)).header("token" , token))
 
@@ -120,7 +120,7 @@ public class TestPointerAddressController extends BaseTest {
         pointerAddress1.setId(pointerAddress.getId());
         pointerAddress1.setVersion(pointerAddress.getVersion());
 
-        MvcResult result = mockMvc.perform(put("/api/pointerAddress/update/"+pointerAddress.getId())
+        MvcResult result = mockMvc.perform(put("/api/pointerAddress/createOrUpdate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject.toJSONString(pointerAddress1)).header("token" , token))
                 .andExpect(status().isOk())

@@ -1,6 +1,8 @@
 import React from 'react';
 import {Form, Input, Button, Icon, Tooltip, Select} from 'antd';
 
+import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
+
 const FormItem = Form.Item;
 const Option = Select.Option;
 
@@ -27,7 +29,7 @@ class CreatePointer extends React.Component {
     } = this.props;
     validateFields((error, values) => {
       if (error) return;
-      const reqParams = {...values, ...adCodeInfo};
+      const reqParams = {...this.props.pointer, ...values, ...adCodeInfo};
       if (onSubmit) {
         onSubmit(reqParams);
       }
@@ -42,7 +44,7 @@ class CreatePointer extends React.Component {
     } = this.props;
     validateFields((error, values) => {
       if (error) return;
-      const reqParams = {...values, ...adCodeInfo};
+      const reqParams = {...this.props.pointer, ...values, ...adCodeInfo};
       if (onSave) {
         onSave(reqParams);
       }
@@ -51,14 +53,6 @@ class CreatePointer extends React.Component {
 
   //撤销
   onRevoke = () => {
-    const {onRevoke} = this.props;
-    if (onRevoke) {
-      onRevoke();
-    }
-  };
-
-  //更新
-  onUpdate = (pointer) => {
     const {onRevoke} = this.props;
     if (onRevoke) {
       onRevoke();
@@ -76,15 +70,16 @@ class CreatePointer extends React.Component {
       form: {getFieldDecorator},
       pointer = {},
       onRelocation,
-      onCreateFance,
-      onRemoveFance,
+      onCreateFence,
+      onRemoveFence,
     } = this.props;
+    console.log(pointer);
     return (
       <div className="pointerCreate">
         <Form>
           <Form.Item label="类别">
             {getFieldDecorator('type', {
-              initialValue: pointer && pointer.type ? pointer.type : '',
+              initialValue: pointer && pointer.type ? parseInt(pointer.type) : '',
               rules: [{required: true, message: '请选择'}],
             })(
               <Select placeholder="请选择">
@@ -102,7 +97,7 @@ class CreatePointer extends React.Component {
           </Form.Item>
           <Form.Item label="经纬度">
             {getFieldDecorator('lnglat', {
-              initialValue: pointer && pointer.lnglat ? pointer.lnglat.join(',') : '',
+              initialValue: pointer && pointer.lnglat ? pointer.lnglat.lng + ',' + pointer.lnglat.lat : '',
               rules: [{required: true, message: '请填写'}],
             })(
               <Input
@@ -123,17 +118,17 @@ class CreatePointer extends React.Component {
           </Form.Item>
 
           <Form.Item label="围栏">
-            {getFieldDecorator('fance', {initialValue: pointer && pointer.fance ? pointer.fance.path.join(';') : ''})(
+            {getFieldDecorator('fence', {initialValue: pointer && pointer.fence ? pointer.fence : ''})(
               <Input
                 suffix={
                   pointer &&
-                  pointer.fance && (
+                  pointer.fence && (
                     <Tooltip title="删除围栏">
                       <Icon
                         type="delete"
                         style={{color: 'rgba(0,0,0,.45)'}}
                         onClick={() => {
-                          onRemoveFance && onRemoveFance(pointer.fance.id);
+                          onRemoveFence && onRemoveFence(pointer.fenceId);
                         }}
                       />
                     </Tooltip>
@@ -141,7 +136,7 @@ class CreatePointer extends React.Component {
                 }
                 addonAfter={
                   <Tooltip title="建立围栏">
-                    <Icon type="table" onClick={() => onCreateFance(pointer.lnglat)} />
+                    <Icon type="table" onClick={() => onCreateFence(pointer.lnglat)} />
                   </Tooltip>
                 }
               />,
@@ -166,14 +161,18 @@ class CreatePointer extends React.Component {
             </Button>
           )}
           &nbsp;
-          <Button size="small" type="primary" onClick={this.save}>
-            保存
-          </Button>
-          &nbsp;
-          <Button size="small" type="primary" onClick={this.submit}>
-            保存并提交
-          </Button>
-          &nbsp;
+          {(!pointer.id || pointer.state === PointerAddressConstant.status.STATUS_WAIT_SUBMIT) && (
+            <React.Fragment>
+              <Button size="small" type="primary" onClick={this.save}>
+                保存
+              </Button>
+              &nbsp;
+              <Button size="small" type="primary" onClick={this.submit}>
+                保存并提交
+              </Button>
+              &nbsp;
+            </React.Fragment>
+          )}
           {pointer && pointer.id && (
             <Button size="small" type="primary" onClick={this.onDelete}>
               删除

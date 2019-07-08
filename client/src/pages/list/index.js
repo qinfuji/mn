@@ -157,6 +157,18 @@ class PointerList extends React.Component {
         const status = PointerAddressConstant.status;
         if (record.state === status.STATUS_WAIT_SUBMIT) {
           return (
+            <Button
+              className="operationBtn"
+              type="link"
+              size="small"
+              onClick={() => this.enterCreatePointer(record.id)}
+            >
+              点址管理
+            </Button>
+          );
+        }
+        if (record.state === status.STATUS_NOT_ESTIMATE) {
+          return (
             <React.Fragment>
               <Button
                 className="operationBtn"
@@ -164,24 +176,17 @@ class PointerList extends React.Component {
                 size="small"
                 onClick={() => this.enterCreatePointer(record.id)}
               >
-                修改点址
+                点址管理
               </Button>
-              <Button className="operationBtn" type="link" size="small">
-                删除
+              <Button type="link" size="small">
+                请求评估
               </Button>
             </React.Fragment>
           );
         }
-        if (record.state === status.STATUS_NOT_ESTIMATE) {
-          return (
-            <Button type="link" size="small" style={{fontSize: 12}}>
-              '未评估'
-            </Button>
-          );
-        }
         if (record.state === status.STATUS_WAIT_ESTIMATE) {
           return (
-            <Button type="primary" size="small" style={{fontSize: 12}}>
+            <Button type="primary" size="small">
               待评估
             </Button>
           );

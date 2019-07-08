@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import {createMap, updateMap} from './api';
 
 const __com__ = 'Map';
-const debug = console.log;
-//const debug = () => {};
+//const debug = console.log;
+const debug = () => {};
 
 export class Map extends Component {
   static propTypes = {

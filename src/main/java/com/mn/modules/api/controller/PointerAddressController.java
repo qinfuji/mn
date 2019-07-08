@@ -30,19 +30,31 @@ public class PointerAddressController {
     @Autowired
     PointerAddressService service;
 
-    @PostMapping("/create")
+    @PostMapping("/createOrUpdate")
     @ApiOperation("创建机会点")
     @CheckToken
-    public RestResult<PointerAddress> create(@RequestBody PointerAddress pointerAddress,
+    public RestResult<PointerAddress> createOrUpdate(@RequestBody PointerAddress pointerAddress,
                                              @RequestAttribute UserInfo userInfo) {
         try {
-            System.out.println(userInfo);
+
             pointerAddress.setUserId(userInfo.getId());
             pointerAddress.setOrganizationId(userInfo.getOrganizationId());
-            ValidatorUtils.validateEntity(pointerAddress, AddGroup.class);
-            pointerAddress.setState(PointerAddressService.STATUS_WAIT_SUBMIT);
-            PointerAddress ret = service.createPointerAddress(pointerAddress);
-            return RestResult.build(ret);
+            if(pointerAddress.getId()==null || "".equals(pointerAddress.getId())){
+                pointerAddress.setState(PointerAddressService.STATUS_WAIT_SUBMIT);
+                return _create(pointerAddress, userInfo);
+            }else{
+                PointerAddress pa = service.queryPointerAddress(pointerAddress.getId());
+                if (userInfo != null && userInfo.getOrganizationId().equals(pa.getOrganizationId())) {
+                    ValidatorUtils.validateEntity(pointerAddress, UpdateGroup.class);
+                    pointerAddress.setState(PointerAddressService.STATUS_WAIT_SUBMIT);
+                    service.updatePointerAddress(pointerAddress);
+                    PointerAddress ret = service.queryPointerAddress(pointerAddress.getId());
+                    return RestResult.build(ret);
+                }else{
+                    return RestResult.fail.msg("操作失败.点址不存在或您没有权限操作该数据");
+                }
+            }
+
         } catch (Exception e) {
             logger.error("创建点址失败", e);
             return RestResult.fail.msg("创建点址失败! "+e.getMessage());
@@ -57,13 +69,12 @@ public class PointerAddressController {
     public RestResult<PointerAddress> submit(@RequestBody PointerAddress pointerAddress,
                                              @RequestAttribute UserInfo userInfo) {
         try {
-
             if (pointerAddress.getId() == null || "".equals(pointerAddress.getId())) {
+                pointerAddress.setState(PointerAddressService.STATUS_NOT_ESTIMATE);
                 return _create(pointerAddress, userInfo);
             } else {
                 PointerAddress pa = service.queryPointerAddress(pointerAddress.getId());
                 if (userInfo != null && userInfo.getOrganizationId().equals(pa.getOrganizationId())) {
-
                     ValidatorUtils.validateEntity(pointerAddress, UpdateGroup.class);
                     pointerAddress.setState(PointerAddressService.STATUS_NOT_ESTIMATE);
                     service.updatePointerAddress(pointerAddress);
@@ -81,11 +92,9 @@ public class PointerAddressController {
 
     private RestResult<PointerAddress> _create(PointerAddress pointerAddress, UserInfo userInfo) {
         try {
-
             pointerAddress.setUserId(userInfo.getId());
             pointerAddress.setOrganizationId(userInfo.getOrganizationId());
             ValidatorUtils.validateEntity(pointerAddress, AddGroup.class);
-            pointerAddress.setState(PointerAddressService.STATUS_WAIT_SUBMIT);
             PointerAddress ret = service.createPointerAddress(pointerAddress);
             return RestResult.build(ret);
         } catch (Exception e) {
@@ -95,14 +104,11 @@ public class PointerAddressController {
     }
 
 
-    @PutMapping("/update/{id}")
-    @ApiOperation("创建机会点")
+    @GetMapping("/{id}")
+    @ApiOperation("机会点详情")
     @CheckToken
-    public RestResult<PointerAddress> update(@PathVariable String id,
-                                             @RequestBody PointerAddress pointerAddress,
+    public RestResult<PointerAddress> detail(@PathVariable String id,
                                              @RequestAttribute UserInfo userInfo) {
-
-
         PointerAddress pa = service.queryPointerAddress(id);
         if (pa == null) {
             return RestResult.fail.msg("点址不存在");
@@ -110,12 +116,10 @@ public class PointerAddressController {
         if (!userInfo.getOrganizationId().equals(pa.getOrganizationId())) {
             return RestResult.fail.msg("您无权操作该数据");
         }
-        ValidatorUtils.validateEntity(pointerAddress, UpdateGroup.class);
-        PointerAddress ret = service.updatePointerAddress(pointerAddress);
-        return RestResult.build(ret);
+        return RestResult.build(pa);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @ApiOperation("删除")
     @CheckToken
     public RestResult<Boolean> delete(@PathVariable String id, @RequestAttribute UserInfo userInfo) {

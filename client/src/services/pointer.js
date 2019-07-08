@@ -16,7 +16,7 @@ export async function detail(params) {
 }
 
 export async function create(params) {
-  return request(`${HOST}/api/pointerAddresses/create`, {
+  return request(`${HOST}/api/pointerAddresses/createOrUpdate`, {
     body: params,
     method: 'POST',
   });
