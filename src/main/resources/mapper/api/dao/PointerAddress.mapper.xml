@@ -26,12 +26,17 @@
              and pa.state = #{qo.state}
         ]]>
         </if>
+        <if test="qo.type != null">
+            <![CDATA[
+             and pa.type = #{qo.type}
+        ]]>
+        </if>
         <if test="userInfo != null and  userInfo.organizationId != null and userInfo.organizationId != ''">
             <![CDATA[
            and pa.organization_id = #{userInfo.organizationId}
         ]]>
         </if>
-        <if test="qo.scope == 'province'">
+        <if test="qo.adcode == 'province'">
             <![CDATA[
            and pa.province = #{qo.adcode}
         ]]>
@@ -58,7 +63,7 @@
                   POW(SIN(ABS(#{qo.lat} * PI() / 180 - a.lat * PI() / 180) / 2),2)
                  +COS(#{qo.lat} * PI() / 180) * COS(a.lat * PI() / 180)
                  *POW(SIN(ABS(#{qo.lng} * PI() / 180 - a.lng * PI() / 180) / 2),2)
-                 )) * 10000)/10000 <= #{qo.distance}
+                 )) * 10000)/10000 <= #{qo.distance}/1000
             ]]>
         </if>
         <if test="qo.orderby!=null">

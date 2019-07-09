@@ -91,13 +91,17 @@ class CreatePointer extends React.Component {
         <Form>
           <Form.Item label="类别">
             {getFieldDecorator('type', {
-              initialValue: pointer && pointer.type ? parseInt(pointer.type) : '',
+              initialValue: pointer && pointer.type ? pointer.type : '',
               rules: [{required: true, message: '请选择'}],
             })(
               <Select placeholder="请选择">
-                <Option value={1}>机会点</Option>
-                <Option value={2}>已有店</Option>
-                <Option value={3}>竞品店</Option>
+                {Object.keys(PointerAddressConstant.typeLabel).map((key) => {
+                  return (
+                    <Option key={key} value={key}>
+                      {PointerAddressConstant.typeLabel[key]}
+                    </Option>
+                  );
+                })}
               </Select>,
             )}
           </Form.Item>

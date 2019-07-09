@@ -2,8 +2,8 @@ import React, {Component, PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {createInfoWindow, updateInfoWindow} from './api';
 const __com__ = 'InfoWindow';
-//const debug = console.log;
-const debug = () => {};
+const debug = console.log;
+//const debug = () => {};
 
 // https://lbs.amap.com/api/javascript-api/reference/infowindow
 export class InfoWindow extends Component {

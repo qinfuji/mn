@@ -10,6 +10,7 @@ import com.mn.modules.api.entity.EstimateTask;
 import com.mn.modules.api.entity.PointerAddress;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
+import com.mn.modules.api.vo.PointerAddressAndEstimateTask;
 import com.mn.modules.api.vo.RestResult;
 import com.mn.modules.api.vo.UserInfo;
 import io.swagger.annotations.Api;
@@ -127,7 +128,7 @@ public class EstimateTaskController {
     @GetMapping("/querybyPointerAddressId")
     @ApiOperation("查询点址下的有效任务")
     @CheckToken
-    public RestResult<IPage<PointerAddress>> querybyPointerAddressId(
+    public RestResult<PointerAddressAndEstimateTask> querybyPointerAddressId(
             @RequestAttribute UserInfo userInfo,
             @RequestParam String paId) {
 
@@ -138,6 +139,6 @@ public class EstimateTaskController {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
         EstimateTask ret = service.getEstimateTaskWithPointerAddressId(paId);
-        return RestResult.build(ret);
+        return RestResult.build(new PointerAddressAndEstimateTask(ps ,ret));
     }
 }

@@ -7,6 +7,7 @@ import com.mn.modules.api.entity.PointerAddress;
 import com.mn.modules.api.interceptor.TestTokenInterceptor;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
+import com.mn.modules.api.vo.PointerAddressAndEstimateTask;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,7 +78,7 @@ public class TestEstimateTaskController extends BaseTest {
         et.setPointerAddressId(pa.getId());
         et.setFilterLabels("1,2,3");
         et.setObserveId("1");
-        et.setDistance(3d);
+        et.setDistance(3000);
 
         MvcResult result = mockMvc.perform(post("/api/estimateTask/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +125,7 @@ public class TestEstimateTaskController extends BaseTest {
         et.setPointerAddressId(pa.getId());
         et.setFilterLabels("1,2,3");
         et.setObserveId("1");
-        et.setDistance(3d);
+        et.setDistance(3000);
 
         MvcResult result = mockMvc.perform(post("/api/estimateTask/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -149,7 +150,7 @@ public class TestEstimateTaskController extends BaseTest {
         et.setPointerAddressId(pa.getId());
         et.setFilterLabels("1,2,3");
         et.setObserveId("1");
-        et.setDistance(3d);
+        et.setDistance(3000);
 
         MvcResult result = mockMvc.perform(post("/api/estimateTask/submit")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -188,7 +189,7 @@ public class TestEstimateTaskController extends BaseTest {
         et.setPointerAddressId(pa.getId());
         et.setFilterLabels("1,2,3");
         et.setObserveId("1");
-        et.setDistance(3d);
+        et.setDistance(3000);
 
         MvcResult submitResult =  mockMvc.perform(post("/api/estimateTask/submit")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -225,8 +226,8 @@ public class TestEstimateTaskController extends BaseTest {
         System.out.println(responseString);
         jo =  JSONObject.parseObject(responseString);
         Assert.assertEquals(0 ,jo.getInteger("code").intValue()) ;
-        dbet =  jo.getObject("data" , EstimateTask.class);
-        Assert.assertEquals(null ,dbet) ;
+        PointerAddressAndEstimateTask dbet1 =  jo.getObject("data" , PointerAddressAndEstimateTask.class);
+        Assert.assertEquals(null ,dbet1.getEstimateTask()) ;
 
     }
 }

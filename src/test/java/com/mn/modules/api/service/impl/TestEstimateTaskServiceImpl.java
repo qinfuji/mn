@@ -146,7 +146,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
 
         EstimateTask estimateTask = new EstimateTask();
         estimateTask.setPointerAddressId(pa.getId());
-        estimateTask.setDistance(55d);
+        estimateTask.setDistance(55000);
         estimateTask.setExecState(EstimateTaskService.EXEC_STATUS_NULL);
         estimateTask.setObserveId("observerId");
         estimateTaskService.createEstimate(estimateTask);

@@ -59,3 +59,11 @@ table .ant-btn {
   margin-right: 4px;
   margin-bottom: 6px;
 }
+
+#hotCard .ant-row {
+  margin: 10px 0;
+}
+
+#hotCard .ant-card-body {
+  padding: 10px;
+}

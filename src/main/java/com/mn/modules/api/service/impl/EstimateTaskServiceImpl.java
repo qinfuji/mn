@@ -159,7 +159,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         PointerAddress pa = pointerAddressDao.selectById(task.getPointerAddressId());
         Double lng = pa.getLng();
         Double lat = pa.getLat();
-        Double distance = task.getDistance();
+        Integer distance = task.getDistance();
 
         //查询所有的辐射距离的点址
         IPage page = new Page(1, 1000000);

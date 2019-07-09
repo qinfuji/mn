@@ -1,8 +1,10 @@
 package com.mn.modules.api.qo;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString
 public class PointerAddressQuery extends QueryBase{
 
     /**
@@ -20,7 +22,7 @@ public class PointerAddressQuery extends QueryBase{
     /**
      * 查询的辐射范围
      */
-    private Double distance;
+    private Integer distance;
     /**
      * 查询的范围
      */
@@ -37,5 +39,10 @@ public class PointerAddressQuery extends QueryBase{
      * 业态标签
      */
     private String labels;
+
+    /**
+     * 点址类型
+     */
+    private String type;
 
 }

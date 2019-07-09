@@ -104,6 +104,10 @@ class PointerList extends React.Component {
     History.push('/createPointAddress/' + id);
   };
 
+  enterCreateAppraise = (id) => {
+    History.push('/createAppraise/pointerAddressId/' + id);
+  };
+
   columns = [
     /*{
       title: '序号',
@@ -116,6 +120,14 @@ class PointerList extends React.Component {
     {
       title: '点址名称',
       dataIndex: 'name',
+    },
+    {
+      title: '类别',
+      width: '80px',
+      dataIndex: 'type',
+      render: (val) => {
+        return <span>{PointerAddressConstant.typeLabel[val]}</span>;
+      },
     },
     {
       title: '省',
@@ -169,7 +181,9 @@ class PointerList extends React.Component {
               <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
                 点址管理
               </Button>
-              <Button size="small">请求评估</Button>
+              <Button size="small" onClick={() => this.enterCreateAppraise(record.id)}>
+                请求评估
+              </Button>
             </React.Fragment>
           );
         }

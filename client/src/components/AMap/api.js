@@ -795,6 +795,9 @@ export const createInfoWindow = (options, events) => {
     return null;
   }
   let entity = new window.AMap.InfoWindow(options);
+  if (options.opened) {
+    entity.open(options.map, options.position);
+  }
   forOwn(events, (value, key) => {
     entity.on(key, value);
   });
@@ -812,7 +815,31 @@ export const updateInfoWindow = (entity, newOptions, newEvents, oldOptions, oldE
     offset: null,
     position: (v) => entity.setPosition(v),
     showShadow: null,
+    opened: (v) => {
+      const isOpen = entity.getIsOpen();
+      if (v && !isOpen) {
+        entity.open(newOptions.map, newOptions.position);
+      }
+      if (!v && isOpen) {
+        entity.close();
+      }
+    },
   };
 
-  return commonUpdate(entity, newOptions, newEvents, oldOptions, oldEvents, operators, 'updateInfoWindow');
+  let hasChangeOperation = {
+    opened: (v) => {
+      return true;
+    },
+  };
+
+  return commonUpdate(
+    entity,
+    newOptions,
+    newEvents,
+    oldOptions,
+    oldEvents,
+    operators,
+    'updateInfoWindow',
+    hasChangeOperation,
+  );
 };

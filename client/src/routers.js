@@ -35,6 +35,14 @@ export default [
         }),
         exact: true,
       },
+
+      {
+        path: '/createAppraise/pointerAddressId/:pointerAddressId',
+        component: dynamic({
+          loader: () => import('./pages/appraise'),
+        }),
+        exact: true,
+      },
     ],
   },
 ];

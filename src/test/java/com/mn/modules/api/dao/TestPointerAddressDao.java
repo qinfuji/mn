@@ -80,7 +80,7 @@ public class TestPointerAddressDao extends BaseTest {
         pointerAddressDao.insert(pointerAddress);
 
         PointerAddressQuery qo = new PointerAddressQuery();
-        qo.setDistance(15D);  //15公里范围
+        qo.setDistance(15000);  //15公里范围
         qo.setLat("1.1");
         qo.setLng("1.1");
 
@@ -119,7 +119,7 @@ public class TestPointerAddressDao extends BaseTest {
 
         PointerAddressQuery qo = new PointerAddressQuery();
         qo.setLabels("1,2");
-        qo.setDistance(15D);  //15公里范围
+        qo.setDistance(15000);  //15公里范围
         qo.setLat("1.1");
         qo.setLng("1.1");
         qo.setAddress("北京");

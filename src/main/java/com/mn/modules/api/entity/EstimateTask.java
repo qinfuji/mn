@@ -33,6 +33,29 @@ public class EstimateTask extends Base{
     @TableField("filter_labels")
     String filterLabels ;
 
+
+    @ApiModelProperty("需要呈现的竞争对手")
+    @TableField("competitor_ids")
+    String competitorIds;
+
+
+    @ApiModelProperty("到访比例")
+    @TableField("arrive_scale")
+    Integer arriveScale;
+
+    /**
+     * 点址评估任务的辐射距离
+     */
+    @ApiModelProperty("辐射距离，单位米")
+    @TableField("distance")
+    @NotNull(groups = {AddGroup.class} , message="辐射距离必须填写")
+    Integer distance;
+
+
+    @ApiModelProperty("是否显示存量人口")
+    @TableField("show_person_count")
+    Integer showPersonCount;
+
     /**
      *  热力围栏列表
      */
@@ -54,14 +77,6 @@ public class EstimateTask extends Base{
     @TableField("fence_hot_condition")
     String fenaceHotCondition;
 
-
-    /**
-     * 点址评估任务的辐射距离
-     */
-    @ApiModelProperty("辐射距离")
-    @TableField("distance")
-    @NotNull(groups = {AddGroup.class} , message="辐射距离必须填写")
-    Double distance;
 
     /**
      * 测控点数据
