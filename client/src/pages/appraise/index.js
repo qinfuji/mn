@@ -19,7 +19,7 @@ import Marker from '@/components/AMap/Marker';
 import Polygon from '@/components/AMap/Polygon';
 import Circle from '@/components/AMap/Circle';
 import InfoWindow from '@/components/AMap/InfoWindow';
-import {loadUI} from '@/components/AMap/api';
+import History from '../../core/history';
 import Map from '@/components/AMap/Map';
 import {getEsmtimateByPointerAddressId} from '../../services/appraise';
 import {fetch as fetchPointerAddress} from '../../services/pointer';
@@ -375,6 +375,10 @@ class Appraise extends React.Component {
     });
   };
 
+  goBackList = () => {
+    History.push('/listPointAddress');
+  };
+
   createMarker = () => {};
 
   render() {
@@ -555,9 +559,12 @@ class Appraise extends React.Component {
               </Form.Item>
               <Form.Item label="测控点">{getFieldDecorator('observerId', {})(<Select />)}</Form.Item>
             </Form>
-            <div style={{marginTop: '40px', display: 'flex', justifyContent: 'flex-end'}}>
+            <div id="btnbar" style={{marginTop: '20px', display: 'flex', justifyContent: 'flex-end'}}>
               <Button type="primary">保存</Button>&nbsp;
               <Button type="primary">保存并提交</Button>
+              <Button type="primary" onClick={this.goBackList}>
+                返回列表
+              </Button>
             </div>
           </div>
         </Sider>
