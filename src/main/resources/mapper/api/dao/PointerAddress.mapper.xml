@@ -36,7 +36,7 @@
            and pa.organization_id = #{userInfo.organizationId}
         ]]>
         </if>
-        <if test="qo.adcode == 'province'">
+        <if test="qo.scope == 'province'">
             <![CDATA[
            and pa.province = #{qo.adcode}
         ]]>
@@ -51,7 +51,12 @@
             and pa.address like CONCAT('%',#{qo.address},'%')
         </if>
         <if test="qo.labels != null and qo.labels != ''">
-            and pal.label_id in (${qo.labels})
+            and pal.label_id in
+            <foreach item="item" index="index" collection="qo.labels.split(',')" open="(" separator="," close=")">'${item}'</foreach>
+        </if>
+        <if test="qo.competitorIds !=null">
+            or pa.id in
+            <foreach item="item" index="index" collection="qo.competitorIds.split(',')" open="(" separator="," close=")">'${item}'</foreach>
         </if>
         <!--设置查询范围-->
         <if test="qo.lat !=null and qo.lng !=null and qo.distance !=null">

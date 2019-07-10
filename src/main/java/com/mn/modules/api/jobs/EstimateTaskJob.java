@@ -6,6 +6,8 @@ import com.mn.modules.api.service.EstimateTaskService;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -17,6 +19,8 @@ import java.util.List;
 @Component
 @DisallowConcurrentExecution
 public class EstimateTaskJob  extends QuartzJobBean {
+
+    private static Logger logger = LoggerFactory.getLogger(EstimateTaskJob.class);
 
     @Autowired
     EstimateTaskService estimateTaskService;
@@ -31,12 +35,16 @@ public class EstimateTaskJob  extends QuartzJobBean {
 
         estimateTaskList.forEach((estimateTask)->{
             Integer execState =  estimateTask.getExecState();
-            if((execState & EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA) == EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA){
-                estimateTaskService.execRequestUserFenceHotData(estimateTask);
-            }else if((execState & EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA) == EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA){
-                estimateTaskService.execRequestFenceData(estimateTask);
-            }else if((execState & EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE) == EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE){
+            logger.info("执行评估任务： 点址id:{} , 任务id：{} , 当前执行状态 ：{} " ,estimateTask.getPointerAddressId() , estimateTask.getId() , estimateTask.getExecState()  );
+            if((execState & EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE) != EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE){
+                logger.info("执行评估任务： 点址id:{} , 任务id：{} , 当前执行任务 ：{} " ,estimateTask.getPointerAddressId() , estimateTask.getId() , EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE  );
                 estimateTaskService.execCalculateFence(estimateTask);
+            }else if((execState & EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA) != EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA){
+                logger.info("执行评估任务： 点址id:{} , 任务id：{} , 当前执行任务 ：{} " ,estimateTask.getPointerAddressId() , estimateTask.getId() , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA  );
+                estimateTaskService.execRequestUserFenceHotData(estimateTask);
+            }else if((execState & EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA) != EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA){
+                logger.info("执行评估任务： 点址id:{} , 任务id：{} , 当前执行任务 ：{} " ,estimateTask.getPointerAddressId() , estimateTask.getId() , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA  );
+                estimateTaskService.execRequestFenceData(estimateTask);
             }
         });
 

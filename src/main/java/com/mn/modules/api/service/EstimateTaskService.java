@@ -38,7 +38,7 @@ public interface EstimateTaskService extends IService<EstimateTask> {
      /**
       * 请求用户定义的围栏的热力数据
       */
-     int EXEC_STATUS_REQUESTED_FENCE_HOT_DATA=3;
+     int EXEC_STATUS_REQUESTED_FENCE_HOT_DATA=4;
      /**
       * 任务执行玩的状态
       */
@@ -49,7 +49,8 @@ public interface EstimateTaskService extends IService<EstimateTask> {
       * 创建任务对象，并同时创建任务结果对象
       * @return
       */
-     EstimateTask createEstimate(EstimateTask estimateTask);
+     EstimateTask createEstimate(EstimateTask estimateTask ,boolean isSubmit);
+
 
      /**
       * 获取有限的地址评估任务

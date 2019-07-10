@@ -149,7 +149,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         estimateTask.setDistance(55000);
         estimateTask.setExecState(EstimateTaskService.EXEC_STATUS_NULL);
         estimateTask.setObserveId("observerId");
-        estimateTaskService.createEstimate(estimateTask);
+        estimateTaskService.createEstimate(estimateTask , true);
 
         PointerAddress pointerAddress = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
         Assert.assertEquals(PointerAddressService.STATUS_WAIT_ESTIMATE , pointerAddress.getState());
@@ -188,16 +188,19 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         Assert.assertNotNull(null , edr.getFence());
 
 
-
         Mockito.when(dataService.getFenceEstimateData(any())).thenReturn(new ArrayList());
         Mockito.when(dataService.getFenceHotData(any())).thenReturn(new ArrayList());
+
+        estimateTask1 = estimateTaskService.getById(estimateTask1.getId());
         estimateTaskService.execRequestFenceData(estimateTask1);
+        estimateTask1 = estimateTaskService.getById(estimateTask1.getId());
         estimateTaskService.execRequestUserFenceHotData(estimateTask1);
 
+        //estimateTask1 = estimateTaskService.getById(estimateTask1.getId());
 
-        estimateTask1 = estimateTaskService.getById(estimateTask.getId());
-        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA&estimateTask1.getExecState());
-        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA&estimateTask1.getExecState());
+        System.out.println(estimateTask1.getExecState());
+        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA&estimateTask1.getExecState().intValue());
+        Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA&estimateTask1.getExecState().intValue());
         Assert.assertEquals(EstimateTaskService.EXEC_STATUS_FINISH_CODE , estimateTask1.getExecState().intValue());
 
         pointerAddress = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());

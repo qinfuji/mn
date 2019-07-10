@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
+@Transactional
 public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, EstimateTask> implements EstimateTaskService {
 
     private static Logger logger = LoggerFactory.getLogger(EstimateTaskServiceImpl.class);
@@ -61,22 +63,35 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
     }
 
     @Override
-    public EstimateTask createEstimate(EstimateTask estimateTask) {
-        EstimateDataResult edr = new EstimateDataResult();
-        estimateDataResultDao.insert(edr);
-        estimateTask.setResultDataId(edr.getId());
-        this.baseMapper.insert(estimateTask);
+    public EstimateTask createEstimate(EstimateTask estimateTask, boolean isSubmit) {
 
+        if (estimateTask.getId() == null) {
+            EstimateDataResult edr = new EstimateDataResult();
+            estimateDataResultDao.insert(edr);
+            estimateTask.setResultDataId(edr.getId());
+        }
         //创建任务后需要更新点址的状态
-        PointerAddress inDbPa =  this.pointerAddressDao.selectById(estimateTask.getPointerAddressId());
-        PointerAddress updatePs =  new PointerAddress();
-        updatePs.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
+        PointerAddress inDbPa = this.pointerAddressDao.selectById(estimateTask.getPointerAddressId());
+        PointerAddress updatePs = new PointerAddress();
+        if (isSubmit) {
+            updatePs.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
+            estimateTask.setState(EstimateTaskService.STATUS_COMMITED);
+            estimateTask.setExecState(EstimateTaskService.EXEC_STATUS_NULL);
+        } else {
+            updatePs.setState(PointerAddressService.STATUS_WAIT_ESTIMATE_SUBMIT);
+            estimateTask.setState(EstimateTaskService.STATUS_WAIT_COMMIT);
+        }
+        if (estimateTask.getId() == null) {
+            this.baseMapper.insert(estimateTask);
+        } else {
+            this.baseMapper.updateById(estimateTask);
+        }
+
         updatePs.setId(inDbPa.getId());
         updatePs.setVersion(inDbPa.getVersion());
         pointerAddressDao.updateById(updatePs);
         return estimateTask;
     }
-
 
     @Override
     public EstimateTask getEstimateTaskWithPointerAddressId(String pointerAddressId) {
@@ -84,7 +99,6 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         logger.debug("getEstimateTaskWithPointerAddressId pointerAddress id {}", pointerAddressId);
         QueryWrapper<EstimateTask> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("pointer_address_id", pointerAddressId);
-        queryWrapper.eq("state", STATUS_COMMITED);
         List<EstimateTask> ret = this.baseMapper.selectList(queryWrapper);
         if (ret != null && ret.size() > 0) {
             return ret.get(0);
@@ -94,7 +108,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
 
 
     @Override
-    public EstimateDataResult getEstimateDataResult(String estimateTaskId){
+    public EstimateDataResult getEstimateDataResult(String estimateTaskId) {
         EstimateTask ret = this.baseMapper.selectById(estimateTaskId);
         return estimateDataResultDao.selectById(ret.getResultDataId());
     }
@@ -172,6 +186,10 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         paq.setLng(String.valueOf(lng));
         paq.setDistance(distance);
 
+        if (task.getCompetitorIds() != null && !"".equals(task.getCompetitorIds())) {
+            paq.setCompetitorIds(task.getCompetitorIds());
+        }
+
         IPage<PointerAddress> pageList = pointerAddressDao.queryPointerAddressList(page, paq, null);
         if (pageList.getTotal() <= 0) {
             return new ArrayList<>();
@@ -202,7 +220,6 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         });
 
         //将转换后的
-
         List<List<LngLat>> ret = new ArrayList<>();
         if (observerPointDatas == null || observerPointDatas.size() == 0) {
             return ret;
@@ -220,6 +237,12 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
                 }
             });
         });
+
+
+        fances.forEach((target) -> {
+            ret.add(target);
+        });
+
         return ret;
     }
 
@@ -252,7 +275,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
                 return;
             }
             fence.forEach((lnglat) -> {
-                t.add(new double[]{lnglat.getLng().doubleValue(),lnglat.getLat().doubleValue()});
+                t.add(new double[]{lnglat.getLng().doubleValue(), lnglat.getLat().doubleValue()});
             });
         });
 
@@ -265,12 +288,13 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         List<Polygon> polys = new AlphaShape(t, 100).compute();
 
         List<LngLat> alphaShapeRet = new ArrayList<>();
-        if(polys!=null && polys.size()>0){
-              polys.forEach((poly)->{
-                  double[] ll = poly.get(0);
-                  LngLat lngLat = new LngLat(Double.valueOf(ll[0]), Double.valueOf(ll[1]));
-                  alphaShapeRet.add(lngLat);
-              });
+        if (polys != null && polys.size() > 0) {
+            Polygon poly = polys.get(0);
+            for (int i = 0; i < poly.size(); i++) {
+                double[] ll = poly.get(i);
+                LngLat lngLat = new LngLat(Double.valueOf(ll[0]), Double.valueOf(ll[1]));
+                alphaShapeRet.add(lngLat);
+            }
         }
         return alphaShapeRet;
     }

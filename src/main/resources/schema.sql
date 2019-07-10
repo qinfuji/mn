@@ -33,7 +33,7 @@ CREATE TABLE `estimate_task_t` (
   `arrive_scale` int(11) DEFAULT NULL COMMENT '到访百分比',
   `show_person_count` int(11) DEFAULT NULL,
   `hot_fences` text COMMENT '热力围栏数据',
-  `fence_hot_date` date DEFAULT NULL COMMENT '围栏热力数据采集时间',
+  `fence_hot_date` varchar(200) DEFAULT NULL COMMENT '围栏热力数据采集时间',
   `fence_hot_condition` varchar(45) DEFAULT NULL COMMENT '围栏热力数据采集条件',
   `distance` int(11) DEFAULT NULL COMMENT '辐射距离,单位米',
   `observe_id` varchar(45) DEFAULT NULL COMMENT '测控点id',
@@ -52,7 +52,7 @@ CREATE TABLE `estimate_task_t` (
   PRIMARY KEY (`id`))
 
 
-  CREATE TABLE `estimate_result_t` (
+  CREATE TABLE `estimate_data_result_t` (
     `id` VARCHAR(32) NOT NULL,
     `fence` TEXT NULL COMMENT '址最终产生的围栏数据',
     `fence_hot_datas` TEXT NULL COMMENT '用户定义的围栏热力数据',

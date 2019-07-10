@@ -441,9 +441,14 @@ class PointManager extends React.Component {
           ></Input>
         </Form.Item>
         <Form.Item>
-          <Button type="primary" size="small" onClick={this.onSearch}>
-            查询
-          </Button>
+          <div id="btnbar">
+            <Button type="primary" size="small" onClick={this.onSearch}>
+              查询
+            </Button>
+            <Button type="primary" size="small" onClick={this.onBackList}>
+              返回列表
+            </Button>
+          </div>
         </Form.Item>
       </Form>
     );

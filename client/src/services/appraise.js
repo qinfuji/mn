@@ -7,3 +7,23 @@ export async function getEsmtimateByPointerAddressId(params) {
     method: 'GET',
   });
 }
+
+export async function createEsmtimate(params, type) {
+  if (type === 'save') {
+    return request(`${HOST}/api/estimateTask/create`, {
+      method: 'POST',
+      body: params,
+    });
+  } else {
+    return request(`${HOST}/api/estimateTask/submit`, {
+      method: 'POST',
+      body: params,
+    });
+  }
+}
+
+export async function getEsmtimateDataResult(params) {
+  return request(`${HOST}/api/estimateTask/getDataResult?emtimateId=${params.id}`, {
+    method: 'GET',
+  });
+}

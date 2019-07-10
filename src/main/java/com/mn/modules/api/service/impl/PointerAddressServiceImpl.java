@@ -12,11 +12,13 @@ import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.vo.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 
 @Service
+@Transactional
 public class PointerAddressServiceImpl implements PointerAddressService {
 
 

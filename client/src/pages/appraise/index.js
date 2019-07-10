@@ -16,15 +16,17 @@ import {
   Col,
 } from 'antd';
 import Marker from '@/components/AMap/Marker';
+import moment from 'moment';
 import Polygon from '@/components/AMap/Polygon';
 import Circle from '@/components/AMap/Circle';
 import InfoWindow from '@/components/AMap/InfoWindow';
 import History from '../../core/history';
 import Map from '@/components/AMap/Map';
-import {getEsmtimateByPointerAddressId} from '../../services/appraise';
+import {getEsmtimateByPointerAddressId, createEsmtimate, getEsmtimateDataResult} from '../../services/appraise';
 import {fetch as fetchPointerAddress} from '../../services/pointer';
 import {PolygonOptions, CircleOptions} from '../../utils/mapShapeOptions';
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
+import {Constant as AppraiseConstant} from '../../models/appraise';
 import {generateUUID} from '../../utils/misc';
 const {Content, Sider} = Layout;
 const {RangePicker} = DatePicker;
@@ -57,12 +59,14 @@ class Appraise extends React.Component {
       mapNeedClear: false,
       mapDrawMode: false,
       mapWindowInfo: null,
-      currentAppraise: {
-        distance: 1.5, //默认辐射范围1.5公里
-      },
       currentPointerAddress: {},
       competitors: [], //竞品店
       userHotFencePolygons: [], //热力围栏
+      pointerAddressPolygon: null,
+      pointerAddressMarker: null,
+      competitorPolygons: [], //竞品店围栏
+      filterLabelPolygons: [], //过滤的业态围栏
+      appraiseFencePolygon: null, //点址评估后的围栏
     };
   }
 
@@ -80,11 +84,11 @@ class Appraise extends React.Component {
     const otherPointerAddress = await this.getFilterPointerAddress();
     const data = response.data;
     const pointerAddress = data.pointerAddress;
-    const appraise = data.appraise;
+    const appraise = data.estimateTask;
     const markers = [];
     const polygons = [];
     const circles = [];
-
+    console.log(appraise);
     //查询范围内的竞品店
     const competitors = await this.getRemoteCompetitor({
       adcode: pointerAddress.district,
@@ -105,19 +109,13 @@ class Appraise extends React.Component {
         offset: new window.AMap.Pixel(-13, -30),
       },
     };
-    markers.push(pointerAddressMarker);
+
+    let pointerAddressPolygon = null;
     if (pointerAddress.fence) {
       //如果有围栏信息，需要画出围栏信息
       const pointers = getPath(pointerAddress.fence);
       if (pointers.length >= 3) {
-        const _polygon = {
-          id: pointerAddress.id,
-          options: {
-            ...PolygonOptions,
-            path: pointers,
-          },
-        };
-        polygons.push(_polygon);
+        pointerAddressPolygon = this.createPolygon(pointers, false, 'pointerAddressPolygon', pointerAddress);
       }
     }
 
@@ -133,8 +131,63 @@ class Appraise extends React.Component {
         radius: distance, //半径
       },
     };
-
     circles.push(_circle);
+
+    //热力围栏
+    const userHotFencePolygons = [];
+    if (appraise && appraise.hotFences) {
+      const hotfences = appraise.hotFences.split('|');
+      hotfences.forEach((hotfence) => {
+        const pointers = getPath(hotfence);
+        if (pointers.length >= 3) {
+          const _polygon = this.createPolygon(
+            pointers,
+            appraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT,
+            'userHotFencePolygons',
+            {name: '热力围栏', address: ''},
+          );
+          userHotFencePolygons.push(_polygon);
+        }
+      });
+    }
+
+    let appraiseFencePolygon = null;
+    if (appraise && appraise.execState === AppraiseConstant.execState.EXEC_STATUS_FINISH_CODE) {
+      //获取评估
+      const appraiseDataResultResponse = await getEsmtimateDataResult({id: appraise.id});
+      if (appraiseDataResultResponse) {
+        const dataResultResponse = appraiseDataResultResponse.data;
+        const fence = dataResultResponse.fence;
+        if (fence) {
+          console.log(fence);
+          const path = getPath(fence);
+          appraiseFencePolygon = this.createPolygon(path, false, 'appraiseFencePolygon', {
+            name: '辐射围栏',
+            address: '',
+          });
+        }
+      }
+    }
+
+    //竞品店围栏
+    const competitorPolygons = [];
+    if (appraise && appraise.competitorIds && appraise.competitorIds.length && competitors && competitors.length) {
+      const competitorIds = appraise.competitorIds.split(',');
+      competitorIds.forEach((competitorId) => {
+        competitors.forEach((competitor) => {
+          if (competitorId === competitor.id) {
+            const pointers = getPath(competitor.fence);
+            if (pointers.length >= 3) {
+              const _polygon = this.createPolygon(pointers, false, 'competitorPolygons', {
+                name: competitor.name + '(竞品店)',
+                address: competitor.address,
+              });
+              competitorPolygons.push(_polygon);
+            }
+          }
+        });
+      });
+    }
 
     this.setState({
       mapZoom: 15,
@@ -143,7 +196,13 @@ class Appraise extends React.Component {
       mapCircles: circles,
       mapPolygons: polygons,
       currentPointerAddress: pointerAddress,
+      pointerAddressMarker,
+      pointerAddressPolygon,
+      currentAppraise: appraise,
+      userHotFencePolygons,
       competitors,
+      competitorPolygons,
+      appraiseFencePolygon,
     });
   };
 
@@ -197,7 +256,7 @@ class Appraise extends React.Component {
   /**
    * 获取测控点列表
    */
-  getObserverIds = async () => {};
+  getObserveIds = async () => {};
 
   distanceChange = async (value) => {
     const {form} = this.props;
@@ -232,6 +291,38 @@ class Appraise extends React.Component {
       mapCircles: circles,
       competitors,
     });
+  };
+
+  createCompetitorIds = (competitorIds, competitors) => {
+    const polygons = [];
+    if (competitorIds && competitorIds.length && competitors && competitors.length) {
+      competitorIds.forEach((competitorId) => {
+        for (let i = 0; i < competitors.length; i++) {
+          const competitor = competitors[i];
+          if (competitor.id === competitorId) {
+            if (!competitor.fence) continue;
+            const pointers = getPath(competitor.fence);
+            if (pointers.length >= 3) {
+              const _polygon = {
+                id: competitorId,
+                options: {
+                  ...PolygonOptions,
+                  path: pointers,
+                  title: competitor.name,
+                },
+                events: {
+                  click: (e) => {
+                    this.openCreateInfoWindiw(e.lnglat, competitor);
+                  },
+                },
+              };
+              polygons.push(_polygon);
+            }
+          }
+        }
+      });
+    }
+    return polygons;
   };
 
   competitorIdsChange = (competitorIds) => {
@@ -281,12 +372,11 @@ class Appraise extends React.Component {
     });
   };
 
-  openCreateInfoWindiw = (lnglat, pointerAddress) => {
-    console.log(lnglat, pointerAddress);
+  openCreateInfoWindiw = (lnglat, windowInfo) => {
     //构建信息窗体中显示的内容
     var info = [];
-    info.push(`<div style="padding:0px 0px 0px 4px;"><b>名称:${pointerAddress.name}</b>`);
-    info.push(`地址 :${pointerAddress.address}</div></div>`);
+    info.push(`<div style="padding:0px 0px 0px 4px;"><b>名称:${windowInfo.name}</b>`);
+    info.push(`地址 :${windowInfo.address}</div></div>`);
     this.setState({
       mapWindowInfo: {
         options: {
@@ -317,7 +407,10 @@ class Appraise extends React.Component {
           (e) => {
             const pathobj = e.obj.getPath();
             const pathArray = getPath(pathobj.join(';'));
-            const polygon = this.createUserHotFencePolygon(pathArray);
+            const polygon = this.createPolygon(pathArray, true, 'userHotFencePolygons', {
+              name: '热力围栏',
+              address: '',
+            });
             e.obj.getMap().remove(e.obj);
             const polygons = [].concat(this.state.userHotFencePolygons, polygon);
             this.setState({
@@ -329,7 +422,7 @@ class Appraise extends React.Component {
     });
   };
 
-  createUserHotFencePolygon = (paths) => {
+  createPolygon = (paths, canEdit, stateProps, windowInfo) => {
     const id = generateUUID();
     const _polygon = {
       id,
@@ -337,24 +430,34 @@ class Appraise extends React.Component {
         ...PolygonOptions,
         id,
         path: paths,
-        editable: {
-          events: {
-            adjust: (e) => {
-              //   const pointerAddress = this.state.currentPointer;
-              //   const path = e.target.getPath();
-              //   pointerAddress.fence = path.join(';');
-              //   const pythone = this.createFencePolygon(pointerAddress);
-              //   this.setState({
-              //     mapPolygons: pythone ? [pythone] : [],
-              //     mapActionMode: null,
-              //     mapDrawMode: false,
-              //     currentPointer: {
-              //       ...pointerAddress,
-              //       fenceId: id,
-              //     },
-              //   });
-            },
-          },
+        editable: canEdit
+          ? {
+              events: {
+                adjust: (e) => {
+                  const path = e.target.getPath();
+                  const pythone = this.createPolygon(getPath(path.join(';')), true, stateProps, windowInfo);
+                  pythone.id = id;
+                  const userHotFencePolygons = this.state[stateProps] || [];
+                  const newUserHotFances = userHotFencePolygons.reduce((ret, fence) => {
+                    if (fence.id === id) {
+                      ret.push(pythone);
+                    } else {
+                      ret.push({...fence, options: {...fence.options}});
+                    }
+                    return ret;
+                  }, []);
+                  this.setState({
+                    [stateProps]: newUserHotFances,
+                  });
+                },
+              },
+            }
+          : null,
+      },
+
+      events: {
+        click: (e) => {
+          windowInfo && this.openCreateInfoWindiw(e.lnglat, windowInfo);
         },
       },
     };
@@ -373,6 +476,64 @@ class Appraise extends React.Component {
     this.setState({
       userHotFencePolygons: ret,
     });
+  };
+
+  saveOrUpdate = async (type) => {
+    //保存
+    const {
+      form: {validateFields},
+    } = this.props;
+    const {userHotFencePolygons, currentPointerAddress, currentAppraise = {}} = this.state;
+    validateFields(async (error, values) => {
+      if (error) return;
+      let params = values;
+      params = {
+        ...currentAppraise,
+        ...params,
+        filterLabels: params.filterLabels ? params.filterLabels.join(',') : '',
+        competitorIds: params.competitorIds ? params.competitorIds.join(',') : '',
+      };
+
+      if (
+        userHotFencePolygons &&
+        userHotFencePolygons.length &&
+        (!params.fencesHotDate || !params.fenaceHotCondition)
+      ) {
+        Modal.error({
+          title: '热力分析日期、热力条件必须填写',
+        });
+        return;
+      }
+      if (userHotFencePolygons && userHotFencePolygons.length) {
+        const fancesArray = [];
+        userHotFencePolygons.forEach((fence) => {
+          const path = fence.options.path;
+          fancesArray.push(path.join(';'));
+        });
+        params.hotFences = fancesArray.join('|');
+      }
+      if (userHotFencePolygons && userHotFencePolygons.length && params.fencesHotDate) {
+        const stateDate = params.fencesHotDate[0];
+        const endDate = params.fencesHotDate[1];
+        params.fencesHotDate = moment(stateDate).format('YYYY-MM-DD') + ';' + moment(endDate).format('YYYY-MM-DD');
+      } else {
+        params.fencesHotDate = '';
+      }
+      params.pointerAddressId = currentPointerAddress.id;
+      console.log(params);
+      const response = await createEsmtimate(params, type);
+      if (response) {
+        History.push('/listPointAddress');
+      }
+    });
+  };
+
+  onSave = () => {
+    this.saveOrUpdate('save');
+  };
+
+  onSubmit = () => {
+    this.saveOrUpdate('submit');
   };
 
   goBackList = () => {
@@ -395,11 +556,22 @@ class Appraise extends React.Component {
       competitors, //精品店
       mapWindowInfo,
       userHotFencePolygons, //用户自定义热力围栏
+      pointerAddressMarker, //点址marker
+      pointerAddressPolygon, //点址围栏
+      competitorPolygons, //竞品店围栏
+      appraiseFencePolygon, //统计分析后的点址围栏
     } = this.state;
+    console.log(this.state);
     const {
       form: {getFieldDecorator},
     } = this.props;
 
+    const fenceHotDate = [];
+    if (currentAppraise && currentAppraise.fencesHotDate) {
+      const strDates = currentAppraise.fencesHotDate.split(';');
+      fenceHotDate.push(moment(strDates[0]));
+      fenceHotDate.push(moment(strDates[1]));
+    }
     return (
       <Layout style={{width: '100%', height: '100%'}}>
         <Content>
@@ -425,6 +597,30 @@ class Appraise extends React.Component {
                 return <Marker key={m.id} options={m.options} events={m.events} />;
               })}
 
+            {pointerAddressMarker && (
+              <Marker
+                key={pointerAddressMarker.id}
+                options={pointerAddressMarker.options}
+                events={pointerAddressMarker.events}
+              />
+            )}
+
+            {pointerAddressPolygon && (
+              <Polygon
+                key={pointerAddressPolygon.id}
+                options={pointerAddressPolygon.options}
+                events={pointerAddressPolygon.events}
+              />
+            )}
+
+            {appraiseFencePolygon && (
+              <Polygon
+                key={appraiseFencePolygon.id}
+                options={appraiseFencePolygon.options}
+                events={appraiseFencePolygon.events}
+              />
+            )}
+
             {mapPolygons &&
               mapPolygons.length &&
               mapPolygons.map((p) => {
@@ -434,6 +630,12 @@ class Appraise extends React.Component {
             {userHotFencePolygons &&
               userHotFencePolygons.length &&
               userHotFencePolygons.map((p) => {
+                return <Polygon key={p.id} options={p.options} events={p.events} />;
+              })}
+
+            {competitorPolygons &&
+              competitorPolygons.length &&
+              competitorPolygons.map((p) => {
                 return <Polygon key={p.id} options={p.options} events={p.events} />;
               })}
 
@@ -449,10 +651,13 @@ class Appraise extends React.Component {
                 {currentPointerAddress.name}
               </Form.Item>
               <Form.Item label="业态标签">
-                {getFieldDecorator('filterLabels', {})(
+                {getFieldDecorator('filterLabels', {
+                  initialValue:
+                    currentAppraise && currentAppraise.filterLabels ? currentAppraise.filterLabels.split(',') : [],
+                })(
                   <Select mode="multiple">
-                    <Option value={1}>标签1</Option>
-                    <Option value={2}>标签2</Option>
+                    <Option value={'1'}>标签1</Option>
+                    <Option value={'2'}>标签2</Option>
                   </Select>,
                 )}
               </Form.Item>
@@ -507,17 +712,21 @@ class Appraise extends React.Component {
                 )}
               </Form.Item>
               <Form.Item label="存量人口">
-                {getFieldDecorator('latlng', {
-                  value: '',
+                {getFieldDecorator('showPersonCount', {
+                  initialValue:
+                    currentAppraise && currentAppraise.showPersonCount ? parseInt(currentAppraise.showPersonCount) : 1,
                 })(<Switch size="small" checkedChildren="显示" unCheckedChildren="不显示" defaultChecked />)}
               </Form.Item>
               <Form.Item label="热力分析">
                 <Card id="hotCard">
                   <Row>
                     <Col>
-                      <Button type="primary" size="small" onClick={this.onCreateUserFenceHandle}>
-                        新建围栏
-                      </Button>
+                      {(!currentAppraise ||
+                        (currentAppraise && currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
+                        <Button type="primary" size="small" onClick={this.onCreateUserFenceHandle}>
+                          新建围栏
+                        </Button>
+                      )}
                     </Col>
                   </Row>
                   <Row>
@@ -530,15 +739,19 @@ class Appraise extends React.Component {
                               key={userHotFence.id}
                               value={userHotFence.options.path.join(';')}
                               suffix={
-                                <Tooltip title="删除围栏">
-                                  <Icon
-                                    type="delete"
-                                    style={{color: 'rgba(0,0,0,.45)'}}
-                                    onClick={() => {
-                                      this.onRemoveUserHotFence(userHotFence);
-                                    }}
-                                  />
-                                </Tooltip>
+                                (!currentAppraise ||
+                                  (currentAppraise &&
+                                    currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
+                                  <Tooltip title="删除围栏">
+                                    <Icon
+                                      type="delete"
+                                      style={{color: 'rgba(0,0,0,.45)'}}
+                                      onClick={() => {
+                                        this.onRemoveUserHotFence(userHotFence);
+                                      }}
+                                    />
+                                  </Tooltip>
+                                )
                               }
                             />
                           );
@@ -548,21 +761,53 @@ class Appraise extends React.Component {
                   <Row gutter={10}>
                     <Col span={8}>选择日期:</Col>
                     <Col span={16}>
-                      <RangePicker onChange={this.onChange} />
+                      {getFieldDecorator('fencesHotDate', {
+                        initialValue: fenceHotDate,
+                      })(<RangePicker />)}
                     </Col>
                   </Row>
                   <Row gutter={10}>
                     <Col>围栏热力条件</Col>
-                    <Col>{getFieldDecorator('observerId', {})(<Select />)}</Col>
+                    <Col>
+                      {getFieldDecorator('fenaceHotCondition', {
+                        initialValue:
+                          currentAppraise && currentAppraise.fenaceHotCondition
+                            ? currentAppraise.fenaceHotCondition
+                            : '',
+                      })(
+                        <Select>
+                          <Option value={'1'}>人口</Option>
+                        </Select>,
+                      )}
+                    </Col>
                   </Row>
                 </Card>
               </Form.Item>
-              <Form.Item label="测控点">{getFieldDecorator('observerId', {})(<Select />)}</Form.Item>
+              <Form.Item label="测控点">
+                {getFieldDecorator('observeId', {
+                  initialValue: currentAppraise && currentAppraise.observeId ? currentAppraise.observeId : '',
+                  rules: [{required: true, message: '请选择'}],
+                })(
+                  <Select>
+                    <Option value={'1221212'}>测控点1</Option>
+                  </Select>,
+                )}
+              </Form.Item>
             </Form>
-            <div id="btnbar" style={{marginTop: '20px', display: 'flex', justifyContent: 'flex-end'}}>
-              <Button type="primary">保存</Button>&nbsp;
-              <Button type="primary">保存并提交</Button>
-              <Button type="primary" onClick={this.goBackList}>
+            <div id="btnbar" style={{marginTop: '20px'}}>
+              {(!currentAppraise ||
+                (currentAppraise && currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
+                <Button size="small" type="primary" onClick={this.onSave}>
+                  保存
+                </Button>
+              )}
+              {(!currentAppraise ||
+                (currentAppraise && currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
+                <Button size="small" type="primary" onClick={this.onSubmit}>
+                  保存并提交
+                </Button>
+              )}
+              <Button size="small" type="primary" onClick={this.goBackList}>
                 返回列表
               </Button>
             </div>

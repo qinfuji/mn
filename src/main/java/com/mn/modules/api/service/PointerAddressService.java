@@ -31,6 +31,12 @@ public interface PointerAddressService {
      * 信息待提交
      */
     String STATUS_WAIT_SUBMIT = "waitSubmit";
+
+    /**
+     * 待评估
+     */
+    String STATUS_WAIT_ESTIMATE_SUBMIT = "waitEstimateSubmit";
+
     /**
      * 待评估
      */

@@ -76,7 +76,7 @@ class PointerList extends React.Component {
         </Form.Item>
         <Form.Item label="状态">
           {getFieldDecorator('state', {})(
-            <Select allowClear style={{width: 100}} size="small">
+            <Select allowClear style={{width: 120}} size="small">
               {Object.keys(PointerAddressConstant.statusLabels).map((key) => {
                 return (
                   <Option key={key} value={key}>
@@ -166,44 +166,75 @@ class PointerList extends React.Component {
     },
     {
       title: '操作',
-      render: (text, record) => {
-        const status = PointerAddressConstant.status;
-        if (record.state === status.STATUS_WAIT_SUBMIT) {
-          return (
+      render: (text, record) => (
+        <React.Fragment>
+          {record.state !== PointerAddressConstant.status.STATUS_DELETE && (
             <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
               点址管理
             </Button>
-          );
-        }
-        if (record.state === status.STATUS_NOT_ESTIMATE) {
-          return (
-            <React.Fragment>
-              <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
-                点址管理
-              </Button>
-              <Button size="small" onClick={() => this.enterCreateAppraise(record.id)}>
+          )}
+
+          {record.state === PointerAddressConstant.status.STATUS_NOT_ESTIMATE &&
+            record.state !== PointerAddressConstant.status.STATUS_DELETE && (
+              <Button type="primary" size="small" onClick={() => this.enterCreateAppraise(record.id)}>
                 请求评估
               </Button>
-            </React.Fragment>
-          );
-        }
-        if (record.state === status.STATUS_WAIT_ESTIMATE) {
-          return (
-            <Button type="primary" size="small">
-              待评估
+            )}
+          {record.state !== PointerAddressConstant.status.STATUS_NOT_ESTIMATE &&
+            record.state !== PointerAddressConstant.status.STATUS_WAIT_SUBMIT &&
+            record.state !== PointerAddressConstant.status.STATUS_DELETE && (
+              <Button type="primary" size="small" onClick={() => this.enterCreateAppraise(record.id)}>
+                评估管理
+              </Button>
+            )}
+          {record.state === PointerAddressConstant.status.STATUS_ESTIMATE_FINISH && (
+            <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
+              建立结论
             </Button>
-          );
-        }
-        if (record.state === status.STATUS_ESTIMATE_FINISH) {
-          return '评估完成';
-        }
-        if (record.state === status.STATUS_ALL_FINISH) {
-          return '结论完成';
-        }
-        if (record.state === status.STATUS_DELETE) {
-          return '';
-        }
-      },
+          )}
+          {record.state === PointerAddressConstant.status.STATUS_ESTIMATE_FINISH && (
+            <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
+              建立结论
+            </Button>
+          )}
+        </React.Fragment>
+        // const status = PointerAddressConstant.status;
+        // if (record.state === status.STATUS_WAIT_SUBMIT) {
+        //   return (
+        //     <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
+        //       点址管理
+        //     </Button>
+        //   );
+        // }
+        // if (record.state === status.STATUS_NOT_ESTIMATE) {
+        //   return (
+        //     <React.Fragment>
+        //       <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
+        //         点址管理
+        //       </Button>
+        //       <Button size="small" onClick={() => this.enterCreateAppraise(record.id)}>
+        //         请求评估
+        //       </Button>
+        //     </React.Fragment>
+        //   );
+        // }
+        // if (record.state === status.STATUS_WAIT_ESTIMATE) {
+        //   return (
+        //     <Button type="primary" size="small">
+        //       待评估
+        //     </Button>
+        //   );
+        // }
+        // if (record.state === status.STATUS_ESTIMATE_FINISH) {
+        //   return '评估完成';
+        // }
+        // if (record.state === status.STATUS_ALL_FINISH) {
+        //   return '结论完成';
+        // }
+        // if (record.state === status.STATUS_DELETE) {
+        //   return '';
+        // }
+      ),
     },
   ];
 

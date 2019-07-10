@@ -3,8 +3,9 @@ import {fetch, remove, create, submit, update} from '../services/pointer';
 export const Constant = {
   status: {
     STATUS_WAIT_SUBMIT: 'waitSubmit',
-    STATUS_WAIT_ESTIMATE: 'waitEstimate',
     STATUS_NOT_ESTIMATE: 'notEstimate',
+    STATUS_WAIT_ESTIMATE_SUBMIT: 'waitEstimateSubmit',
+    STATUS_WAIT_ESTIMATE: 'waitEstimate',
     STATUS_ESTIMATE_FINISH: 'estimateFinished',
     STATUS_ALL_FINISH: 'allFinished',
     STATUS_DELETE: 'deleted',
@@ -12,8 +13,9 @@ export const Constant = {
 
   statusLabels: {
     waitSubmit: '待提交',
-    waitEstimate: '待评估',
     notEstimate: '未评估',
+    waitEstimateSubmit: '评估待提交',
+    waitEstimate: '待评估',
     estimateFinished: '评估完成',
     waitConclusion: '等待结论',
     allFinished: '结论完成',

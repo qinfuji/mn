@@ -6,11 +6,15 @@ import Layout from './layouts/Layout';
 import history from './core/history';
 import dvaContainerProvider from './DvaContainer';
 import {loadMap, loadPlugin, loadAmpLocaApi, loadAmpUIApi, loadUI} from '@/components/AMap/api';
+import moment from 'moment';
 import {LocaleProvider} from 'antd';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
+import 'moment/locale/zh-cn';
 import dvaApp from './initDva';
 import './App.css';
 const DvaConainer = dvaContainerProvider(dvaApp);
+
+moment.locale('zh_CN');
 
 class App extends React.Component {
   state = {initedMap: false};

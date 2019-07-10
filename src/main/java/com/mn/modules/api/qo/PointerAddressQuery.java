@@ -45,4 +45,9 @@ public class PointerAddressQuery extends QueryBase{
      */
     private String type;
 
+    /**
+     * 竞品店id
+     */
+    private String competitorIds;
+
 }
