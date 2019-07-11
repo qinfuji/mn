@@ -2,6 +2,7 @@ package com.mn.modules.api.controller;
 
 
 import com.mn.common.validator.ValidatorUtils;
+import com.mn.common.validator.group.AddGroup;
 import com.mn.common.validator.group.UpdateGroup;
 import com.mn.modules.api.annotation.CheckToken;
 import com.mn.modules.api.entity.EstimateDataResult;
@@ -9,6 +10,7 @@ import com.mn.modules.api.entity.EstimateTask;
 import com.mn.modules.api.entity.PointerAddress;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
+import com.mn.modules.api.validator.SaveConclusion;
 import com.mn.modules.api.vo.PointerAddressAndEstimateTask;
 import com.mn.modules.api.vo.RestResult;
 import com.mn.modules.api.vo.UserInfo;
@@ -133,6 +135,17 @@ public class EstimateTaskController {
     public RestResult<EstimateDataResult> getDataResult(
             @RequestParam String emtimateId) {
         EstimateDataResult ret = service.getEstimateDataResult(emtimateId);
+        return RestResult.build(ret);
+    }
+
+    @PutMapping("/saveConclusion")
+    @ApiOperation("保存结论")
+    @CheckToken
+    public RestResult<EstimateDataResult> saveConclusion(
+            @RequestBody EstimateDataResult conclusion,
+            @RequestParam String emtimateId) {
+        ValidatorUtils.validateEntity(conclusion, SaveConclusion.class);
+        EstimateDataResult ret = service.saveConclusion(emtimateId, conclusion);
         return RestResult.build(ret);
     }
 }

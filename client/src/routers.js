@@ -37,9 +37,17 @@ export default [
       },
 
       {
-        path: '/createAppraise/pointerAddressId/:pointerAddressId',
+        path: '/createAppraise/pointerAddressId/:pointerAddressId/:vtype',
         component: dynamic({
           loader: () => import('./pages/appraise'),
+        }),
+        exact: true,
+      },
+
+      {
+        path: '/categroyLabel',
+        component: dynamic({
+          loader: () => import('./pages/categroyLabels'),
         }),
         exact: true,
       },

@@ -104,8 +104,12 @@ class PointerList extends React.Component {
     History.push('/createPointAddress/' + id);
   };
 
+  enterCreateConclusion = (id) => {
+    History.push(`/createAppraise/pointerAddressId/${id}/conclusion`);
+  };
+
   enterCreateAppraise = (id) => {
-    History.push('/createAppraise/pointerAddressId/' + id);
+    History.push(`/createAppraise/pointerAddressId/${id}/appraise`);
   };
 
   columns = [
@@ -150,7 +154,7 @@ class PointerList extends React.Component {
     },
     {
       title: '状态',
-      width: '70px',
+      width: '90px',
       sorter: true,
       dataIndex: 'state',
       render: (val) => {
@@ -187,53 +191,13 @@ class PointerList extends React.Component {
                 评估管理
               </Button>
             )}
-          {record.state === PointerAddressConstant.status.STATUS_ESTIMATE_FINISH && (
-            <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
-              建立结论
-            </Button>
-          )}
-          {record.state === PointerAddressConstant.status.STATUS_ESTIMATE_FINISH && (
-            <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
-              建立结论
+          {(record.state === PointerAddressConstant.status.STATUS_ESTIMATE_FINISH ||
+            record.state === PointerAddressConstant.status.STATUS_ALL_FINISH) && (
+            <Button className="operationBtn" size="small" onClick={() => this.enterCreateConclusion(record.id)}>
+              任务结论
             </Button>
           )}
         </React.Fragment>
-        // const status = PointerAddressConstant.status;
-        // if (record.state === status.STATUS_WAIT_SUBMIT) {
-        //   return (
-        //     <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
-        //       点址管理
-        //     </Button>
-        //   );
-        // }
-        // if (record.state === status.STATUS_NOT_ESTIMATE) {
-        //   return (
-        //     <React.Fragment>
-        //       <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
-        //         点址管理
-        //       </Button>
-        //       <Button size="small" onClick={() => this.enterCreateAppraise(record.id)}>
-        //         请求评估
-        //       </Button>
-        //     </React.Fragment>
-        //   );
-        // }
-        // if (record.state === status.STATUS_WAIT_ESTIMATE) {
-        //   return (
-        //     <Button type="primary" size="small">
-        //       待评估
-        //     </Button>
-        //   );
-        // }
-        // if (record.state === status.STATUS_ESTIMATE_FINISH) {
-        //   return '评估完成';
-        // }
-        // if (record.state === status.STATUS_ALL_FINISH) {
-        //   return '结论完成';
-        // }
-        // if (record.state === status.STATUS_DELETE) {
-        //   return '';
-        // }
       ),
     },
   ];
@@ -322,6 +286,7 @@ class PointerList extends React.Component {
           <Content>
             <Card>
               <StandardTable
+                size="middle"
                 bordered
                 selectedRows={[]}
                 data={data}

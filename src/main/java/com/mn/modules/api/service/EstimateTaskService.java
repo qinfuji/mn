@@ -46,6 +46,15 @@ public interface EstimateTaskService extends IService<EstimateTask> {
 
 
      /**
+      * 结果等待提交
+      */
+     String RESULT_DATE_STATUS_WAIT_SUBMIT="waitSubmit";
+
+     /**
+      * 结果已经提交，就是结论
+      */
+     String RESULT_DATE_STATUS_SUBMITED="submited";
+     /**
       * 创建任务对象，并同时创建任务结果对象
       * @return
       */
@@ -66,6 +75,14 @@ public interface EstimateTaskService extends IService<EstimateTask> {
       * @return
       */
      EstimateDataResult getEstimateDataResult(String estimateTaskId);
+
+     /**
+      * 保存结论
+      * @emtimateId 任务id
+      * @param dataResult
+      * @return
+      */
+     EstimateDataResult saveConclusion(String emtimateId , EstimateDataResult dataResult);
      /**
       * 删除当前任务
       * @param task

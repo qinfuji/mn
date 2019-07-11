@@ -22,11 +22,18 @@ import Circle from '@/components/AMap/Circle';
 import InfoWindow from '@/components/AMap/InfoWindow';
 import History from '../../core/history';
 import Map from '@/components/AMap/Map';
-import {getEsmtimateByPointerAddressId, createEsmtimate, getEsmtimateDataResult} from '../../services/appraise';
+import {
+  getEsmtimateByPointerAddressId,
+  createEsmtimate,
+  getEsmtimateDataResult,
+  saveConclusion,
+} from '../../services/appraise';
 import {fetch as fetchPointerAddress} from '../../services/pointer';
 import {PolygonOptions, CircleOptions} from '../../utils/mapShapeOptions';
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 import {Constant as AppraiseConstant} from '../../models/appraise';
+import CreateAppraise from './create';
+import Conclusion from './conclusion';
 import {generateUUID} from '../../utils/misc';
 const {Content, Sider} = Layout;
 const {RangePicker} = DatePicker;
@@ -67,6 +74,7 @@ class Appraise extends React.Component {
       competitorPolygons: [], //竞品店围栏
       filterLabelPolygons: [], //过滤的业态围栏
       appraiseFencePolygon: null, //点址评估后的围栏
+      appraiseDataResult: {}, //数据结果
     };
   }
 
@@ -80,7 +88,7 @@ class Appraise extends React.Component {
     const pointerAddressId = params.pointerAddressId;
     //得到点址，评估数据
     const response = await getEsmtimateByPointerAddressId({pointerAddressId});
-
+    if (!response) return;
     const otherPointerAddress = await this.getFilterPointerAddress();
     const data = response.data;
     const pointerAddress = data.pointerAddress;
@@ -152,17 +160,19 @@ class Appraise extends React.Component {
     }
 
     let appraiseFencePolygon = null;
+    let appraiseDataResult = null;
     if (appraise && appraise.execState === AppraiseConstant.execState.EXEC_STATUS_FINISH_CODE) {
       //获取评估
+
       const appraiseDataResultResponse = await getEsmtimateDataResult({id: appraise.id});
       if (appraiseDataResultResponse) {
-        const dataResultResponse = appraiseDataResultResponse.data;
-        const fence = dataResultResponse.fence;
+        appraiseDataResult = appraiseDataResultResponse.data;
+        const fence = appraiseDataResult.fence;
         if (fence) {
           console.log(fence);
           const path = getPath(fence);
           appraiseFencePolygon = this.createPolygon(path, false, 'appraiseFencePolygon', {
-            name: '辐射围栏',
+            name: `点址：${pointerAddress.name}<br/>到访围栏`,
             address: '',
           });
         }
@@ -203,6 +213,7 @@ class Appraise extends React.Component {
       competitors,
       competitorPolygons,
       appraiseFencePolygon,
+      appraiseDataResult,
     });
   };
 
@@ -376,7 +387,7 @@ class Appraise extends React.Component {
     //构建信息窗体中显示的内容
     var info = [];
     info.push(`<div style="padding:0px 0px 0px 4px;"><b>名称:${windowInfo.name}</b>`);
-    info.push(`地址 :${windowInfo.address}</div></div>`);
+    windowInfo.address && info.push(`地址 :${windowInfo.address}</div></div>`);
     this.setState({
       mapWindowInfo: {
         options: {
@@ -478,54 +489,44 @@ class Appraise extends React.Component {
     });
   };
 
-  saveOrUpdate = async (type) => {
+  saveOrUpdate = async (values, type) => {
     //保存
-    const {
-      form: {validateFields},
-    } = this.props;
     const {userHotFencePolygons, currentPointerAddress, currentAppraise = {}} = this.state;
-    validateFields(async (error, values) => {
-      if (error) return;
-      let params = values;
-      params = {
-        ...currentAppraise,
-        ...params,
-        filterLabels: params.filterLabels ? params.filterLabels.join(',') : '',
-        competitorIds: params.competitorIds ? params.competitorIds.join(',') : '',
-      };
-
-      if (
-        userHotFencePolygons &&
-        userHotFencePolygons.length &&
-        (!params.fencesHotDate || !params.fenaceHotCondition)
-      ) {
-        Modal.error({
-          title: '热力分析日期、热力条件必须填写',
-        });
-        return;
-      }
-      if (userHotFencePolygons && userHotFencePolygons.length) {
-        const fancesArray = [];
-        userHotFencePolygons.forEach((fence) => {
-          const path = fence.options.path;
-          fancesArray.push(path.join(';'));
-        });
-        params.hotFences = fancesArray.join('|');
-      }
-      if (userHotFencePolygons && userHotFencePolygons.length && params.fencesHotDate) {
-        const stateDate = params.fencesHotDate[0];
-        const endDate = params.fencesHotDate[1];
-        params.fencesHotDate = moment(stateDate).format('YYYY-MM-DD') + ';' + moment(endDate).format('YYYY-MM-DD');
-      } else {
-        params.fencesHotDate = '';
-      }
-      params.pointerAddressId = currentPointerAddress.id;
-      console.log(params);
-      const response = await createEsmtimate(params, type);
-      if (response) {
-        History.push('/listPointAddress');
-      }
-    });
+    let params = values;
+    params = {
+      ...currentAppraise,
+      ...params,
+      filterLabels: params.filterLabels ? params.filterLabels.join(',') : '',
+      competitorIds: params.competitorIds ? params.competitorIds.join(',') : '',
+      showPersonCount: params.showPersonCount ? 1 : 0,
+    };
+    if (userHotFencePolygons && userHotFencePolygons.length && (!params.fencesHotDate || !params.fenaceHotCondition)) {
+      Modal.error({
+        title: '热力分析日期、热力条件必须填写',
+      });
+      return;
+    }
+    if (userHotFencePolygons && userHotFencePolygons.length) {
+      const fancesArray = [];
+      userHotFencePolygons.forEach((fence) => {
+        const path = fence.options.path;
+        fancesArray.push(path.join(';'));
+      });
+      params.hotFences = fancesArray.join('|');
+    }
+    if (userHotFencePolygons && userHotFencePolygons.length && params.fencesHotDate) {
+      const stateDate = params.fencesHotDate[0];
+      const endDate = params.fencesHotDate[1];
+      params.fencesHotDate = moment(stateDate).format('YYYY-MM-DD') + ';' + moment(endDate).format('YYYY-MM-DD');
+    } else {
+      params.fencesHotDate = '';
+    }
+    params.pointerAddressId = currentPointerAddress.id;
+    console.log(params);
+    const response = await createEsmtimate(params, type);
+    if (response) {
+      History.push('/listPointAddress');
+    }
   };
 
   onSave = () => {
@@ -538,6 +539,14 @@ class Appraise extends React.Component {
 
   goBackList = () => {
     History.push('/listPointAddress');
+  };
+
+  onSaveConclusion = async (conclusion) => {
+    const {currentAppraise} = this.state;
+    const response = await saveConclusion(currentAppraise.id, conclusion);
+    if (response.data) {
+      History.push('/listPointAddress');
+    }
   };
 
   createMarker = () => {};
@@ -560,11 +569,13 @@ class Appraise extends React.Component {
       pointerAddressPolygon, //点址围栏
       competitorPolygons, //竞品店围栏
       appraiseFencePolygon, //统计分析后的点址围栏
+      appraiseDataResult, //结论
     } = this.state;
-    console.log(this.state);
+
     const {
-      form: {getFieldDecorator},
+      match: {params},
     } = this.props;
+    const vtype = params.vtype;
 
     const fenceHotDate = [];
     if (currentAppraise && currentAppraise.fencesHotDate) {
@@ -645,173 +656,28 @@ class Appraise extends React.Component {
           </Map>
         </Content>
         <Sider theme="light" width={'25%'} style={{height: '100%', overflow: 'auto'}}>
-          <div className="pointerCreate">
-            <Form onSubmit={this.onSubmit}>
-              <Form.Item label="评估点" labelCol={{span: 4}} wrapperCol={{span: 15}}>
-                {currentPointerAddress.name}
-              </Form.Item>
-              <Form.Item label="业态标签">
-                {getFieldDecorator('filterLabels', {
-                  initialValue:
-                    currentAppraise && currentAppraise.filterLabels ? currentAppraise.filterLabels.split(',') : [],
-                })(
-                  <Select mode="multiple">
-                    <Option value={'1'}>标签1</Option>
-                    <Option value={'2'}>标签2</Option>
-                  </Select>,
-                )}
-              </Form.Item>
-              <Form.Item label="竞对呈现">
-                {getFieldDecorator('competitorIds', {
-                  initialValue:
-                    currentAppraise && currentAppraise.competitorIds ? currentAppraise.competitorIds.split(',') : [],
-                })(
-                  <Select
-                    mode="multiple"
-                    placeholder="请选择"
-                    style={{width: '100%'}}
-                    onChange={this.competitorIdsChange}
-                  >
-                    {competitors.map((c) => {
-                      if (c.id !== currentPointerAddress.id) {
-                        return (
-                          <Option key={c.id} value={c.id}>
-                            {c.name}
-                          </Option>
-                        );
-                      } else {
-                        return null;
-                      }
-                    })}
-                  </Select>,
-                )}
-              </Form.Item>
-              <Form.Item label="到访百分比">
-                {getFieldDecorator('arriveScale', {
-                  initialValue:
-                    currentAppraise && currentAppraise.arriveScale ? parseInt(currentAppraise.arriveScale) : 20,
-                })(<Slider step={1} max={100} min={20} />)}
-              </Form.Item>
-              <Form.Item label="辐射距离">
-                {getFieldDecorator('distance', {
-                  initialValue: currentAppraise && currentAppraise.distance ? parseInt(currentAppraise.distance) : 1000,
-                })(
-                  <Slider
-                    marks={{
-                      1000: '1KM',
-                      1500: '1.5KM',
-                      2000: '2KM',
-                      2500: '2.5KM',
-                      3000: '3KM',
-                    }}
-                    step={500}
-                    max={3000}
-                    min={1000}
-                    onChange={this.distanceChange}
-                  />,
-                )}
-              </Form.Item>
-              <Form.Item label="存量人口">
-                {getFieldDecorator('showPersonCount', {
-                  initialValue:
-                    currentAppraise && currentAppraise.showPersonCount ? parseInt(currentAppraise.showPersonCount) : 1,
-                })(<Switch size="small" checkedChildren="显示" unCheckedChildren="不显示" defaultChecked />)}
-              </Form.Item>
-              <Form.Item label="热力分析">
-                <Card id="hotCard">
-                  <Row>
-                    <Col>
-                      {(!currentAppraise ||
-                        (currentAppraise && currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
-                        <Button type="primary" size="small" onClick={this.onCreateUserFenceHandle}>
-                          新建围栏
-                        </Button>
-                      )}
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      {userHotFencePolygons &&
-                        userHotFencePolygons.map((userHotFence) => {
-                          return (
-                            <Input
-                              readOnly
-                              key={userHotFence.id}
-                              value={userHotFence.options.path.join(';')}
-                              suffix={
-                                (!currentAppraise ||
-                                  (currentAppraise &&
-                                    currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
-                                  <Tooltip title="删除围栏">
-                                    <Icon
-                                      type="delete"
-                                      style={{color: 'rgba(0,0,0,.45)'}}
-                                      onClick={() => {
-                                        this.onRemoveUserHotFence(userHotFence);
-                                      }}
-                                    />
-                                  </Tooltip>
-                                )
-                              }
-                            />
-                          );
-                        })}
-                    </Col>
-                  </Row>
-                  <Row gutter={10}>
-                    <Col span={8}>选择日期:</Col>
-                    <Col span={16}>
-                      {getFieldDecorator('fencesHotDate', {
-                        initialValue: fenceHotDate,
-                      })(<RangePicker />)}
-                    </Col>
-                  </Row>
-                  <Row gutter={10}>
-                    <Col>围栏热力条件</Col>
-                    <Col>
-                      {getFieldDecorator('fenaceHotCondition', {
-                        initialValue:
-                          currentAppraise && currentAppraise.fenaceHotCondition
-                            ? currentAppraise.fenaceHotCondition
-                            : '',
-                      })(
-                        <Select>
-                          <Option value={'1'}>人口</Option>
-                        </Select>,
-                      )}
-                    </Col>
-                  </Row>
-                </Card>
-              </Form.Item>
-              <Form.Item label="测控点">
-                {getFieldDecorator('observeId', {
-                  initialValue: currentAppraise && currentAppraise.observeId ? currentAppraise.observeId : '',
-                  rules: [{required: true, message: '请选择'}],
-                })(
-                  <Select>
-                    <Option value={'1221212'}>测控点1</Option>
-                  </Select>,
-                )}
-              </Form.Item>
-            </Form>
-            <div id="btnbar" style={{marginTop: '20px'}}>
-              {(!currentAppraise ||
-                (currentAppraise && currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
-                <Button size="small" type="primary" onClick={this.onSave}>
-                  保存
-                </Button>
-              )}
-              {(!currentAppraise ||
-                (currentAppraise && currentAppraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
-                <Button size="small" type="primary" onClick={this.onSubmit}>
-                  保存并提交
-                </Button>
-              )}
-              <Button size="small" type="primary" onClick={this.goBackList}>
-                返回列表
-              </Button>
-            </div>
-          </div>
+          {vtype === 'appraise' && (
+            <CreateAppraise
+              pointerAddress={currentPointerAddress}
+              appraise={currentAppraise}
+              onCompetitorIdsChange={this.competitorIdsChange}
+              onDistanceChange={this.distanceChange}
+              saveOrUpdate={this.saveOrUpdate}
+              competitors={competitors}
+              userHotFencePolygons={userHotFencePolygons}
+              goBackList={this.goBackList}
+              onCreateUserFenceHandle={this.onCreateUserFenceHandle}
+            />
+          )}
+
+          {vtype === 'conclusion' && (
+            <Conclusion
+              pointerAddress={currentPointerAddress}
+              appraiseDataResult={appraiseDataResult}
+              goBackList={this.goBackList}
+              onSave={this.onSaveConclusion}
+            />
+          )}
         </Sider>
       </Layout>
     );

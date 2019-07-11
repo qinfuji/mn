@@ -49,7 +49,6 @@ public class CategroyLabel {
      * 标签状态
      */
     @ApiModelProperty("标签状态")
-    @TableField(value = "label")
-    @NotNull(groups = AddGroup.class , message = "标签名称必须填写")
+    @TableField(value = "state")
     Integer state;
 }

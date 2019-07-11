@@ -106,6 +106,22 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         return null;
     }
 
+    @Override
+    public EstimateDataResult saveConclusion(String emtimateId  , EstimateDataResult result) {
+
+        EstimateTask et =  this.baseMapper.selectById(emtimateId);
+        EstimateDataResult updated = new EstimateDataResult();
+        updated.setConclusion(result.getConclusion());
+        updated.setEnterDate(result.getEnterDate());
+        updated.setBusinessType(result.getBusinessType());
+        updated.setId(et.getResultDataId());
+        updated.setState(EstimateTaskService.RESULT_DATE_STATUS_SUBMITED);
+        estimateDataResultDao.updateById(updated);
+        PointerAddress pa = this.pointerAddressDao.selectById(et.getPointerAddressId());
+        pa.setState(PointerAddressService.STATUS_ALL_FINISH);
+        this.pointerAddressDao.updateById(pa);
+        return estimateDataResultDao.selectById(updated.getId());
+    }
 
     @Override
     public EstimateDataResult getEstimateDataResult(String estimateTaskId) {

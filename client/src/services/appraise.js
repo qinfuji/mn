@@ -27,3 +27,10 @@ export async function getEsmtimateDataResult(params) {
     method: 'GET',
   });
 }
+
+export async function saveConclusion(id, params) {
+  return request(`${HOST}/api/estimateTask/saveConclusion?emtimateId=${id}`, {
+    method: 'PUT',
+    body: params,
+  });
+}

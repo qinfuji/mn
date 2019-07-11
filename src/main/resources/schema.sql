@@ -59,6 +59,11 @@ CREATE TABLE `estimate_task_t` (
     `observer_rate_flow` VARCHAR(45) NULL COMMENT '测控点流量',
     `radiation_distance` VARCHAR(45) NULL COMMENT '评估辐射距离',
     `radiation_area` VARCHAR(45) NULL COMMENT '评估辐射面积',
+    `arrive_persion_data` TEXT NULL  COMMENT '到访人口数量',
+    `conclusion` VARCHAR(45) NULL COMMENT '点址结论',
+    `enter_date` VARCHAR(45) NULL COMMENT '准入时间',
+    `business_type` VARCHAR(45) NULL COMMENT '商圈类型',
+    `state` VARCHAR(45) NULL COMMENT '状态';
     PRIMARY KEY (`id`));
 
 

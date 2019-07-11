@@ -17,7 +17,7 @@ code {
 }
 
 .pointerCreate {
-  margin: 0 20px;
+  margin: 0 10px;
 }
 
 .pointerCreate .ant-form-item-label {
@@ -52,6 +52,7 @@ code {
 
 #btnbar .ant-btn {
   margin-right: 8px;
+  margin-left: 8px;
   margin-bottom: 12px;
 }
 
@@ -66,4 +67,18 @@ table .ant-btn {
 
 #hotCard .ant-card-body {
   padding: 10px;
+}
+
+#conclusion .ant-card-body {
+  padding: 10px;
+}
+
+#conclusion .ant-form-item {
+  margin-bottom: 0;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+#categroyLabelTable .ant-btn {
+  margin-right: 4px;
+  margin-bottom: 6px;
 }
