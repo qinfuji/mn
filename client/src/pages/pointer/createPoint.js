@@ -1,7 +1,8 @@
 import React from 'react';
-import {Form, Input, Button, Icon, Tooltip, Select, Modal} from 'antd';
+import {Form, Input, Button, Icon, Tooltip, Select, Modal, TreeSelect} from 'antd';
 
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
+const {TreeNode} = TreeSelect;
 
 const FormItem = Form.Item;
 const Option = Select.Option;
