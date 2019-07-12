@@ -2,7 +2,7 @@ import React from 'react';
 import {Form, Input, Button, Icon, Tooltip, Select, Modal, TreeSelect} from 'antd';
 
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
-const {TreeNode} = TreeSelect;
+import {fatchAll} from '../../services/categroyLabels';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -14,15 +14,29 @@ const {confirm} = Modal;
       lnglat: props.lnglat,
     };
   },
-  //onFieldsChange(props, changedFields) {
-  //  console.log(changedFields);
-  //props.onChange(changedFields);
-  //},
+
   onValuesChange(props, values) {
+    if (values['labels']) {
+      values['labels'] = values['labels'].join(',');
+    }
+    console.log(values);
     props.onChange(values);
   },
 })
 class CreatePointer extends React.Component {
+  state = {
+    treeData: [],
+  };
+
+  componentDidMount() {
+    setTimeout(async () => {
+      const data = await fatchAll();
+      this.setState({
+        treeData: data,
+      });
+    }, 100);
+  }
+
   submit = (e) => {
     const {
       form: {validateFields},
@@ -75,8 +89,25 @@ class CreatePointer extends React.Component {
     });
   };
 
-  //保存
-  onSave = (pointer) => {};
+  getNewTreeData(treeData, currentId, child) {
+    const loop = (data) => {
+      if (!data) return;
+      data.forEach((item) => {
+        if (currentId === item.id) {
+          item.children = child;
+        } else {
+          loop(item.children);
+        }
+      });
+    };
+    loop(treeData);
+    return treeData;
+  }
+
+  onChange = (value) => {
+    console.log('onChange ', value);
+    this.setState({value});
+  };
 
   render() {
     const {
@@ -87,6 +118,7 @@ class CreatePointer extends React.Component {
       onRemoveFence,
       onBack,
     } = this.props;
+    console.log(pointer);
     return (
       <div className="pointerCreate">
         <Form>
@@ -161,13 +193,16 @@ class CreatePointer extends React.Component {
           </Form.Item>
           <Form.Item label="标签(业态)">
             {getFieldDecorator('labels', {
-              initialValue: pointer && pointer.labels ? pointer.labels : '',
+              initialValue: pointer && pointer.labels ? [32, 20] : [],
               rules: [{required: true, message: '请填写'}],
             })(
-              <Select>
-                <Option value={1}>标签1</Option>
-                <Option value={2}>标签2</Option>
-              </Select>,
+              <TreeSelect
+                dropdownStyle={{maxHeight: 400, overflow: 'auto'}}
+                placeholder="请选择"
+                allowClear
+                multiple
+                treeData={this.state.treeData}
+              ></TreeSelect>,
             )}
           </Form.Item>
         </Form>

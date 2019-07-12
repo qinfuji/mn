@@ -13,175 +13,6 @@ import java.util.List;
 public class GeometryUtil {
     private static final int POLYGON_MIN_SIZE = 3;
 
-
-    /**
-     * 没有测试
-     *
-     * @param pointX
-     * @param pointY
-     * @param MapUnits
-     * @return
-     */
-    public static double calcArea(ArrayList pointX, ArrayList pointY, String MapUnits) {
-
-        int Count = pointX.size();
-        if (Count > 2) {
-            double mtotalArea = 0;
-            if (MapUnits == "DEGREES")//经纬度坐标下的球面多边形
-            {
-                double LowX = 0.0;
-                double LowY = 0.0;
-                double MiddleX = 0.0;
-                double MiddleY = 0.0;
-                double HighX = 0.0;
-                double HighY = 0.0;
-
-                double AM = 0.0;
-                double BM = 0.0;
-                double CM = 0.0;
-
-                double AL = 0.0;
-                double BL = 0.0;
-                double CL = 0.0;
-
-                double AH = 0.0;
-                double BH = 0.0;
-                double CH = 0.0;
-
-                double CoefficientL = 0.0;
-                double CoefficientH = 0.0;
-
-                double ALtangent = 0.0;
-                double BLtangent = 0.0;
-                double CLtangent = 0.0;
-
-                double AHtangent = 0.0;
-                double BHtangent = 0.0;
-                double CHtangent = 0.0;
-
-                double ANormalLine = 0.0;
-                double BNormalLine = 0.0;
-                double CNormalLine = 0.0;
-
-                double OrientationValue = 0.0;
-
-                double AngleCos = 0.0;
-
-                double Sum1 = 0.0;
-                double Sum2 = 0.0;
-                double Count2 = 0;
-                double Count1 = 0;
-
-
-                double Sum = 0.0;
-                double Radius = 6378000;
-
-                for (int i = 0; i < Count; i++) {
-                    if (i == 0) {
-                        LowX = (double) pointX.get(Count - 1) * Math.PI / 180;
-                        LowY = (double) pointY.get(Count - 1) * Math.PI / 180;
-                        MiddleX = (double) pointX.get(0) * Math.PI / 180;
-                        MiddleY = (double) pointY.get(0) * Math.PI / 180;
-                        HighX = (double) pointX.get(1) * Math.PI / 180;
-                        HighY = (double) pointY.get(1) * Math.PI / 180;
-                    } else if (i == Count - 1) {
-                        LowX = (double) pointX.get(Count - 2) * Math.PI / 180;
-                        LowY = (double) pointY.get(Count - 2) * Math.PI / 180;
-                        MiddleX = (double) pointX.get(Count - 1) * Math.PI / 180;
-                        MiddleY = (double) pointY.get(Count - 1) * Math.PI / 180;
-                        HighX = (double) pointX.get(0) * Math.PI / 180;
-                        HighY = (double) pointY.get(0) * Math.PI / 180;
-                    } else {
-                        LowX = (double) pointX.get(i - 1) * Math.PI / 180;
-                        LowY = (double) pointY.get(i - 1) * Math.PI / 180;
-                        MiddleX = (double) pointX.get(i) * Math.PI / 180;
-                        MiddleY = (double) pointY.get(i) * Math.PI / 180;
-                        HighX = (double) pointX.get(i + 1) * Math.PI / 180;
-                        HighY = (double) pointY.get(i + 1) * Math.PI / 180;
-                    }
-
-                    AM = Math.cos(MiddleY) * Math.cos(MiddleX);
-                    BM = Math.cos(MiddleY) * Math.sin(MiddleX);
-                    CM = Math.sin(MiddleY);
-                    AL = Math.cos(LowY) * Math.cos(LowX);
-                    BL = Math.cos(LowY) * Math.sin(LowX);
-                    CL = Math.sin(LowY);
-                    AH = Math.cos(HighY) * Math.cos(HighX);
-                    BH = Math.cos(HighY) * Math.sin(HighX);
-                    CH = Math.sin(HighY);
-
-
-                    CoefficientL = (AM * AM + BM * BM + CM * CM) / (AM * AL + BM * BL + CM * CL);
-                    CoefficientH = (AM * AM + BM * BM + CM * CM) / (AM * AH + BM * BH + CM * CH);
-
-                    ALtangent = CoefficientL * AL - AM;
-                    BLtangent = CoefficientL * BL - BM;
-                    CLtangent = CoefficientL * CL - CM;
-                    AHtangent = CoefficientH * AH - AM;
-                    BHtangent = CoefficientH * BH - BM;
-                    CHtangent = CoefficientH * CH - CM;
-
-
-                    AngleCos = (AHtangent * ALtangent + BHtangent * BLtangent + CHtangent * CLtangent) / (Math.sqrt(AHtangent * AHtangent + BHtangent * BHtangent + CHtangent * CHtangent) * Math.sqrt(ALtangent * ALtangent + BLtangent * BLtangent + CLtangent * CLtangent));
-
-                    AngleCos = Math.acos(AngleCos);
-
-                    ANormalLine = BHtangent * CLtangent - CHtangent * BLtangent;
-                    BNormalLine = 0 - (AHtangent * CLtangent - CHtangent * ALtangent);
-                    CNormalLine = AHtangent * BLtangent - BHtangent * ALtangent;
-
-                    if (AM != 0) {
-                        OrientationValue = ANormalLine / AM;
-                    } else if (BM != 0) {
-                        OrientationValue = BNormalLine / BM;
-                    } else {
-                        OrientationValue = CNormalLine / CM;
-                    }
-
-
-                    if (OrientationValue > 0) {
-                        Sum1 += AngleCos;
-                        Count1++;
-
-                    } else {
-                        Sum2 += AngleCos;
-                        Count2++;
-                        //Sum +=2*Math.PI-AngleCos;
-                    }
-
-                }
-
-                if (Sum1 > Sum2) {
-                    Sum = Sum1 + (2 * Math.PI * Count2 - Sum2);
-                } else {
-                    Sum = (2 * Math.PI * Count1 - Sum1) + Sum2;
-                }
-
-                //平方米
-                mtotalArea = (Sum - (Count - 2) * Math.PI) * Radius * Radius;
-            } else { //非经纬度坐标下的平面多边形
-
-                int i, j;
-                //double j;
-                double p1x, p1y;
-                double p2x, p2y;
-                for (i = Count - 1, j = 0; j < Count; i = j, j++) {
-
-                    p1x = (double) pointX.get(i);
-                    p1y = (double) pointY.get(i);
-
-                    p2x = (double) pointX.get(j);
-                    p2y = (double) pointY.get(j);
-
-                    mtotalArea += p1x * p2y - p2x * p1y;
-                }
-                mtotalArea /= 2.0;
-            }
-            return mtotalArea;
-        }
-        return 0;
-    }
-
     /**
      * @param point
      * @param polygon 多边形的顶点
@@ -232,7 +63,6 @@ public class GeometryUtil {
      */
     public static boolean isPointInPoly(LngLat point, List<LngLat> polygon) {
         assertParams(point, polygon);
-
         java.awt.geom.GeneralPath p = new java.awt.geom.GeneralPath();
         LngLat first = polygon.get(0);
         p.moveTo(first.getLng(), first.getLat());
@@ -348,6 +178,32 @@ public class GeometryUtil {
         if (null == point || null == polygon || polygon.size() < POLYGON_MIN_SIZE) {
             throw new IllegalArgumentException("参数不能为空，且多边形点数大于3");
         }
+    }
+
+    /**
+     * 获取多边形的中心
+     * @param points
+     * @return
+     */
+    public static LngLat getCenterOfGravityPoint(List<LngLat> points ) {
+        double area = 0.0;//多边形面积
+        double Gx = 0.0, Gy = 0.0;// 重心的x、y
+        for (int i = 1; i <= points.size(); i++) {
+            double iLat = points.get(i % points.size()).getLng();
+            double iLng = points.get(i % points.size()).getLat();
+            double nextLat = points.get(i - 1).getLng();
+            double nextLng = points.get(i - 1).getLat();
+            double temp = (iLat * nextLng - iLng * nextLat) / 2.0;
+            area += temp;
+            Gx += temp * (iLng + nextLng) / 3.0;
+            Gy += temp * (iLat + nextLat) / 3.0;
+        }
+        Gx = Gx / area;
+        Gy = Gy / area;
+        LngLat lnglat = new LngLat();
+        lnglat.setLng(Gx);
+        lnglat.setLat(Gy);
+        return lnglat;
     }
 
 }

@@ -1,3 +1,24 @@
+CREATE TABLE `share_pointer_address_t` (
+  `id` VARCHAR(32) NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `address` VARCHAR(200) NOT NULL,
+  `lng` DECIMAL(10,6) NOT NULL,
+  `lat` DECIMAL(10,6) NOT NULL,
+  `fence` TEXT NULL,
+  `province` VARCHAR(45) NOT NULL,
+  `province_name` VARCHAR(45) NOT NULL,
+  `city` VARCHAR(45) NOT NULL,
+  `city_name` VARCHAR(45) NOT NULL,
+  `district` VARCHAR(45) NOT NULL,
+  `district_name` VARCHAR(45) NOT NULL,
+  `created_user_id` VARCHAR(45) NULL,
+  `created_user_name` VARCHAR(45) NULL,
+  `created_time` DATETIME NOT NULL,
+  `last_updated_user_id` VARCHAR(45) NULL,
+  `last_updated_user_name` VARCHAR(45) NULL,
+  `updated_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`));
+
 CREATE TABLE `pointer_address_t` (
   `id` VARCHAR(32) NOT NULL,
   `user_id` VARCHAR(45) NULL,

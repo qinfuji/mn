@@ -35,7 +35,7 @@ public class CategroyLabel {
      */
     @ApiModelProperty("标签父id")
     @TableField(value = "parent_id")
-    String parentId;
+    Integer parentId;
 
     /**
      * 标签名称

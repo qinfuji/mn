@@ -14,10 +14,12 @@ import {
   Card,
   Row,
   Col,
+  TreeSelect,
 } from 'antd';
 import moment from 'moment';
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 import {Constant as AppraiseConstant} from '../../models/appraise';
+import {fatchAll} from '../../services/categroyLabels';
 
 const FormItem = Form.Item;
 const {Option} = Select;
@@ -25,6 +27,10 @@ const {RangePicker} = DatePicker;
 
 @Form.create()
 class CreateAppraise extends React.Component {
+  state = {
+    treeData: [],
+  };
+
   saveOrUpdate = async (type) => {
     const {
       form: {validateFields},
@@ -37,6 +43,15 @@ class CreateAppraise extends React.Component {
       }
     });
   };
+
+  componentDidMount() {
+    setTimeout(async () => {
+      const data = await fatchAll();
+      this.setState({
+        treeData: data,
+      });
+    }, 100);
+  }
 
   onSave = () => {
     this.saveOrUpdate('save');
@@ -74,10 +89,13 @@ class CreateAppraise extends React.Component {
               {getFieldDecorator('filterLabels', {
                 initialValue: appraise && appraise.filterLabels ? appraise.filterLabels.split(',') : [],
               })(
-                <Select mode="multiple">
-                  <Option value={'1'}>标签1</Option>
-                  <Option value={'2'}>标签2</Option>
-                </Select>,
+                <TreeSelect
+                  dropdownStyle={{maxHeight: 400, overflow: 'auto'}}
+                  placeholder="请选择"
+                  allowClear
+                  multiple
+                  treeData={this.state.treeData}
+                ></TreeSelect>,
               )}
             </Form.Item>
             <Form.Item label="竞对呈现">

@@ -353,6 +353,7 @@ class PointManager extends React.Component {
     const lnglat = pointer.lnglat.split(',');
     pointer.lng = lnglat[0];
     pointer.lat = lnglat[1];
+    pointer.labels = pointer.labels.join(',');
     const response = await create(pointer);
     if (response) {
       History.push('/listPointAddress');
@@ -363,6 +364,7 @@ class PointManager extends React.Component {
     const lnglat = pointer.lnglat.split(',');
     pointer.lng = lnglat[0];
     pointer.lat = lnglat[1];
+    pointer.labels = pointer.labels.join(',');
     const response = await submit(pointer);
     if (response) {
       History.push('/listPointAddress');

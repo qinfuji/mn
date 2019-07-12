@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -63,8 +64,12 @@ public class PointerAddressServiceImpl implements PointerAddressService {
         queryWrapper.eq("pointer_address_id" , pa.getId());
         List<PointerAddressLabel> pointerAddressLabelList = pointerAddressLabelsDao.selectList(queryWrapper);
         String labels = "";
-        for(PointerAddressLabel pointerAddressLabel : pointerAddressLabelList){
-             labels += pointerAddressLabel.getLabelId();
+        Iterator<PointerAddressLabel> t = pointerAddressLabelList.iterator();
+        while(t.hasNext()){
+            labels += t.next().getLabelId();
+            if(t.hasNext()){
+                labels +=",";
+            }
         }
         pa.setLabels(labels);
         return pa;

@@ -72,18 +72,18 @@ public class MapHelper {
      * @param polygons
      * @return 平方千米
      */
-    private static double CalculatePolygonArea(List<Point2D.Double> polygons)
+    private static double CalculatePolygonArea(List<LngLat> polygons)
     {
         double area = 0;
         if (polygons.size() > 2)
         {
             for (int i = 0; i < polygons.size() - 1; i++)
             {
-                Point2D.Double p1 = polygons.get(i);
-                Point2D.Double p2 = polygons.get(i+1);
+                LngLat p1 = polygons.get(i);
+                LngLat p2 = polygons.get(i+1);
                 //x:经度 y:维度
                 //return (p1.first-p0.first)*(p2.second-p0.second)-(p1.second-p0.second)*(p2.first-p0.first);
-                area += rad(p2.getX() - p1.getX()) * (2 + Math.sin(rad(p1.getY())) + Math.sin(rad(p2.getY())));
+                area += rad(p2.getLng() - p1.getLng()) * (2 + Math.sin(rad(p1.getLat())) + Math.sin(rad(p2.getLat())));
             }
             area = area * EarthRadius * EarthRadius  / 2.0;
         }

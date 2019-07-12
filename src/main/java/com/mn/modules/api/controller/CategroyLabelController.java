@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.ResultSet;
 import java.util.List;
 
 @RestController
@@ -92,6 +93,21 @@ public class CategroyLabelController {
         }catch(Exception e){
             logger.error("修改状态失败" , e);
             return RestResult.fail.msg("修改状态失败");
+        }
+
+    }
+
+    @GetMapping("/queryAll")
+    @ApiOperation("查询所有")
+    public RestResult<List<CategroyLabel>> queryAll() {
+        try{
+            QueryWrapper<CategroyLabel> qw =  new QueryWrapper<>();
+            qw.eq("state" , CategroyLabelService.STATE_NORMAL);
+            List<CategroyLabel>  l  = categroyLabelService.list(qw);
+            return RestResult.build(l);
+        }catch(Exception e){
+            logger.error("查询所有分类标签失败" , e);
+            return RestResult.fail.msg("查询所有分类标签失败");
         }
 
     }
