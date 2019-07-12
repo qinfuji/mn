@@ -28,7 +28,7 @@ import {
   getEsmtimateDataResult,
   saveConclusion,
 } from '../../services/appraise';
-import {fetch as fetchPointerAddress} from '../../services/pointer';
+import {fetch as fetchPointerAddress, fetchSharePointerAddress} from '../../services/pointer';
 import {PolygonOptions, CircleOptions} from '../../utils/mapShapeOptions';
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 import {Constant as AppraiseConstant} from '../../models/appraise';
@@ -74,6 +74,7 @@ class Appraise extends React.Component {
       competitorPolygons: [], //竞品店围栏
       filterLabelPolygons: [], //过滤的业态围栏
       appraiseFencePolygon: null, //点址评估后的围栏
+      sharePointerAddressPolyons: [], //业态类型过滤
       appraiseDataResult: {}, //数据结果
     };
   }
@@ -89,7 +90,7 @@ class Appraise extends React.Component {
     //得到点址，评估数据
     const response = await getEsmtimateByPointerAddressId({pointerAddressId});
     if (!response) return;
-    const otherPointerAddress = await this.getFilterPointerAddress();
+
     const data = response.data;
     const pointerAddress = data.pointerAddress;
     const appraise = data.estimateTask;
@@ -163,7 +164,6 @@ class Appraise extends React.Component {
     let appraiseDataResult = null;
     if (appraise && appraise.execState === AppraiseConstant.execState.EXEC_STATUS_FINISH_CODE) {
       //获取评估
-
       const appraiseDataResultResponse = await getEsmtimateDataResult({id: appraise.id});
       if (appraiseDataResultResponse) {
         appraiseDataResult = appraiseDataResultResponse.data;
@@ -199,6 +199,31 @@ class Appraise extends React.Component {
       });
     }
 
+    //查询共享点址的围栏
+    const sharePointerAddressPolyons = [];
+    if (appraise.labels) {
+      const sharedPointerAddressRep = await this.getRemoteSharePointerAddress({
+        adcode: pointerAddress.district,
+        scope: 'district',
+        lng: pointerAddress.lng,
+        lat: pointerAddress.lat,
+        distance: appraise ? appraise.distance : 10000, //默认辐射范围1000米
+        labels: appraise.labels,
+      });
+      if (sharedPointerAddressRep) {
+        const spas = sharedPointerAddressRep.data || [];
+        spas.forEach((spa) => {
+          const pointers = getPath(spa);
+          if (pointers.length >= 3) {
+            const _polygon = this.createPolygon(pointers, false, 'sharePointerAddressPolyons', {
+              name: spa.name,
+            });
+            sharePointerAddressPolyons.push(_polygon);
+          }
+        });
+      }
+    }
+
     this.setState({
       mapZoom: 15,
       mapCenter: center,
@@ -214,6 +239,7 @@ class Appraise extends React.Component {
       competitorPolygons,
       appraiseFencePolygon,
       appraiseDataResult,
+      sharePointerAddressPolyons,
     });
   };
 
@@ -253,6 +279,14 @@ class Appraise extends React.Component {
       type,
       distance,
     });
+    if (response) {
+      return response.data.records;
+    }
+    return [];
+  };
+
+  getRemoteSharePointerAddress = async ({distance, adcode, scope, lng, lat, labels} = {}) => {
+    const response = await fetchSharePointerAddress({distance, adcode, scope, lng, lat, labels});
     if (response) {
       return response.data.records;
     }
@@ -570,6 +604,7 @@ class Appraise extends React.Component {
       competitorPolygons, //竞品店围栏
       appraiseFencePolygon, //统计分析后的点址围栏
       appraiseDataResult, //结论
+      sharePointerAddressPolyons,
     } = this.state;
 
     const {
@@ -601,13 +636,11 @@ class Appraise extends React.Component {
               mapCircles.map((c) => {
                 return <Circle key={c.id} options={c.options} events={c.events} />;
               })}
-
             {mapMarkers &&
               mapMarkers.length &&
               mapMarkers.map((m) => {
                 return <Marker key={m.id} options={m.options} events={m.events} />;
               })}
-
             {pointerAddressMarker && (
               <Marker
                 key={pointerAddressMarker.id}
@@ -615,7 +648,6 @@ class Appraise extends React.Component {
                 events={pointerAddressMarker.events}
               />
             )}
-
             {pointerAddressPolygon && (
               <Polygon
                 key={pointerAddressPolygon.id}
@@ -623,7 +655,6 @@ class Appraise extends React.Component {
                 events={pointerAddressPolygon.events}
               />
             )}
-
             {appraiseFencePolygon && (
               <Polygon
                 key={appraiseFencePolygon.id}
@@ -631,16 +662,20 @@ class Appraise extends React.Component {
                 events={appraiseFencePolygon.events}
               />
             )}
-
             {mapPolygons &&
               mapPolygons.length &&
               mapPolygons.map((p) => {
                 return <Polygon key={p.id} options={p.options} events={p.events} />;
               })}
-
             {userHotFencePolygons &&
               userHotFencePolygons.length &&
               userHotFencePolygons.map((p) => {
+                return <Polygon key={p.id} options={p.options} events={p.events} />;
+              })}
+
+            {sharePointerAddressPolyons &&
+              sharePointerAddressPolyons.length &&
+              sharePointerAddressPolyons.map((p) => {
                 return <Polygon key={p.id} options={p.options} events={p.events} />;
               })}
 
@@ -649,7 +684,6 @@ class Appraise extends React.Component {
               competitorPolygons.map((p) => {
                 return <Polygon key={p.id} options={p.options} events={p.events} />;
               })}
-
             {mapWindowInfo && (
               <InfoWindow key={mapWindowInfo.id} options={mapWindowInfo.options} events={mapWindowInfo.events} />
             )}

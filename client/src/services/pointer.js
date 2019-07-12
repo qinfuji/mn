@@ -9,6 +9,13 @@ export async function fetch(params) {
   });
 }
 
+export async function fetchSharePointerAddress(params) {
+  return request(`${HOST}/api/sharePointerAddresses/list`, {
+    method: 'POST',
+    body: params,
+  });
+}
+
 export async function detail(params) {
   return request(`${HOST}/api/pointerAddresses/${params.id}`, {
     method: 'GET',
