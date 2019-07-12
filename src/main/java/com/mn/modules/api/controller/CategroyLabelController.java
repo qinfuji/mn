@@ -83,7 +83,7 @@ public class CategroyLabelController {
 
     @PutMapping("/{id}/state")
     @ApiOperation("失效")
-    public RestResult<CategroyLabel> invalid(@PathVariable Integer id) {
+    public RestResult<CategroyLabel> invalid(@PathVariable String id) {
         try{
             CategroyLabel categroyLabel = new CategroyLabel();
             categroyLabel.setId(id);

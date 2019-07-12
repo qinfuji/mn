@@ -201,19 +201,19 @@ class Appraise extends React.Component {
 
     //查询共享点址的围栏
     const sharePointerAddressPolyons = [];
-    if (appraise.labels) {
+    if (appraise && appraise.filterLabels) {
       const sharedPointerAddressRep = await this.getRemoteSharePointerAddress({
         adcode: pointerAddress.district,
         scope: 'district',
         lng: pointerAddress.lng,
         lat: pointerAddress.lat,
         distance: appraise ? appraise.distance : 10000, //默认辐射范围1000米
-        labels: appraise.labels,
+        labels: appraise.filterLabels,
       });
       if (sharedPointerAddressRep) {
-        const spas = sharedPointerAddressRep.data || [];
+        const spas = sharedPointerAddressRep;
         spas.forEach((spa) => {
-          const pointers = getPath(spa);
+          const pointers = getPath(spa.fence);
           if (pointers.length >= 3) {
             const _polygon = this.createPolygon(pointers, false, 'sharePointerAddressPolyons', {
               name: spa.name,
@@ -288,7 +288,7 @@ class Appraise extends React.Component {
   getRemoteSharePointerAddress = async ({distance, adcode, scope, lng, lat, labels} = {}) => {
     const response = await fetchSharePointerAddress({distance, adcode, scope, lng, lat, labels});
     if (response) {
-      return response.data.records;
+      return response.data;
     }
     return [];
   };
@@ -303,9 +303,7 @@ class Appraise extends React.Component {
    */
   getObserveIds = async () => {};
 
-  distanceChange = async (value) => {
-    const {form} = this.props;
-    const params = form.getFieldsValue(['filterLabels', 'competitorIds']);
+  distanceChange = async (value, {filterLabels}) => {
     const {mapCircles, currentPointerAddress} = this.state;
     const circles = [];
     if (mapCircles && mapCircles.length) {
@@ -332,9 +330,35 @@ class Appraise extends React.Component {
       lat: currentPointerAddress.lat,
       distance: value,
     });
+    const sharePointerAddressPolyons = [];
+    if (filterLabels && filterLabels.length) {
+      const sharedPointerAddressRep = await this.getRemoteSharePointerAddress({
+        adcode: currentPointerAddress.district,
+        scope: 'district',
+        lng: currentPointerAddress.lng,
+        lat: currentPointerAddress.lat,
+        distance: value,
+        labels: filterLabels && filterLabels.length !== 0 ? filterLabels.join(',') : null,
+      });
+
+      if (sharedPointerAddressRep) {
+        const spas = sharedPointerAddressRep;
+        spas.forEach((spa) => {
+          const pointers = getPath(spa.fence);
+          if (pointers.length >= 3) {
+            const _polygon = this.createPolygon(pointers, false, 'sharePointerAddressPolyons', {
+              name: spa.name,
+            });
+            sharePointerAddressPolyons.push(_polygon);
+          }
+        });
+      }
+    }
+
     this.setState({
       mapCircles: circles,
       competitors,
+      sharePointerAddressPolyons,
     });
   };
 
@@ -583,6 +607,40 @@ class Appraise extends React.Component {
     }
   };
 
+  onLabelsChange = async (value, {distance}) => {
+    if (!value || value.length === 0) {
+      this.setState({
+        sharePointerAddressPolyons: [],
+      });
+      return;
+    }
+    const {currentPointerAddress} = this.state;
+    const sharedPointerAddressRep = await this.getRemoteSharePointerAddress({
+      adcode: currentPointerAddress.district,
+      scope: 'district',
+      lng: currentPointerAddress.lng,
+      lat: currentPointerAddress.lat,
+      distance: distance | 1000,
+      labels: value.join(','),
+    });
+    if (sharedPointerAddressRep) {
+      const sharePointerAddressPolyons = [];
+      const spas = sharedPointerAddressRep;
+      spas.forEach((spa) => {
+        const pointers = getPath(spa.fence);
+        if (pointers.length >= 3) {
+          const _polygon = this.createPolygon(pointers, false, 'sharePointerAddressPolyons', {
+            name: spa.name,
+          });
+          sharePointerAddressPolyons.push(_polygon);
+        }
+      });
+      this.setState({
+        sharePointerAddressPolyons,
+      });
+    }
+  };
+
   createMarker = () => {};
 
   render() {
@@ -701,6 +759,7 @@ class Appraise extends React.Component {
               userHotFencePolygons={userHotFencePolygons}
               goBackList={this.goBackList}
               onCreateUserFenceHandle={this.onCreateUserFenceHandle}
+              onLabelsChange={this.onLabelsChange}
             />
           )}
 

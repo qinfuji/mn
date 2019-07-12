@@ -1,17 +1,15 @@
 package com.mn.modules.api.service.impl;
 
 import com.mn.modules.api.BaseTest;
-import com.mn.modules.api.dao.EstimateDataResultDao;
-import com.mn.modules.api.dao.EstimateTaskDao;
-import com.mn.modules.api.dao.PointerAddressDao;
-import com.mn.modules.api.entity.EstimateDataResult;
-import com.mn.modules.api.entity.EstimateTask;
-import com.mn.modules.api.entity.PointerAddress;
+import com.mn.modules.api.dao.*;
+import com.mn.modules.api.entity.*;
 import com.mn.modules.api.interceptor.TestTokenInterceptor;
 import com.mn.modules.api.remote.DataService;
 import com.mn.modules.api.remote.ObservePointService;
+import com.mn.modules.api.service.CategroyLabelService;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
+import com.mn.modules.api.service.SharePointerAddressService;
 import com.mn.modules.api.vo.ObserverPointData;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,11 +30,17 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
     @Autowired
     PointerAddressService pointerAddressService;
 
+    @Autowired
+    SharePointerAddressService sharePointerAddressService;
+
     @Mock
     DataService dataService;
 
     @Autowired
     PointerAddressDao pointerAddressDao;
+
+    @Autowired
+    SharePointerAddressDao sharePointerAddressDao;
 
     @Mock
     ObservePointService observePointService;
@@ -51,13 +55,20 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
     EstimateTaskService estimateTaskService;
 
 
+    @Autowired
+    CategroyLabelDao categroyLabelDao;
+
+
     @BeforeEach
     @Before
     public void init() {
-        estimateTaskService = new EstimateTaskServiceImpl(observePointService, estimateTaskDao, pointerAddressDao, estimateDataResultDao, dataService);
+        estimateTaskService = new EstimateTaskServiceImpl(observePointService, estimateTaskDao, sharePointerAddressDao,pointerAddressDao, estimateDataResultDao, dataService);
     }
 
     private PointerAddress getTmpPointerAddress() {
+
+
+
 
         PointerAddress pointerAddress = new PointerAddress();
         pointerAddress.setAddress("北京市朝阳区");
@@ -66,6 +77,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         pointerAddress.setState(PointerAddressService.STATUS_WAIT_SUBMIT);
         pointerAddress.setLat(1.1);
         pointerAddress.setLng(1.1);
+
         pointerAddress.setCity("100000");
         pointerAddress.setCityName("100000");
         pointerAddress.setProvince("100000");
@@ -79,64 +91,138 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         return pointerAddress;
     }
 
+    private SharePointerAddress getTmpSharePointerAddress() {
+
+        SharePointerAddress pointerAddress = new SharePointerAddress();
+        pointerAddress.setAddress("北京市朝阳区");
+        pointerAddress.setName("测试点址");
+        pointerAddress.setLat(1.1);
+        pointerAddress.setLng(1.1);
+        pointerAddress.setCity("100000");
+        pointerAddress.setCityName("100000");
+        pointerAddress.setProvince("100000");
+        pointerAddress.setProvinceName("100000");
+        pointerAddress.setDistrict("100000");
+        pointerAddress.setDistrictName("100000");
+        pointerAddress.setLabels("1,3");
+        pointerAddress.setCreatedTime(new Date());
+        pointerAddress.setLastUpdatedTime(new Date());
+        return pointerAddress;
+    }
+
 
     @Test
     public void execCalculateFence() {
+
+        CategroyLabel cl = new CategroyLabel();
+        cl.setState(CategroyLabelService.STATE_NORMAL);
+        cl.setLabel("测试一");
+        categroyLabelDao.insert(cl);
+
+        String id1 = cl.getId();
+
+        CategroyLabel cl1 = new CategroyLabel();
+        cl1.setState(CategroyLabelService.STATE_NORMAL);
+        cl1.setLabel("测试二");
+        categroyLabelDao.insert(cl1);
+        String id2 = cl1.getId();
+
+        //竞品点址
+        PointerAddress cpa = getTmpPointerAddress();
+        cpa.setLng(116.532049);
+        cpa.setLat(40.024517);
+        cpa.setAddress("北京市朝阳区崔各庄镇卓锦万代");
+        cpa.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
+        cpa.setType(PointerAddressService.TYPPE_COMPETITION_SHOP);
+        cpa.setFence("116.530182,40.027162;116.530783,40.022397;116.534946,40.023482;116.534388,40.027524");
+        pointerAddressDao.insert(cpa);
+
+
+        cpa = getTmpPointerAddress();
+        cpa.setLng(116.537928);
+        cpa.setLat(40.031681);
+        cpa.setAddress("北京市朝阳区孙河镇康营清真寺");
+        cpa.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
+        cpa.setType(PointerAddressService.TYPPE_COMPETITION_SHOP);
+        cpa.setFence("116.534431,40.033702;116.534903,40.029331;116.540611,40.029758;116.540139,40.033274");
+        pointerAddressDao.insert(cpa);
+
+        cpa = getTmpPointerAddress();
+        cpa.setLng(116.518831);
+        cpa.setLat(40.031582);
+        cpa.setAddress("北京市朝阳区孙河镇香江花园别墅");
+        cpa.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
+        cpa.setType(PointerAddressService.TYPPE_COMPETITION_SHOP);
+        cpa.setFence("116.515205,40.033241;116.515333,40.029857;116.519367,40.02989;116.51941,40.029265;116.522329,40.029364;116.523101,40.030941;116.520741,40.031106;116.520397,40.031861;116.52117,40.032749;116.524174,40.033143;116.524646,40.032847;116.52559,40.034063;116.51499,40.033504");
+        pointerAddressDao.insert(cpa);
+
+
+        cpa = getTmpPointerAddress();
+        cpa.setLng(116.515655);
+        cpa.setLat(40.018207);
+        cpa.setAddress("北京市朝阳区崔各庄镇东隆别墅");
+        cpa.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
+        cpa.setType(PointerAddressService.TYPPE_COMPETITION_SHOP);
+        cpa.setFence("116.513488,40.019834;116.513745,40.016744;116.51808,40.016942;116.518337,40.020787");
+        pointerAddressDao.insert(cpa);
+
+        //公共点址
+        SharePointerAddress spa = getTmpSharePointerAddress();
+        spa.setLng(116.542926);
+        spa.setLat(40.008762);
+        spa.setLabels(id1+","+id2);
+        spa.setAddress("北京市朝阳区金盏镇长店大街");
+        spa.setFence("116.541252,40.009896;116.541252,40.007102;116.545415,40.007332;116.546016,40.009962");
+        sharePointerAddressService.createPointerAddress(spa);
+
+
+        spa = getTmpSharePointerAddress();
+        spa.setLng(116.527777);
+        spa.setLat(40.010274);
+        spa.setLabels(id1+","+id2);
+        spa.setAddress("北京市朝阳区崔各庄镇京旺家园(三区)京旺家园三区");
+        spa.setFence("116.5234,40.010751;116.525932,40.010701;116.525975,40.008548;116.530996,40.008581;116.531039,40.012394;116.523228,40.01223");
+
+        sharePointerAddressService.createPointerAddress(spa);
+
+
+        spa = getTmpSharePointerAddress();
+        spa.setLng(116.523013);
+        spa.setLat(40.019806);
+        spa.setLabels(id1+","+id2);
+        spa.setAddress("北京市朝阳区崔各庄镇太利花园");
+        spa.setFence("116.519794,40.0214;116.520352,40.017883;116.526146,40.018343;116.525717,40.021269;116.525202,40.023996;116.521253,40.023668;116.523571,40.021466");
+        sharePointerAddressService.createPointerAddress(spa);
+
+
+        spa = getTmpSharePointerAddress();
+        spa.setLng(116.539364);
+        spa.setLat(40.020069);
+        spa.setLabels(id1+","+id2);
+        spa.setAddress("北京市朝阳区崔各庄镇朝林科技园");
+        //spa.setFence("116.536961,40.022353;116.537347,40.017916;116.544471,40.017883;116.544943,40.022583;116.54181,40.024128;116.541209,40.021959;116.541209,40.021959");
+        spa.setFence("116.536961,40.022353;116.537347,40.017916;116.544471,40.017883;116.544943,40.022583;116.54181,40.024128;116.541209,40.021959");
+        sharePointerAddressService.createPointerAddress(spa);
+
+        spa = getTmpSharePointerAddress();
+        spa.setLng(116.533873);
+        spa.setLat(40.02013);
+        spa.setLabels(id1+","+id2);
+        spa.setAddress("北京市朝阳区崔各庄镇首都机场辅路");
+        spa.setFence("116.531598,40.022266;116.531384,40.018027;116.53619,40.018881;116.536319,40.019407");
+        sharePointerAddressService.createPointerAddress(spa);
+
+
+        spa = getTmpSharePointerAddress();
+        spa.setLng(116.536319);
+        spa.setLat(40.009661);
+        spa.setLabels(id1+","+id2);
+        spa.setAddress("北京市朝阳区金盏镇长店大街62");
+        spa.setFence("116.534087,40.011222;116.535933,40.008231;116.538443,40.008149;116.539752,40.011288");
+        sharePointerAddressService.createPointerAddress(spa);
+
+
         PointerAddress pa = getTmpPointerAddress();
-        pa.setLng(116.542926);
-        pa.setLat(40.008762);
-        pa.setAddress("北京市朝阳区金盏镇长店大街");
-        pa.setFence("116.541252,40.009896;116.541252,40.007102;116.545415,40.007332;116.546016,40.009962");
-        pa.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
-        pointerAddressService.createPointerAddress(pa);
-
-
-        pa = getTmpPointerAddress();
-        pa.setLng(116.527777);
-        pa.setLat(40.010274);
-        pa.setAddress("北京市朝阳区崔各庄镇京旺家园(三区)京旺家园三区");
-        pa.setFence("116.5234,40.010751;116.525932,40.010701;116.525975,40.008548;116.530996,40.008581;116.531039,40.012394;116.523228,40.01223");
-        pa.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
-        pointerAddressService.createPointerAddress(pa);
-
-
-        pa = getTmpPointerAddress();
-        pa.setLng(116.523013);
-        pa.setLat(40.019806);
-        pa.setAddress("北京市朝阳区崔各庄镇太利花园");
-        pa.setFence("116.519794,40.0214;116.520352,40.017883;116.526146,40.018343;116.525717,40.021269;116.525202,40.023996;116.521253,40.023668;116.523571,40.021466");
-        pa.setState(PointerAddressService.STATUS_WAIT_ESTIMATE);
-        pointerAddressService.createPointerAddress(pa);
-
-
-        pa = getTmpPointerAddress();
-        pa.setLng(116.539364);
-        pa.setLat(40.020069);
-        pa.setAddress("北京市朝阳区崔各庄镇朝林科技园");
-        //pa.setFence("116.536961,40.022353;116.537347,40.017916;116.544471,40.017883;116.544943,40.022583;116.54181,40.024128;116.541209,40.021959;116.541209,40.021959");
-        pa.setFence("116.536961,40.022353;116.537347,40.017916;116.544471,40.017883;116.544943,40.022583;116.54181,40.024128;116.541209,40.021959");
-        pa.setState(PointerAddressService.STATUS_NOT_ESTIMATE);
-        pointerAddressService.createPointerAddress(pa);
-
-        pa = getTmpPointerAddress();
-        pa.setLng(116.533873);
-        pa.setLat(40.02013);
-        pa.setAddress("北京市朝阳区崔各庄镇首都机场辅路");
-        pa.setFence("116.531598,40.022266;116.531384,40.018027;116.53619,40.018881;116.536319,40.019407");
-        pa.setState(PointerAddressService.STATUS_NOT_ESTIMATE);
-        pointerAddressService.createPointerAddress(pa);
-
-
-        pa = getTmpPointerAddress();
-        pa.setLng(116.536319);
-        pa.setLat(40.009661);
-        pa.setAddress("北京市朝阳区金盏镇长店大街62");
-        pa.setFence("116.534087,40.011222;116.535933,40.008231;116.538443,40.008149;116.539752,40.011288");
-        pa.setState(PointerAddressService.STATUS_NOT_ESTIMATE);
-        pointerAddressService.createPointerAddress(pa);
-
-
-        pa = getTmpPointerAddress();
         pa.setLng(116.534987);
         pa.setLat(40.015172);
         pa.setAddress("北京市朝阳区崔各庄镇北京国际航空俱乐部");
@@ -146,9 +232,11 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
 
         EstimateTask estimateTask = new EstimateTask();
         estimateTask.setPointerAddressId(pa.getId());
-        estimateTask.setDistance(55000);
+        estimateTask.setDistance(155000);
         estimateTask.setExecState(EstimateTaskService.EXEC_STATUS_NULL);
         estimateTask.setObserveId("observerId");
+        estimateTask.setCompetitorIds(cpa.getId());
+        estimateTask.setFilterLabels(id1+","+id2);
         estimateTaskService.createEstimate(estimateTask , true);
 
         PointerAddress pointerAddress = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
@@ -175,6 +263,12 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         opd = new ObserverPointData();
         opd.setLng(116.533873);
         opd.setLat(40.02013);
+        observerPointList.add(opd);
+
+        //竞品店的测试数据
+        opd = new ObserverPointData();
+        opd.setLng(116.532049);
+        opd.setLat(40.024517);
         observerPointList.add(opd);
 
         Mockito.when(observePointService.getObserveData(any())).thenReturn(observerPointList);

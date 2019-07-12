@@ -26,9 +26,9 @@ public class CategroyLabel {
     /**
      * 标签Id
      */
-    @TableId(type= IdType.AUTO)
+    @TableId(type= IdType.UUID)
     @NotNull(groups = UpdateGroup.class)
-    Integer id;
+    String id;
 
     /**
      * 父id

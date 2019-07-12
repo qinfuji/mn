@@ -98,7 +98,7 @@ public class TestPointerAddressDao extends BaseTest {
         pointerAddressDao.insert(pointerAddress);
         PointerAddressLabel pal1 = new PointerAddressLabel();
         pal1.setPointerAddressId(pointerAddress.getId());
-        pal1.setLabelId(1);
+        pal1.setLabelId("1");
         pointerAddressLabelsDao.insert(pal1);
 
         PointerAddress pointerAddress1 = getTmpPointerAddress();
@@ -106,7 +106,7 @@ public class TestPointerAddressDao extends BaseTest {
         pointerAddressDao.insert(pointerAddress1);
         PointerAddressLabel pal2 = new PointerAddressLabel();
         pal2.setPointerAddressId(pointerAddress1.getId());
-        pal2.setLabelId(2);
+        pal2.setLabelId("2");
         pointerAddressLabelsDao.insert(pal2);
 
         PointerAddress pointerAddress3 = getTmpPointerAddress();
@@ -114,7 +114,7 @@ public class TestPointerAddressDao extends BaseTest {
         pointerAddressDao.insert(pointerAddress3);
         PointerAddressLabel pal3 = new PointerAddressLabel();
         pal3.setPointerAddressId(pointerAddress3.getId());
-        pal3.setLabelId(3);
+        pal3.setLabelId("3");
         pointerAddressLabelsDao.insert(pal3);
 
         PointerAddressQuery qo = new PointerAddressQuery();

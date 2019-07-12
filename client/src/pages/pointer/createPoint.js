@@ -193,7 +193,7 @@ class CreatePointer extends React.Component {
           </Form.Item>
           <Form.Item label="标签(业态)">
             {getFieldDecorator('labels', {
-              initialValue: pointer && pointer.labels ? [32, 20] : [],
+              initialValue: pointer && pointer.labels ? pointer.labels.split(',') : [],
               rules: [{required: true, message: '请填写'}],
             })(
               <TreeSelect

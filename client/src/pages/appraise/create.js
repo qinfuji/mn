@@ -61,13 +61,30 @@ class CreateAppraise extends React.Component {
     this.saveOrUpdate('submit');
   };
 
+  onLabelsChange = (value) => {
+    const {onLabelsChange} = this.props;
+    if (onLabelsChange) {
+      const params = this.props.form.getFieldsValue();
+      params.filterLabels = value;
+      onLabelsChange(value, params);
+    }
+  };
+
+  onDistanceChange = (value) => {
+    const {onDistanceChange} = this.props;
+    if (onDistanceChange) {
+      const params = this.props.form.getFieldsValue();
+      params.distance = value;
+      onDistanceChange(value, params);
+    }
+  };
+
   render() {
     const {
       form: {getFieldDecorator},
       pointerAddress,
       appraise,
       onCompetitorIdsChange,
-      onDistanceChange,
       competitors,
       userHotFencePolygons,
       goBackList,
@@ -94,6 +111,7 @@ class CreateAppraise extends React.Component {
                   placeholder="请选择"
                   allowClear
                   multiple
+                  onChange={this.onLabelsChange}
                   treeData={this.state.treeData}
                 ></TreeSelect>,
               )}
@@ -137,7 +155,7 @@ class CreateAppraise extends React.Component {
                   step={500}
                   max={3000}
                   min={1000}
-                  onChange={onDistanceChange}
+                  onChange={this.onDistanceChange}
                 />,
               )}
             </Form.Item>

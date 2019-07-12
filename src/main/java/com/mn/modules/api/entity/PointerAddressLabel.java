@@ -20,16 +20,16 @@ import javax.validation.constraints.NotNull;
 public class PointerAddressLabel {
 
 
-    @TableId(type= IdType.AUTO)
+    @TableId(type= IdType.UUID)
     @NotNull(groups = UpdateGroup.class)
-    Integer id;
+    String id;
     /**
      * 标签名称
      */
     @TableField("label_id")
     @ApiModelProperty("标签名称id")
     @NotNull(groups = {AddGroup.class}, message = "标签名称id必须填写")
-    Integer labelId;
+    String labelId;
 
     /**
      * 点址id

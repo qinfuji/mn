@@ -4,8 +4,7 @@
 
 <mapper namespace="com.mn.modules.api.dao.PointerAddressDao">
 
-    <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
-
+    <sql id="query">
         <if test="qo.orderby!=null">
             select * from (
         </if>
@@ -22,7 +21,7 @@
             select * from pointer_address_t pa where 1=1
         </if>
         <if test="qo.state != null">
-        <![CDATA[
+            <![CDATA[
              and pa.state = #{qo.state}
         ]]>
         </if>
@@ -55,7 +54,7 @@
             <foreach item="item" index="index" collection="qo.labels.split(',')" open="(" separator="," close=")">'${item}'</foreach>
         </if>
         <if test="qo.competitorIds !=null">
-            or pa.id in
+            and pa.id in
             <foreach item="item" index="index" collection="qo.competitorIds.split(',')" open="(" separator="," close=")">'${item}'</foreach>
         </if>
         <!--设置查询范围-->
@@ -74,6 +73,15 @@
         <if test="qo.orderby!=null">
             ) b order by ${qo.orderby}
         </if>
+    </sql>
+
+    <select id="queryPointerAddressList" resultType="com.mn.modules.api.entity.PointerAddress">
+            <include refid="query"/>
+    </select>
+
+
+    <select id="queryPointerAddressList1" resultType="com.mn.modules.api.entity.PointerAddress">
+        <include refid="query"/>
     </select>
 
 </mapper>

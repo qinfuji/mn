@@ -8,9 +8,11 @@ import com.mn.modules.api.controller.CategroyLabelController;
 import com.mn.modules.api.dao.EstimateDataResultDao;
 import com.mn.modules.api.dao.EstimateTaskDao;
 import com.mn.modules.api.dao.PointerAddressDao;
+import com.mn.modules.api.dao.SharePointerAddressDao;
 import com.mn.modules.api.entity.EstimateDataResult;
 import com.mn.modules.api.entity.EstimateTask;
 import com.mn.modules.api.entity.PointerAddress;
+import com.mn.modules.api.entity.SharePointerAddress;
 import com.mn.modules.api.qo.PointerAddressQuery;
 import com.mn.modules.api.remote.DataService;
 import com.mn.modules.api.remote.ObservePointService;
@@ -48,18 +50,23 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
     @Autowired
     EstimateDataResultDao estimateDataResultDao;
 
+
+    @Autowired
+    SharePointerAddressDao sharePointerAddressDao;
+
     @Autowired
     DataService dataService;
 
     public EstimateTaskServiceImpl() {
     }
 
-    public EstimateTaskServiceImpl(ObservePointService observePointService, EstimateTaskDao estimateTaskDao, PointerAddressDao pointerAddressDao, EstimateDataResultDao estimateDataResultDao, DataService dataService) {
+    public EstimateTaskServiceImpl(ObservePointService observePointService, EstimateTaskDao estimateTaskDao, SharePointerAddressDao sharePointerAddressDao, PointerAddressDao pointerAddressDao, EstimateDataResultDao estimateDataResultDao, DataService dataService) {
         this.observePointService = observePointService;
         this.pointerAddressDao = pointerAddressDao;
         this.estimateDataResultDao = estimateDataResultDao;
         this.dataService = dataService;
         this.baseMapper = estimateTaskDao;
+        this.sharePointerAddressDao = sharePointerAddressDao;
     }
 
     @Override
@@ -107,9 +114,9 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
     }
 
     @Override
-    public EstimateDataResult saveConclusion(String emtimateId  , EstimateDataResult result) {
+    public EstimateDataResult saveConclusion(String emtimateId, EstimateDataResult result) {
 
-        EstimateTask et =  this.baseMapper.selectById(emtimateId);
+        EstimateTask et = this.baseMapper.selectById(emtimateId);
         EstimateDataResult updated = new EstimateDataResult();
         updated.setConclusion(result.getConclusion());
         updated.setEnterDate(result.getEnterDate());
@@ -181,18 +188,17 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         String observerId = task.getObserveId();
         //获取测试点数据
         List<ObserverPointData> observerPointDatas = observePointService.getObserveData(observerId);
-        if (observerPointDatas == null || observerPointDatas.size() == 0) {
-            //如果没有到放数据，则不需要处理
-            return new ArrayList<>();
-        }
+//        if (observerPointDatas == null || observerPointDatas.size() == 0) {
+//            //如果没有到放数据，则不需要处理
+//            return new ArrayList<>();
+//        }
         //获取中心点，当前使用待评估的地址的经纬度
         PointerAddress pa = pointerAddressDao.selectById(task.getPointerAddressId());
         Double lng = pa.getLng();
         Double lat = pa.getLat();
         Integer distance = task.getDistance();
 
-        //查询所有的辐射距离的点址
-        IPage page = new Page(1, 1000000);
+        //查询所有的辐射距离的公共点址
         PointerAddressQuery paq = new PointerAddressQuery();
         String filterLabels = task.getFilterLabels();
         if (!"".equals(filterLabels) && filterLabels != null) {
@@ -201,19 +207,41 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         paq.setLat(String.valueOf(lat));
         paq.setLng(String.valueOf(lng));
         paq.setDistance(distance);
+        List<SharePointerAddress> spaList = sharePointerAddressDao.querySharePointerAddressList(paq);
 
+        //竞品店
+        List<PointerAddress> competitor = new ArrayList<>();
         if (task.getCompetitorIds() != null && !"".equals(task.getCompetitorIds())) {
-            paq.setCompetitorIds(task.getCompetitorIds());
+            PointerAddressQuery paq1 = new PointerAddressQuery();
+            paq1.setCompetitorIds(task.getCompetitorIds());
+            competitor = pointerAddressDao.queryPointerAddressList1(paq1, null);
         }
 
-        IPage<PointerAddress> pageList = pointerAddressDao.queryPointerAddressList(page, paq, null);
-        if (pageList.getTotal() <= 0) {
-            return new ArrayList<>();
-        }
 
-        List<PointerAddress> paList = pageList.getRecords();
         List<List<LngLat>> fances = new ArrayList<>();
-        paList.forEach((pointerAddress) -> {
+        spaList.forEach((pointerAddress) -> {
+            //点址围栏数据
+            String fence = pointerAddress.getFence();
+            if (!"".equals(fence) && fence != null) {
+                //进行对象装换
+                String[] lnglatStrings = fence.split(";");
+                List<LngLat> fencePoints = new ArrayList<>();
+                for (String lnglatString : lnglatStrings) {
+                    String[] lnglat = lnglatString.split(",");
+                    Double _lng = Double.parseDouble(lnglat[0]);
+                    Double _lat = Double.parseDouble(lnglat[1]);
+                    LngLat ll = new LngLat();
+                    ll.setLat(_lat);
+                    ll.setLng(_lng);
+                    fencePoints.add(ll);
+                }
+                if (fencePoints.size() >= 3) {
+                    fances.add(fencePoints);
+                }
+            }
+        });
+
+        competitor.forEach((pointerAddress) -> {
             //点址围栏数据
             String fence = pointerAddress.getFence();
             if (!"".equals(fence) && fence != null) {
@@ -237,26 +265,25 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
 
         //将转换后的
         List<List<LngLat>> ret = new ArrayList<>();
-        if (observerPointDatas == null || observerPointDatas.size() == 0) {
-            return ret;
-        }
 
-        observerPointDatas.forEach((observerPoint) -> {
-            fances.forEach((target) -> {
-                LngLat lnglat = new LngLat();
-                lnglat.setLat(observerPoint.getLat());
-                lnglat.setLng(observerPoint.getLng());
-                //判断到访点是否在围栏中
-                boolean isIn = GeometryUtil.isPtInPoly(lnglat, target);
-                if (isIn) {
-                    ret.add(target);
-                }
-            });
-        });
+//        observerPointDatas.forEach((observerPoint) -> {
+//            fances.forEach((target) -> {
+//                LngLat lnglat = new LngLat();
+//                lnglat.setLat(observerPoint.getLat());
+//                lnglat.setLng(observerPoint.getLng());
+//                //判断到访点是否在围栏中
+//                boolean isIn = GeometryUtil.isPtInPoly(lnglat, target);
+//                if (isIn && !ret.contains(target)) {
+//                    ret.add(target);
+//                }
+//            });
+//        });
 
-
+        //TODO 测试用
         fances.forEach((target) -> {
+
             ret.add(target);
+
         });
 
         return ret;

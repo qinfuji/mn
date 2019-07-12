@@ -35,7 +35,7 @@ public class SharePointerAddressServiceImpl extends ServiceImpl<SharePointerAddr
             String[] labelArray = labels.split(",");
             for (String label : labelArray){
                 PointerAddressLabel pal = new PointerAddressLabel();
-                pal.setLabelId(Integer.parseInt(label));
+                pal.setLabelId(label);
                 pal.setPointerAddressId(pointerAddress.getId());
                 pointerAddressLabelsDao.insert(pal);
             }

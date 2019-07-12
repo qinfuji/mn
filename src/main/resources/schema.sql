@@ -24,7 +24,7 @@ CREATE TABLE `pointer_address_t` (
   `user_id` VARCHAR(45) NULL,
   `code` VARCHAR(45) NULL,
   `state` VARCHAR(40) NULL,
-  `type` VARCHAR(30) NOT NULL,
+  `type` VARCHAR(40) NOT NULL,
   `organization_id` VARCHAR(45) NULL,
   `version` INT NOT NULL DEFAULT 1,
   `name` VARCHAR(45) NOT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE `estimate_task_t` (
     `conclusion` VARCHAR(45) NULL COMMENT '点址结论',
     `enter_date` VARCHAR(45) NULL COMMENT '准入时间',
     `business_type` VARCHAR(45) NULL COMMENT '商圈类型',
-    `state` VARCHAR(45) NULL COMMENT '状态';
+    `state` VARCHAR(45) NULL COMMENT '状态',
     PRIMARY KEY (`id`));
 
 
@@ -96,8 +96,8 @@ CREATE TABLE `pointer_address_label_t` (
 
 
  CREATE TABLE `categroy_label_t` (
-   `id` INT NOT NULL AUTO_INCREMENT,
-   `parent_id` INT NULL COMMENT '父标签id',
+   `id` VARCHAR(32)  NOT NULL,
+   `parent_id` VARCHAR(32) NULL COMMENT '父标签id',
    `state` INT(1) NOT NULL COMMENT '标签状态',
    `label` VARCHAR(45) NOT NULL COMMENT '标签名称',
    PRIMARY KEY (`id`));
