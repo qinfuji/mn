@@ -4,7 +4,13 @@ import {notification} from 'antd';
 
 function getQueryString(name) {
   var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-  var r = window.location.search.substr(1).match(reg);
+  var href = window.location.href;
+  var idx = window.location.href.indexOf('?');
+  if (idx === -1) {
+    return;
+  }
+
+  var r = href.substring(idx + 1).match(reg);
   if (r != null) return unescape(r[2]);
   return null;
 }

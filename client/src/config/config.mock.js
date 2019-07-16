@@ -2,5 +2,5 @@ import merge from 'webpack-merge';
 import defaultConfig from './config.default';
 
 export default merge(defaultConfig, {
-  HOST: '',
+  HOST: 'http://127.0.0.1:8086',
 });

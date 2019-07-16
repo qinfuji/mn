@@ -187,7 +187,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         //测控点id
         String observerId = task.getObserveId();
         //获取测试点数据
-        List<ObserverPointData> observerPointDatas = observePointService.getObserveData(observerId);
+        ObserverPointData observerPointDatas = observePointService.getObserveData(observerId , "");
 //        if (observerPointDatas == null || observerPointDatas.size() == 0) {
 //            //如果没有到放数据，则不需要处理
 //            return new ArrayList<>();

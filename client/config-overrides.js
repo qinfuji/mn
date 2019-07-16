@@ -13,6 +13,10 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const addCustomize = () => (config) => {
   if (process.env.NODE_ENV === 'production') {
     config.devtool = false; //去掉map文件
+    // config.output = {
+    //   path: path.resolve('../src/main/resources/static'),
+    //   publicPath: '',
+    // };
     if (config.plugins) {
       config.plugins.push(new BundleAnalyzerPlugin());
     }

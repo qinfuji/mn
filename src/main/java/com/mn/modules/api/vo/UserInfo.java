@@ -3,6 +3,8 @@ package com.mn.modules.api.vo;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.List;
+
 @Data
 @ToString
 public class UserInfo {
@@ -12,4 +14,6 @@ public class UserInfo {
     String userName;
 
     String organizationId;
+
+    List<String> permissions;
 }

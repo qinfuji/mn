@@ -1,6 +1,8 @@
 import request from '../utils/request';
 
-var HOST = 'http://localhost:8086';
+import config from '@config';
+
+var HOST = config.HOST;
 
 let categroyLabels = [];
 

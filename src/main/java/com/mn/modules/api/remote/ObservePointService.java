@@ -13,12 +13,13 @@ public interface ObservePointService {
      * 获取测控点列表
      * @return
      */
-    List<ObserverPoint> getObserverPointList();
+    List<ObserverPoint> getObserverPointList(String token);
 
 
     /**
      * 获取测控点数据
      * @return
      */
-    List<ObserverPointData> getObserveData(String observerId);
+    ObserverPointData getObserveData(String observerId ,String token);
+
 }

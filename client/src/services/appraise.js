@@ -1,6 +1,7 @@
 import request from '../utils/request';
+import config from '@config';
 
-var HOST = 'http://localhost:8086';
+var HOST = config.HOST;
 
 export async function getEsmtimateByPointerAddressId(params) {
   return request(`${HOST}/api/estimateTask/querybyPointerAddressId?paId=${params.pointerAddressId}`, {

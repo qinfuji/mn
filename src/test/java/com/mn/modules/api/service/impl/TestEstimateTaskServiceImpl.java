@@ -10,6 +10,7 @@ import com.mn.modules.api.service.CategroyLabelService;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.service.SharePointerAddressService;
+import com.mn.modules.api.utils.LngLat;
 import com.mn.modules.api.vo.ObserverPointData;
 import org.junit.Assert;
 import org.junit.Before;
@@ -243,35 +244,44 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         Assert.assertEquals(PointerAddressService.STATUS_WAIT_ESTIMATE , pointerAddress.getState());
 
 
-        List<ObserverPointData> observerPointList = new ArrayList<>();
+
         ObserverPointData opd = new ObserverPointData();
-        opd.setLng(116.542926);
-        opd.setLat(40.008762);
-        observerPointList.add(opd);
-        opd = new ObserverPointData();
-        opd.setLng(116.527777);
-        opd.setLat(40.010274);
-        observerPointList.add(opd);
-        opd = new ObserverPointData();
-        opd.setLng(116.523013);
-        opd.setLat(40.019806);
-        observerPointList.add(opd);
-        opd = new ObserverPointData();
-        opd.setLng(116.539364);
-        opd.setLat(40.020069);
-        observerPointList.add(opd);
-        opd = new ObserverPointData();
-        opd.setLng(116.533873);
-        opd.setLat(40.02013);
-        observerPointList.add(opd);
+
+        List<LngLat> observerPointList = new ArrayList<>();
+        LngLat lnglat = new LngLat();
+        lnglat.setLng(116.542926);
+        lnglat.setLat(40.008762);
+        observerPointList.add(lnglat);
+
+        lnglat = new LngLat();
+        lnglat.setLng(116.527777);
+        lnglat.setLat(40.010274);
+        observerPointList.add(lnglat);
+
+        lnglat = new LngLat();
+        lnglat.setLng(116.523013);
+        lnglat.setLat(40.019806);
+        observerPointList.add(lnglat);
+
+        lnglat = new LngLat();
+        lnglat.setLng(116.539364);
+        lnglat.setLat(40.020069);
+        observerPointList.add(lnglat);
+
+        lnglat = new LngLat();
+        lnglat.setLng(116.533873);
+        lnglat.setLat(40.02013);
+        observerPointList.add(lnglat);
 
         //竞品店的测试数据
-        opd = new ObserverPointData();
-        opd.setLng(116.532049);
-        opd.setLat(40.024517);
-        observerPointList.add(opd);
+        lnglat = new LngLat();
+        lnglat.setLng(116.532049);
+        lnglat.setLat(40.024517);
+        observerPointList.add(lnglat);
 
-        Mockito.when(observePointService.getObserveData(any())).thenReturn(observerPointList);
+        opd.setArrivedPoints(observerPointList);
+
+        Mockito.when(observePointService.getObserveData(any(),any())).thenReturn(opd);
         estimateTaskService.execCalculateFence(estimateTask);
 
         EstimateTask estimateTask1 = estimateTaskService.getById(estimateTask.getId());
