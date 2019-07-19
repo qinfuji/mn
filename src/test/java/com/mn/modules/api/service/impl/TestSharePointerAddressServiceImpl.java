@@ -54,4 +54,9 @@ public class TestSharePointerAddressServiceImpl extends BaseTest {
         ll = sharePointerAddressService.query(paq);
         Assert.assertEquals(0 , ll.size());
     }
+
+    @Test
+    public void testImportData(){
+
+    }
 }

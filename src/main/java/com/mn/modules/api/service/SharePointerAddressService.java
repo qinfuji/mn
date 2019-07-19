@@ -11,4 +11,7 @@ public interface SharePointerAddressService extends IService<SharePointerAddress
 
 
      SharePointerAddress createPointerAddress(SharePointerAddress pointerAddress);
+
+
+     void importSharePointerAddresses(String[][] data);
 }
