@@ -15,30 +15,17 @@
         <if test="qo.labels == null">
             select * from share_pointer_address_t pa where 1=1
         </if>
-        <if test="qo.scope == 'province'">
-            <![CDATA[
-           and pa.province = #{qo.adcode}
-        ]]>
-        </if>
-        <if test="qo.scope == 'city'">
-            and pa.city = #{qo.adcode}
-        </if>
-        <if test="qo.scope == 'district'">
-            and pa.district = #{qo.adcode}
-        </if>
-        <if test="qo.address != null">
-            and pa.address like CONCAT('%',#{qo.address},'%')
-        </if>
         <if test="qo.labels != null and qo.labels != ''">
             and pal.label_id in
             <foreach item="item" index="index" collection="qo.labels.split(',')" open="(" separator="," close=")">
                 '${item}'
             </foreach>
         </if>
+
         <!--设置查询范围-->
         <if test="qo.lat !=null and qo.lng !=null and qo.distance !=null">
             <![CDATA[
-            ) a where  ROUND(
+             and (pa.lng> #{qo.lng}-1 and pa.lng < #{qo.lng}+1 and pa.lat > #{qo.lat}-1 and pa.lat < #{qo.lat}+1)  ) a where  ROUND(
             6378.137 * 2 *
             ASIN(
               SQRT(

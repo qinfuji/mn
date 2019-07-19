@@ -49,7 +49,7 @@ CREATE TABLE `pointer_address_t` (
 
 CREATE TABLE `estimate_task_t` (
   `id` varchar(32) NOT NULL,
-  `filter_labels` varchar(200) DEFAULT NULL COMMENT '标签过滤列表',
+  `filter_labels` varchar(600) DEFAULT NULL COMMENT '标签过滤列表',
   `competitor_ids` varchar(200) DEFAULT NULL,
   `arrive_scale` int(11) DEFAULT NULL COMMENT '到访百分比',
   `show_person_count` int(11) DEFAULT NULL,

@@ -97,7 +97,6 @@ class Appraise extends React.Component {
     const markers = [];
     const polygons = [];
     const circles = [];
-    console.log(appraise);
     //查询范围内的竞品店
     const competitors = await this.getRemoteCompetitor({
       adcode: pointerAddress.district,
@@ -142,6 +141,26 @@ class Appraise extends React.Component {
     };
     circles.push(_circle);
 
+    // const _polygon111 = this.createPolygon(
+    //   getPath(
+    //     '116.42213008672002,39.803256372351036;116.42288110524413,39.8033552810516;116.42288110524413,39.80277831162603;116.42321369916203,39.80263818974916;116.42317078381774,39.80165732861616;116.42410419255498,39.801566660073924;116.4240720060468,39.79917626447464;116.41883633404973,39.799192750246064;116.41821406155822,39.80278655408048;116.42000577718022,39.80300085754942;116.42024181157353,39.80159138787002;116.42220518857243,39.80160787306247',
+    //   ),
+    //   false,
+    //   'mapMarkers',
+    //   {name: '热力围栏', address: ''},
+    // );
+    // polygons.push(_polygon111);
+
+    // const pointerAddressMarker111 = {
+    //   id: '77e0e7ff6e086f509750022c4e054346',
+    //   options: {
+    //     position: [116.421185, 39.800845],
+    //     offset: new window.AMap.Pixel(-13, -30),
+    //   },
+    // };
+
+    //markers.push(pointerAddressMarker111);
+
     //热力围栏
     const userHotFencePolygons = [];
     if (appraise && appraise.hotFences) {
@@ -178,7 +197,6 @@ class Appraise extends React.Component {
         }
       }
     }
-
     //竞品店围栏
     const competitorPolygons = [];
     if (appraise && appraise.competitorIds && appraise.competitorIds.length && competitors && competitors.length) {
@@ -635,6 +653,7 @@ class Appraise extends React.Component {
           sharePointerAddressPolyons.push(_polygon);
         }
       });
+
       this.setState({
         sharePointerAddressPolyons,
       });

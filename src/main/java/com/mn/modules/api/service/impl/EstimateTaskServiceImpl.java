@@ -30,10 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Component
 @Transactional
@@ -152,21 +149,23 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         String resultDataId = task.getResultDataId();
         EstimateDataResult edr = new EstimateDataResult();
 
-        String fanceString = "";
+        String fenceString = "";
         if (fence != null && fence.size() >= 3) {
-            for (int i = 0; i < fence.size(); i++) {
-                LngLat lngLat = fence.get(i);
+
+            for(Iterator<LngLat> iteratror= fence.iterator(); iteratror.hasNext();){
+                LngLat lngLat = iteratror.next();
                 if (lngLat == null) {
                     continue;
                 }
-                fanceString += (lngLat.getLng().toString() + "," + lngLat.getLat());
-                if (i < fence.size() - 1) {
-                    fanceString += ";";
+                fenceString += (lngLat.getLng().toString() + "," + lngLat.getLat());
+                if(iteratror.hasNext()){
+                     fenceString += ";";
                 }
             }
+
         }
-        System.out.println(fanceString);
-        edr.setFence(fanceString);
+
+        edr.setFence(fenceString);
         edr.setId(resultDataId);
         estimateDataResultDao.updateById(edr);
 
@@ -299,28 +298,28 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         if (fences == null || fences.size() == 0) {
             return new ArrayList<>();
         }
-//         List<LngLat> ret = new ArrayList<>();
-//         fences.forEach((fence)->{
-//              if(fence == null || fence.size()==0) {
-//                  return;
-//              }
-//              fence.forEach((lnglat)->{
-//                  ret.add(lnglat);
-//              });
-//         });
-//         Melkman melkman = new Melkman(ret);
-//         LngLat[] finallyFence =  melkman.getTubaoPoint();
-//         return Arrays.asList(finallyFence);
+         List<LngLat> ret = new ArrayList<>();
+         fences.forEach((fence)->{
+              if(fence == null || fence.size()==0) {
+                  return;
+              }
+              fence.forEach((lnglat)->{
+                  ret.add(lnglat);
+              });
+         });
+         Melkman melkman = new Melkman(ret);
+         LngLat[] finallyFence =  melkman.getTubaoPoint();
+         return Arrays.asList(finallyFence);
 
-        List<double[]> t = new ArrayList<>();
-        fences.forEach((fence) -> {
-            if (fence == null || fence.size() == 0) {
-                return;
-            }
-            fence.forEach((lnglat) -> {
-                t.add(new double[]{lnglat.getLng().doubleValue(), lnglat.getLat().doubleValue()});
-            });
-        });
+//        List<double[]> t = new ArrayList<>();
+//        fences.forEach((fence) -> {
+//            if (fence == null || fence.size() == 0) {
+//                return;
+//            }
+//            fence.forEach((lnglat) -> {
+//                t.add(new double[]{lnglat.getLng().doubleValue(), lnglat.getLat().doubleValue()});
+//            });
+//        });
 
         /**
          * AlphaShape的第二个参数是范围值， 防止凸包的点连接过长，
@@ -328,18 +327,18 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
          * 这个值占时没有想好设置多大，当前设置100基本就与Melkman算法一样了
          */
 
-        List<Polygon> polys = new AlphaShape(t, 100).compute();
-
-        List<LngLat> alphaShapeRet = new ArrayList<>();
-        if (polys != null && polys.size() > 0) {
-            Polygon poly = polys.get(0);
-            for (int i = 0; i < poly.size(); i++) {
-                double[] ll = poly.get(i);
-                LngLat lngLat = new LngLat(Double.valueOf(ll[0]), Double.valueOf(ll[1]));
-                alphaShapeRet.add(lngLat);
-            }
-        }
-        return alphaShapeRet;
+//        List<Polygon> polys = new AlphaShape(t, 100).compute();
+//
+//        List<LngLat> alphaShapeRet = new ArrayList<>();
+//        if (polys != null && polys.size() > 0) {
+//            Polygon poly = polys.get(0);
+//            for (int i = 0; i < poly.size(); i++) {
+//                double[] ll = poly.get(i);
+//                LngLat lngLat = new LngLat(Double.valueOf(ll[0]), Double.valueOf(ll[1]));
+//                alphaShapeRet.add(lngLat);
+//            }
+//        }
+//        return alphaShapeRet;
     }
 
     @Override

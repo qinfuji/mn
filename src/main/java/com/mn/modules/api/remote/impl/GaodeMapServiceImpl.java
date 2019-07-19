@@ -19,43 +19,55 @@ public class GaodeMapServiceImpl implements GaodeMapService {
 
     private static Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
-    private static final String GET_ADDRESS_URL = "http://restapi.amap.com/v3/geocode/regeo";
+    private static final String GET_ADDRESS_URL = "https://restapi.amap.com/v3/geocode/regeo";
 
-    private static final String KEY = "f7afe9ac13d8d7afcfdd07b8e8e551fa";
+    //高德地址web服务key
+    private static final String KEY = "557502179bf8fc981e4f629b75411025";
 
     @Autowired
     RestTemplate restTemplate;
 
+    AdcodeData adcodeData = new AdcodeData();
+
 
     @Override
-    public GeographyPoint getGeographyPointByLnglat(LngLat lnglat) {
+    public GeographyPoint getGeographyPointByLnglat(LngLat lnglat) throws Exception{
 
-        MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<String, String>();
-        requestMap.add("key", KEY);
-        requestMap.add("location" , lnglat.getLng()+","+lnglat.getLat());
-        ResponseEntity<String>  responseBody = restTemplate.getForEntity(GET_ADDRESS_URL, String.class , requestMap);
-        String responseString = responseBody.getBody();
-        if(logger.isInfoEnabled()){
-             logger.info("用户请求： {}", responseString);
+
+        try{
+            MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<String, String>();
+            System.out.println(lnglat.getLng()+","+lnglat.getLat());
+            System.out.println(116.29814819105682);
+            String url = GET_ADDRESS_URL+"?key="+KEY+"&location="+lnglat.getLng()+","+lnglat.getLat();
+            System.out.println(url);
+            ResponseEntity<String>  responseBody = restTemplate.getForEntity(url, String.class , requestMap);
+            String responseString = responseBody.getBody();
+            if(logger.isInfoEnabled()){
+                logger.info("用户请求： {}", responseString);
+            }
+            JSONObject jsonObject = JSON.parseObject(responseString);
+            Integer state = jsonObject.getInteger("status");
+            if(state.intValue() !=1){
+                String info = jsonObject.getString("info");
+                logger.error("用户请求： {}", info);
+                return null;
+            }
+
+            JSONObject regeocodes = jsonObject.getJSONObject("regeocode");
+            JSONObject addressComponent = regeocodes.getJSONObject("addressComponent");
+            String address = regeocodes.getString("formatted_address");
+
+            String district = addressComponent.getString("adcode");
+
+
+            GeographyPoint gp =  adcodeData.getCodeInfo(district);
+            gp.setLng(lnglat.getLng());
+            gp.setLat(lnglat.getLat());
+            gp.setAddress(address);
+
+            return gp;
+        }catch(Exception err){
+             throw new Exception("获取信息失败" , err);
         }
-        JSONObject jsonObject = JSON.parseObject(responseString);
-        Integer state = jsonObject.getInteger("status");
-        if(state.intValue() !=1){
-            String info = jsonObject.getString("info");
-            logger.error("用户请求： {}", info);
-            return null;
-        }
-
-        JSONObject regeocodes = jsonObject.getJSONObject("regeocodes");
-        JSONObject addressComponent = regeocodes.getJSONObject("addressComponent");
-
-        String district = addressComponent.getString("adcode");
-        //String districtName = addressComponent.getString("district");
-
-        GeographyPoint gp =  AdcodeData.getCodeInfo(district);
-        gp.setLng(lnglat.getLng());
-        gp.setLat(lnglat.getLat());
-
-        return gp;
     }
 }

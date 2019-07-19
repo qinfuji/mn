@@ -189,10 +189,10 @@ public class GeometryUtil {
         double area = 0.0;//多边形面积
         double Gx = 0.0, Gy = 0.0;// 重心的x、y
         for (int i = 1; i <= points.size(); i++) {
-            double iLat = points.get(i % points.size()).getLng();
-            double iLng = points.get(i % points.size()).getLat();
-            double nextLat = points.get(i - 1).getLng();
-            double nextLng = points.get(i - 1).getLat();
+            double iLat = points.get(i % points.size()).getLat();
+            double iLng = points.get(i % points.size()).getLng();
+            double nextLat = points.get(i - 1).getLat();
+            double nextLng = points.get(i - 1).getLng();
             double temp = (iLat * nextLng - iLng * nextLat) / 2.0;
             area += temp;
             Gx += temp * (iLng + nextLng) / 3.0;

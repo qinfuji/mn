@@ -10,5 +10,5 @@ public interface GaodeMapService {
      * 通过地址获取详细信息
      * @return
      */
-    GeographyPoint getGeographyPointByLnglat(LngLat lnglat);
+    GeographyPoint getGeographyPointByLnglat(LngLat lnglat) throws Exception;
 }
