@@ -187,7 +187,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         String observerId = task.getObserveId();
         //获取测试点数据
         ObserverPointData observerPointDatas = observePointService.getObserveData(observerId , "");
-//        if (observerPointDatas == null || observerPointDatas.size() == 0) {
+//        if (observerPointDatas == null || observerPointDatas.getArrivedPoints().size() == 0) {
 //            //如果没有到放数据，则不需要处理
 //            return new ArrayList<>();
 //        }
@@ -265,11 +265,15 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         //将转换后的
         List<List<LngLat>> ret = new ArrayList<>();
 
-//        observerPointDatas.forEach((observerPoint) -> {
+//        observerPointDatas.getArrivedPoints().forEach((arrivedData) -> {
+//            LngLat arrivedLnglat  =  arrivedData.getLngLat();
+//            if(arrivedData.getArrivedRate().intValue() < task.getArriveScale().intValue()){
+//                 return;
+//            }
 //            fances.forEach((target) -> {
 //                LngLat lnglat = new LngLat();
-//                lnglat.setLat(observerPoint.getLat());
-//                lnglat.setLng(observerPoint.getLng());
+//                lnglat.setLat(arrivedLnglat.getLat());
+//                lnglat.setLng(arrivedLnglat.getLng());
 //                //判断到访点是否在围栏中
 //                boolean isIn = GeometryUtil.isPtInPoly(lnglat, target);
 //                if (isIn && !ret.contains(target)) {

@@ -1,6 +1,5 @@
 package com.mn.modules.api.vo;
 
-import com.mn.modules.api.utils.LngLat;
 import lombok.Data;
 
 import java.util.List;
@@ -16,5 +15,5 @@ public class ObserverPointData {
      /**
       * 到访点数据
       */
-     List<LngLat> arrivedPoints;
+     List<ArrivedData> arrivedPoints;
 }

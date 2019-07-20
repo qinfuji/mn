@@ -13,6 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 @ExtendWith(SpringExtension.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MNBIApplication.class)
-//@Transactional
+@Transactional
 public class BaseTest {
 }

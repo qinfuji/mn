@@ -11,6 +11,7 @@ import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.service.SharePointerAddressService;
 import com.mn.modules.api.utils.LngLat;
+import com.mn.modules.api.vo.ArrivedData;
 import com.mn.modules.api.vo.ObserverPointData;
 import org.junit.Assert;
 import org.junit.Before;
@@ -238,6 +239,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         estimateTask.setObserveId("observerId");
         estimateTask.setCompetitorIds(cpa.getId());
         estimateTask.setFilterLabels(id1+","+id2);
+        estimateTask.setArriveScale(60);
         estimateTaskService.createEstimate(estimateTask , true);
 
         PointerAddress pointerAddress = pointerAddressService.queryPointerAddress(estimateTask.getPointerAddressId());
@@ -247,37 +249,55 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
 
         ObserverPointData opd = new ObserverPointData();
 
-        List<LngLat> observerPointList = new ArrayList<>();
+        List<ArrivedData> observerPointList = new ArrayList<>();
         LngLat lnglat = new LngLat();
+        ArrivedData  arrivedData = new ArrivedData();
         lnglat.setLng(116.542926);
         lnglat.setLat(40.008762);
-        observerPointList.add(lnglat);
+        arrivedData.setLngLat(lnglat);
+        arrivedData.setArrivedRate(100);
+        observerPointList.add(arrivedData);
 
         lnglat = new LngLat();
+        arrivedData = new ArrivedData();
         lnglat.setLng(116.527777);
         lnglat.setLat(40.010274);
-        observerPointList.add(lnglat);
+        arrivedData.setLngLat(lnglat);
+        arrivedData.setArrivedRate(100);
+        observerPointList.add(arrivedData);
 
         lnglat = new LngLat();
+        arrivedData = new ArrivedData();
         lnglat.setLng(116.523013);
         lnglat.setLat(40.019806);
-        observerPointList.add(lnglat);
+        arrivedData.setLngLat(lnglat);
+        arrivedData.setArrivedRate(100);
+        observerPointList.add(arrivedData);
 
         lnglat = new LngLat();
+        arrivedData = new ArrivedData();
         lnglat.setLng(116.539364);
         lnglat.setLat(40.020069);
-        observerPointList.add(lnglat);
+        arrivedData.setLngLat(lnglat);
+        arrivedData.setArrivedRate(100);
+        observerPointList.add(arrivedData);
 
         lnglat = new LngLat();
+        arrivedData = new ArrivedData();
         lnglat.setLng(116.533873);
         lnglat.setLat(40.02013);
-        observerPointList.add(lnglat);
+        arrivedData.setLngLat(lnglat);
+        arrivedData.setArrivedRate(100);
+        observerPointList.add(arrivedData);
 
-        //竞品店的测试数据
+        new ArrivedData();
+        arrivedData = new ArrivedData();
         lnglat = new LngLat();
         lnglat.setLng(116.532049);
         lnglat.setLat(40.024517);
-        observerPointList.add(lnglat);
+        arrivedData.setLngLat(lnglat);
+        arrivedData.setArrivedRate(100);
+        observerPointList.add(arrivedData);
 
         opd.setArrivedPoints(observerPointList);
 
