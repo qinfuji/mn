@@ -2,8 +2,8 @@ import React, {Component, PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {createCircle, updateCircle} from './api';
 const __com__ = 'Circle';
-const debug = console.log;
-//const debug = () => {};
+//const debug = console.log;
+const debug = () => {};
 
 export class Circle extends Component {
   static propTypes = {

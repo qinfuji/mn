@@ -2,8 +2,8 @@ import React, {Component, PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {createPolygon, updatePolygon, destroyPolygon, generateUUID} from './api';
 const __com__ = 'Polygon';
-const debug = console.log;
-//const debug = () => {};
+//const debug = console.log;
+const debug = () => {};
 
 export class Polygon extends Component {
   static propTypes = {

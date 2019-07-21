@@ -36,8 +36,6 @@ import CreateAppraise from './create';
 import Conclusion from './conclusion';
 import {generateUUID} from '../../utils/misc';
 const {Content, Sider} = Layout;
-const {RangePicker} = DatePicker;
-const {Option} = Select;
 
 function getPath(sPath) {
   if (!sPath) return [];
@@ -45,7 +43,9 @@ function getPath(sPath) {
   if (pointers.length >= 3) {
     const path = [];
     pointers.forEach((pointer) => {
-      path.push(pointer.split(','));
+      const lnglat = pointer.split(',');
+      if (lnglat.length !== 2) return;
+      path.push(lnglat);
     });
     return path;
   } else {
@@ -188,7 +188,6 @@ class Appraise extends React.Component {
         appraiseDataResult = appraiseDataResultResponse.data;
         const fence = appraiseDataResult.fence;
         if (fence) {
-          console.log(fence);
           const path = getPath(fence);
           appraiseFencePolygon = this.createPolygon(path, false, 'appraiseFencePolygon', {
             name: `点址：${pointerAddress.name}<br/>到访围栏`,
@@ -633,14 +632,15 @@ class Appraise extends React.Component {
       return;
     }
     const {currentPointerAddress} = this.state;
-    const sharedPointerAddressRep = await this.getRemoteSharePointerAddress({
+    const params = {
       adcode: currentPointerAddress.district,
       scope: 'district',
       lng: currentPointerAddress.lng,
       lat: currentPointerAddress.lat,
-      distance: distance | 1000,
+      distance: distance || 1000,
       labels: value.join(','),
-    });
+    };
+    const sharedPointerAddressRep = await this.getRemoteSharePointerAddress(params);
     if (sharedPointerAddressRep) {
       const sharePointerAddressPolyons = [];
       const spas = sharedPointerAddressRep;
