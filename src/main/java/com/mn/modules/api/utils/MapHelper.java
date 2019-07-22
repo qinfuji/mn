@@ -86,4 +86,121 @@ public class MapHelper {
         }
         return Math.abs(area);
     }
+
+
+    /**
+     * 按照多边形的投影走了，就是得到多边形，然后切割成N-2个小三角。然后计算面积
+     * @param list
+     * @return 平方千米
+     */
+    public static double calcArea(List<LngLat> list) {
+        int count = list.size();
+        if (count > 2) {
+            //数组中的元素值
+            double mtotalArea = 0;
+            double LowX = 0.0;
+            double LowY = 0.0;
+            double MiddleX = 0.0;
+            double MiddleY = 0.0;
+            double HighX = 0.0;
+            double HighY = 0.0;
+
+            //三角形的边
+            double AM = 0.0, BM = 0.0, CM = 0.0;
+            double AL = 0.0, BL = 0.0, CL = 0.0;
+            double AH = 0.0, BH = 0.0, CH = 0.0;
+
+            double CoefficientL = 0.0, CoefficientH = 0.0;
+
+            double ALtangent = 0.0, BLtangent = 0.0, CLtangent = 0.0;
+
+            double AHtangent = 0.0, BHtangent = 0.0, CHtangent = 0.0;
+
+            double ANormalLine = 0.0, BNormalLine = 0.0, CNormalLine = 0.0;
+
+            //定位置
+            double OrientationValue = 0.0;
+            //余弦函数
+            double AngleCos = 0.0;
+
+            double Sum1 = 0.0, Sum2 = 0.0;
+            double Count1 = 0, Count2 = 0;
+
+
+            double Sum = 0.0;
+            double Radius = EarthRadius;//地球半径
+            for (int i = 0; i < count; i++) {
+                //坐标系中，一般X代表纬度(Lon)，Y代表经度(Lat)
+                if (i == 0) {
+                    LowX = (list.get(count - 1).getLng()) * Math.PI / 180;
+                    LowY = (list.get(count - 1).getLat()) * Math.PI / 180;
+                    MiddleX = (list.get(0).getLng()) * Math.PI / 180;
+                    MiddleY = (list.get(0).getLat()) * Math.PI / 180;
+                    HighX = (list.get(1).getLng()) * Math.PI / 180;
+                    HighY = (list.get(1).getLat()) * Math.PI / 180;
+                } else if (i == count - 1) {
+                    LowX = (list.get(count - 2).getLng()) * Math.PI / 180;
+                    LowY = (list.get(count - 2).getLat()) * Math.PI / 180;
+                    MiddleX = (list.get(count - 1).getLng()) * Math.PI / 180;
+                    MiddleY = (list.get(count - 1).getLat()) * Math.PI / 180;
+                    HighX = (list.get(0).getLng()) * Math.PI / 180;
+                    HighY = (list.get(0).getLat()) * Math.PI / 180;
+                } else {
+                    LowX = (list.get(i - 1).getLng()) * Math.PI / 180;
+                    LowY = (list.get(i - 1).getLat()) * Math.PI / 180;
+                    MiddleX = (list.get(i).getLng()) * Math.PI / 180;
+                    MiddleY = (list.get(i).getLat()) * Math.PI / 180;
+                    HighX = (list.get(i + 1).getLng()) * Math.PI / 180;
+                    HighY = (list.get(i + 1).getLat()) * Math.PI / 180;
+                }
+
+                AM = Math.cos(MiddleY) * Math.cos(MiddleX);
+                BM = Math.cos(MiddleY) * Math.sin(MiddleX);
+                CM = Math.sin(MiddleY);
+                AL = Math.cos(LowY) * Math.cos(LowX);
+                BL = Math.cos(LowY) * Math.sin(LowX);
+                CL = Math.sin(LowY);
+                AH = Math.cos(HighY) * Math.cos(HighX);
+                BH = Math.cos(HighY) * Math.sin(HighX);
+                CH = Math.sin(HighY);
+
+                CoefficientL = (AM * AM + BM * BM + CM * CM) / (AM * AL + BM * BL + CM * CL);
+                CoefficientH = (AM * AM + BM * BM + CM * CM) / (AM * AH + BM * BH + CM * CH);
+
+                ALtangent = CoefficientL * AL - AM;
+                BLtangent = CoefficientL * BL - BM;
+                CLtangent = CoefficientL * CL - CM;
+                AHtangent = CoefficientH * AH - AM;
+                BHtangent = CoefficientH * BH - BM;
+                CHtangent = CoefficientH * CH - CM;
+                AngleCos = (AHtangent * ALtangent + BHtangent * BLtangent + CHtangent * CLtangent) / (Math.sqrt(AHtangent * AHtangent + BHtangent * BHtangent + CHtangent * CHtangent) * Math.sqrt(ALtangent * ALtangent + BLtangent * BLtangent + CLtangent * CLtangent));
+                AngleCos = Math.acos(AngleCos);//余弦角度
+                ANormalLine = BHtangent * CLtangent - CHtangent * BLtangent;
+                BNormalLine = 0 - (AHtangent * CLtangent - CHtangent * ALtangent);
+                CNormalLine = AHtangent * BLtangent - BHtangent * ALtangent;
+
+                if (AM != 0) {
+                    OrientationValue = ANormalLine / AM;
+                } else if (BM != 0) {
+                    OrientationValue = BNormalLine / BM;
+                } else {
+                    OrientationValue = CNormalLine / CM;
+                }
+                if (OrientationValue > 0) {
+                    Sum1 += AngleCos;
+                    Count1++;
+                } else {
+                    Sum2 += AngleCos;
+                    Count2++;
+                }
+            }
+            if (Sum1 > Sum2) {
+                Sum = Sum1 + (2 * Math.PI * Count2 - Sum2);
+            } else {
+                Sum = (2 * Math.PI * Count1 - Sum1) + Sum2;
+            }
+            return Math.abs((Sum - (count - 2) * Math.PI) * Radius * Radius);
+        }
+        return 0;
+    }
 }

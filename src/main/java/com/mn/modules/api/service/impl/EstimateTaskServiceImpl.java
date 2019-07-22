@@ -167,6 +167,8 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
 
         //获取围栏面积， 计算围栏辐射距离
         double fenceArea = MapHelper.calculatePolygonArea(fence);
+        //下面的面积计算与上面的计算值基本相同
+        //fenceArea = MapHelper.calcArea(fence);
 
         //获取测控点的客流量数据
         Integer observerFlow = observePointService.getObserveFlow(task.getObserveId(), "");
