@@ -12,6 +12,7 @@ public class MapHelper {
 
     /**
      * 经纬度转化成弧度
+     *
      * @param d 经度/纬度
      * @return
      */
@@ -65,32 +66,24 @@ public class MapHelper {
     }
 
     /**
-     *
      * 这是利用:纬度间距1度=111.1km 的关系计算的；经度1度=111.1cosA
      * (A为计算经度之处的纬度，比如在北纬60度处计算经度1度的距离，就是111.1 * cos60=111.1/2km)
      *
      * @param polygons
      * @return 平方千米
      */
-    private static double CalculatePolygonArea(List<LngLat> polygons)
-    {
+    public static double calculatePolygonArea(List<LngLat> polygons) {
         double area = 0;
-        if (polygons.size() > 2)
-        {
-            for (int i = 0; i < polygons.size() - 1; i++)
-            {
+        if (polygons.size() > 2) {
+            for (int i = 0; i < polygons.size(); i++) {
                 LngLat p1 = polygons.get(i);
-                LngLat p2 = polygons.get(i+1);
+                LngLat p2 = polygons.get((i + 1) % polygons.size());
                 //x:经度 y:维度
                 //return (p1.first-p0.first)*(p2.second-p0.second)-(p1.second-p0.second)*(p2.first-p0.first);
                 area += rad(p2.getLng() - p1.getLng()) * (2 + Math.sin(rad(p1.getLat())) + Math.sin(rad(p2.getLat())));
             }
-            area = area * EarthRadius * EarthRadius  / 2.0;
+            area = area * EarthRadius * EarthRadius / 2.0;
         }
         return Math.abs(area);
     }
-
-
-
-
 }

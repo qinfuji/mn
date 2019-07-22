@@ -1,8 +1,10 @@
 package com.mn.modules.api.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import com.mn.common.validator.group.AddGroup;
-import com.mn.common.validator.group.UpdateGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,11 +16,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @ToString(callSuper = true)
 @ApiModel
-public class PointerAddress extends GeographyPoint{
-
-    @TableId(type= IdType.UUID)
-    @NotNull(groups = UpdateGroup.class , message = "ID不能为空")
-    String id;
+public class PointerAddress extends SharePointerAddress{
 
     /**
      * 数据所有者

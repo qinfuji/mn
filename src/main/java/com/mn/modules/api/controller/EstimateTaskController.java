@@ -8,9 +8,11 @@ import com.mn.modules.api.annotation.CheckToken;
 import com.mn.modules.api.entity.EstimateDataResult;
 import com.mn.modules.api.entity.EstimateTask;
 import com.mn.modules.api.entity.PointerAddress;
+import com.mn.modules.api.remote.ObservePointService;
 import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.validator.SaveConclusion;
+import com.mn.modules.api.vo.ObserverPoint;
 import com.mn.modules.api.vo.PointerAddressAndEstimateTask;
 import com.mn.modules.api.vo.RestResult;
 import com.mn.modules.api.vo.UserInfo;
@@ -20,6 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/estimateTask")
@@ -33,6 +38,9 @@ public class EstimateTaskController {
     private EstimateTaskService service;
 
     @Autowired
+    private ObservePointService observePointService;
+
+    @Autowired
     private PointerAddressService pointerAddressService;
 
     @PostMapping("/create")
@@ -44,14 +52,14 @@ public class EstimateTaskController {
         if (ps == null || userInfo == null || !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
-        if(estimateTask.getId()==null){
+        if (estimateTask.getId() == null) {
             EstimateTask et = service.getEstimateTaskWithPointerAddressId(ps.getId());
             if (et != null) {
                 return RestResult.fail.msg("当前点址任务已存在任务");
             }
         }
 
-        EstimateTask st = service.createEstimate(estimateTask , false);
+        EstimateTask st = service.createEstimate(estimateTask, false);
         return RestResult.build(st);
     }
 
@@ -64,17 +72,15 @@ public class EstimateTaskController {
         if (ps == null || userInfo == null || !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
-        if(estimateTask.getId()==null) {
+        if (estimateTask.getId() == null) {
             EstimateTask et = service.getEstimateTaskWithPointerAddressId(ps.getId());
             if (et != null) {
                 return RestResult.fail.msg("当前点址已存在任务");
             }
         }
-        EstimateTask st = service.createEstimate(estimateTask , true);
+        EstimateTask st = service.createEstimate(estimateTask, true);
         return RestResult.build(st);
     }
-
-
 
 
     @PutMapping("/update/{id}")
@@ -88,7 +94,7 @@ public class EstimateTaskController {
         ValidatorUtils.validateEntity(estimateTask, UpdateGroup.class);
         EstimateTask pa = service.getById(id);
         PointerAddress ps = pointerAddressService.queryPointerAddress(pa.getPointerAddressId());
-        if (ps == null || userInfo == null ||  !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
+        if (ps == null || userInfo == null || !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
         service.updateById(estimateTask);
@@ -103,7 +109,7 @@ public class EstimateTaskController {
 
         EstimateTask pa = service.getById(id);
         PointerAddress ps = pointerAddressService.queryPointerAddress(pa.getPointerAddressId());
-        if (ps == null || userInfo == null ||  !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
+        if (ps == null || userInfo == null || !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
         service.invalid(pa);
@@ -121,11 +127,11 @@ public class EstimateTaskController {
 
         PointerAddress ps = pointerAddressService.queryPointerAddress(paId);
 
-        if (ps == null || userInfo == null ||  !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
+        if (ps == null || userInfo == null || !userInfo.getOrganizationId().equals(ps.getOrganizationId())) {
             return RestResult.fail.msg("点址不存在或您没有权限操作该对象");
         }
         EstimateTask ret = service.getEstimateTaskWithPointerAddressId(paId);
-        return RestResult.build(new PointerAddressAndEstimateTask(ps ,ret));
+        return RestResult.build(new PointerAddressAndEstimateTask(ps, ret));
     }
 
 
@@ -147,5 +153,13 @@ public class EstimateTaskController {
         ValidatorUtils.validateEntity(conclusion, SaveConclusion.class);
         EstimateDataResult ret = service.saveConclusion(emtimateId, conclusion);
         return RestResult.build(ret);
+    }
+
+    @PutMapping("/getObserveList")
+    @ApiOperation("获取有效的测控点id")
+    @CheckToken
+    public RestResult<List<ObserverPoint>> getObserveList(@RequestHeader String token) {
+        List<ObserverPoint> l = observePointService.getObserverPointList(token);
+        return RestResult.build(l);
     }
 }

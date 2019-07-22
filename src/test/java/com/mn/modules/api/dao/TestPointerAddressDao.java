@@ -67,7 +67,6 @@ public class TestPointerAddressDao extends BaseTest {
         IPage<PointerAddress> ret = pointerAddressDao.queryPointerAddressList(page, qo, userInfo);
         Assert.assertNotEquals(null, ret);
         Assert.assertEquals(1, ret.getTotal());
-        System.out.print(ret.getRecords().get(0));
         Assert.assertNotEquals(null , ret.getRecords().get(0).getFence());
 
     }

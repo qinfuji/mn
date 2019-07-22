@@ -137,8 +137,8 @@ class CreateAppraise extends React.Component {
             </Form.Item>
             <Form.Item label="到访百分比">
               {getFieldDecorator('arriveScale', {
-                initialValue: appraise && appraise.arriveScale ? parseInt(appraise.arriveScale) : 20,
-              })(<Slider step={1} max={100} min={20} />)}
+                initialValue: appraise && appraise.arriveScale ? parseInt(appraise.arriveScale) / 10 : 0.1,
+              })(<Slider step={0.1} max={100} min={0.1} />)}
             </Form.Item>
             <Form.Item label="辐射距离">
               {getFieldDecorator('distance', {

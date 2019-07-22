@@ -1,5 +1,6 @@
 package com.mn.modules.api.remote;
 
+import com.mn.modules.api.vo.ArrivedData;
 import com.mn.modules.api.vo.ObserverPoint;
 import com.mn.modules.api.vo.ObserverPointData;
 
@@ -17,9 +18,18 @@ public interface ObservePointService {
 
 
     /**
-     * 获取测控点数据
+     * 获取测控点到访数据
      * @return
      */
-    ObserverPointData getObserveData(String observerId ,String token);
+    List<ArrivedData> getObserveArrivedData(String observerId , String token);
+
+
+    /**
+     * 获取测控点客流数据
+     * @param observerId
+     * @param token
+     * @return
+     */
+    Integer getObserveFlow(String observerId , String token);
 
 }

@@ -108,7 +108,6 @@ public class SharePointerAddressServiceImpl extends ServiceImpl<SharePointerAddr
                 }
                 //获取围栏中心
                 String fenceString = "";
-                System.out.println(lnglats);
                 for(Iterator<LngLat> iterator = lnglats.iterator() ; iterator.hasNext();){
                     LngLat ll =  iterator.next();
                     fenceString += (ll.getLng()+","+ll.getLat());
@@ -116,9 +115,7 @@ public class SharePointerAddressServiceImpl extends ServiceImpl<SharePointerAddr
                         fenceString+=";";
                     }
                 }
-                System.out.println(fenceString);
                 LngLat center = GeometryUtil.getCenterOfGravityPoint(lnglats);
-                System.out.println(center);
                 GeographyPoint gp = gaodeMapService.getGeographyPointByLnglat(center);
                 SharePointerAddress spa = new SharePointerAddress();
                 spa.setLabels(labelKey);

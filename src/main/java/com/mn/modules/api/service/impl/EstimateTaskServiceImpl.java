@@ -1,10 +1,7 @@
 package com.mn.modules.api.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mn.modules.api.controller.CategroyLabelController;
 import com.mn.modules.api.dao.EstimateDataResultDao;
 import com.mn.modules.api.dao.EstimateTaskDao;
 import com.mn.modules.api.dao.PointerAddressDao;
@@ -20,10 +17,10 @@ import com.mn.modules.api.service.EstimateTaskService;
 import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.utils.GeometryUtil;
 import com.mn.modules.api.utils.LngLat;
+import com.mn.modules.api.utils.MapHelper;
 import com.mn.modules.api.utils.Melkman;
+import com.mn.modules.api.vo.ArrivedData;
 import com.mn.modules.api.vo.ObserverPointData;
-import de.lmu.ifi.dbs.elki.data.spatial.Polygon;
-import de.lmu.ifi.dbs.elki.math.geometry.AlphaShape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +32,8 @@ import java.util.*;
 @Component
 @Transactional
 public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, EstimateTask> implements EstimateTaskService {
+
+    public static final int MIN_POINT_COUNT = 3;
 
     private static Logger logger = LoggerFactory.getLogger(EstimateTaskServiceImpl.class);
 
@@ -149,29 +148,38 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         String resultDataId = task.getResultDataId();
         EstimateDataResult edr = new EstimateDataResult();
 
-        String fenceString = "";
-        if (fence != null && fence.size() >= 3) {
 
-            for(Iterator<LngLat> iteratror= fence.iterator(); iteratror.hasNext();){
-                LngLat lngLat = iteratror.next();
+        String fenceString = "";
+        if (fence != null && fence.size() >= MIN_POINT_COUNT) {
+            for (Iterator<LngLat> iterator = fence.iterator(); iterator.hasNext(); ) {
+                LngLat lngLat = iterator.next();
                 if (lngLat == null) {
+                    iterator.remove();
                     continue;
                 }
                 fenceString += (lngLat.getLng().toString() + "," + lngLat.getLat());
-                if(iteratror.hasNext()){
-                     fenceString += ";";
+                if (iterator.hasNext()) {
+                    fenceString += ";";
                 }
             }
 
         }
 
-        edr.setFence(fenceString);
-        edr.setId(resultDataId);
-        estimateDataResultDao.updateById(edr);
+        //获取围栏面积， 计算围栏辐射距离
+        double fenceArea = MapHelper.calculatePolygonArea(fence);
 
+        //获取测控点的客流量数据
+        Integer observerFlow = observePointService.getObserveFlow(task.getObserveId(), "");
+        //商圈围栏
+        edr.setFence(fenceString);
+        //测控点客流量
+        edr.setObserverRateFlow(observerFlow);
+        edr.setId(resultDataId);
+        //辐射面积
+        edr.setRadiationArea(fenceArea+"");
+        estimateDataResultDao.updateById(edr);
         task.setExecState(task.getExecState() | EXEC_STATUS_CALCULATED_FENCE);
         this.baseMapper.updateById(task);
-
         updatePointerAddressStateIfNeed(task);
     }
 
@@ -186,11 +194,11 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         //测控点id
         String observerId = task.getObserveId();
         //获取测试点数据
-        ObserverPointData observerPointDatas = observePointService.getObserveData(observerId , "");
-//        if (observerPointDatas == null || observerPointDatas.getArrivedPoints().size() == 0) {
-//            //如果没有到放数据，则不需要处理
-//            return new ArrayList<>();
-//        }
+        List<ArrivedData> observerArrivedDatas = observePointService.getObserveArrivedData(observerId, "");
+        if (observerArrivedDatas == null || observerArrivedDatas.size() == 0) {
+            //如果没有到放数据，则不需要处理
+            return new ArrayList<>();
+        }
         //获取中心点，当前使用待评估的地址的经纬度
         PointerAddress pa = pointerAddressDao.selectById(task.getPointerAddressId());
         Double lng = pa.getLng();
@@ -217,78 +225,63 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         }
 
 
-        List<List<LngLat>> fances = new ArrayList<>();
-        spaList.forEach((pointerAddress) -> {
-            //点址围栏数据
-            String fence = pointerAddress.getFence();
-            if (!"".equals(fence) && fence != null) {
-                //进行对象装换
-                String[] lnglatStrings = fence.split(";");
-                List<LngLat> fencePoints = new ArrayList<>();
-                for (String lnglatString : lnglatStrings) {
-                    String[] lnglat = lnglatString.split(",");
-                    Double _lng = Double.parseDouble(lnglat[0]);
-                    Double _lat = Double.parseDouble(lnglat[1]);
-                    LngLat ll = new LngLat();
-                    ll.setLat(_lat);
-                    ll.setLng(_lng);
-                    fencePoints.add(ll);
-                }
-                if (fencePoints.size() >= 3) {
-                    fances.add(fencePoints);
-                }
-            }
-        });
-
-        competitor.forEach((pointerAddress) -> {
-            //点址围栏数据
-            String fence = pointerAddress.getFence();
-            if (!"".equals(fence) && fence != null) {
-                //进行对象装换
-                String[] lnglatStrings = fence.split(";");
-                List<LngLat> fencePoints = new ArrayList<>();
-                for (String lnglatString : lnglatStrings) {
-                    String[] lnglat = lnglatString.split(",");
-                    Double _lng = Double.parseDouble(lnglat[0]);
-                    Double _lat = Double.parseDouble(lnglat[1]);
-                    LngLat ll = new LngLat();
-                    ll.setLat(_lat);
-                    ll.setLng(_lng);
-                    fencePoints.add(ll);
-                }
-                if (fencePoints.size() >= 3) {
-                    fances.add(fencePoints);
-                }
-            }
-        });
+        List<SharePointerAddress> pointerAddresses = new ArrayList<>();
+        pointerAddresses.addAll(spaList);
+        pointerAddresses.addAll(competitor);
 
         //将转换后的
         List<List<LngLat>> ret = new ArrayList<>();
+        Map<String, List<LngLat>> fenceMap = new HashMap<>(100);
+        Map<String, Integer> fenceArrivedRateMap = new HashMap<>(100);
 
-//        observerPointDatas.getArrivedPoints().forEach((arrivedData) -> {
-//            LngLat arrivedLnglat  =  arrivedData.getLngLat();
-//            if(arrivedData.getArrivedRate().intValue() < task.getArriveScale().intValue()){
-//                 return;
-//            }
-//            fances.forEach((target) -> {
-//                LngLat lnglat = new LngLat();
-//                lnglat.setLat(arrivedLnglat.getLat());
-//                lnglat.setLng(arrivedLnglat.getLng());
-//                //判断到访点是否在围栏中
-//                boolean isIn = GeometryUtil.isPtInPoly(lnglat, target);
-//                if (isIn && !ret.contains(target)) {
-//                    ret.add(target);
-//                }
-//            });
-//        });
+        observerArrivedDatas.forEach((arrivedData) -> {
+            LngLat arrivedLnglat = arrivedData.getLngLat();
+            pointerAddresses.forEach((pointerAddress) -> {
+                String id = pointerAddress.getId();
+                List<LngLat> fencePoints = fenceMap.get(id);
+                if (fencePoints == null) {
+                    String fence = pointerAddress.getFence();
+                    if (!"".equals(fence) && fence != null) {
+                        //进行对象装换
+                        String[] lnglatStrings = fence.split(";");
+                        fencePoints = new ArrayList<>();
+                        for (String lnglatString : lnglatStrings) {
+                            String[] lnglat = lnglatString.split(",");
+                            Double _lng = Double.parseDouble(lnglat[0]);
+                            Double _lat = Double.parseDouble(lnglat[1]);
+                            LngLat ll = new LngLat();
+                            ll.setLat(_lat);
+                            ll.setLng(_lng);
+                            fencePoints.add(ll);
+                        }
+                        fenceMap.put(id, fencePoints);
+                    }
+                }
 
-        //TODO 测试用
-        fances.forEach((target) -> {
-
-            ret.add(target);
-
+                LngLat lnglat = new LngLat();
+                lnglat.setLat(arrivedLnglat.getLat());
+                lnglat.setLng(arrivedLnglat.getLng());
+                //判断到访点是否在围栏中
+                boolean isIn = GeometryUtil.isPtInPoly(lnglat, fencePoints);
+                if (isIn) {
+                    Integer rate = fenceArrivedRateMap.get(id);
+                    if (rate == null) {
+                        rate = 0;
+                    }
+                    rate += arrivedData.getArrivedRate().intValue();
+                    fenceArrivedRateMap.put(id, rate);
+                }
+            });
         });
-
+        fenceArrivedRateMap.forEach((key, value) -> {
+            //数据库里存储的是千分比，需要转换成数值
+            if (value >= task.getArriveScale() / 1000) {
+                List<LngLat> fencePoints = fenceMap.get(key);
+                if (fencePoints != null && fencePoints.size() >= MIN_POINT_COUNT) {
+                    ret.add(fencePoints);
+                }
+            }
+        });
         return ret;
     }
 
@@ -302,47 +295,18 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         if (fences == null || fences.size() == 0) {
             return new ArrayList<>();
         }
-         List<LngLat> ret = new ArrayList<>();
-         fences.forEach((fence)->{
-              if(fence == null || fence.size()==0) {
-                  return;
-              }
-              fence.forEach((lnglat)->{
-                  ret.add(lnglat);
-              });
-         });
-         Melkman melkman = new Melkman(ret);
-         LngLat[] finallyFence =  melkman.getTubaoPoint();
-         return Arrays.asList(finallyFence);
-
-//        List<double[]> t = new ArrayList<>();
-//        fences.forEach((fence) -> {
-//            if (fence == null || fence.size() == 0) {
-//                return;
-//            }
-//            fence.forEach((lnglat) -> {
-//                t.add(new double[]{lnglat.getLng().doubleValue(), lnglat.getLat().doubleValue()});
-//            });
-//        });
-
-        /**
-         * AlphaShape的第二个参数是范围值， 防止凸包的点连接过长，
-         * 这个算法当前结合中的点不能相同，在否则会会出现错误。
-         * 这个值占时没有想好设置多大，当前设置100基本就与Melkman算法一样了
-         */
-
-//        List<Polygon> polys = new AlphaShape(t, 100).compute();
-//
-//        List<LngLat> alphaShapeRet = new ArrayList<>();
-//        if (polys != null && polys.size() > 0) {
-//            Polygon poly = polys.get(0);
-//            for (int i = 0; i < poly.size(); i++) {
-//                double[] ll = poly.get(i);
-//                LngLat lngLat = new LngLat(Double.valueOf(ll[0]), Double.valueOf(ll[1]));
-//                alphaShapeRet.add(lngLat);
-//            }
-//        }
-//        return alphaShapeRet;
+        List<LngLat> ret = new ArrayList<>();
+        fences.forEach((fence) -> {
+            if (fence == null || fence.size() == 0) {
+                return;
+            }
+            fence.forEach((lnglat) -> {
+                ret.add(lnglat);
+            });
+        });
+        Melkman melkman = new Melkman(ret);
+        LngLat[] finallyFence = melkman.getTubaoPoint();
+        return Arrays.asList(finallyFence);
     }
 
     @Override

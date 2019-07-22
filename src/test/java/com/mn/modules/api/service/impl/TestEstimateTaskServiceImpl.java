@@ -249,46 +249,46 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
 
         ObserverPointData opd = new ObserverPointData();
 
-        List<ArrivedData> observerPointList = new ArrayList<>();
+        List<ArrivedData> observerArrivedDataList = new ArrayList<>();
         LngLat lnglat = new LngLat();
         ArrivedData  arrivedData = new ArrivedData();
         lnglat.setLng(116.542926);
         lnglat.setLat(40.008762);
         arrivedData.setLngLat(lnglat);
-        arrivedData.setArrivedRate(100);
-        observerPointList.add(arrivedData);
+        arrivedData.setArrivedRate(100D);
+        observerArrivedDataList.add(arrivedData);
 
         lnglat = new LngLat();
         arrivedData = new ArrivedData();
         lnglat.setLng(116.527777);
         lnglat.setLat(40.010274);
         arrivedData.setLngLat(lnglat);
-        arrivedData.setArrivedRate(100);
-        observerPointList.add(arrivedData);
+        arrivedData.setArrivedRate(100D);
+        observerArrivedDataList.add(arrivedData);
 
         lnglat = new LngLat();
         arrivedData = new ArrivedData();
         lnglat.setLng(116.523013);
         lnglat.setLat(40.019806);
         arrivedData.setLngLat(lnglat);
-        arrivedData.setArrivedRate(100);
-        observerPointList.add(arrivedData);
+        arrivedData.setArrivedRate(100D);
+        observerArrivedDataList.add(arrivedData);
 
         lnglat = new LngLat();
         arrivedData = new ArrivedData();
         lnglat.setLng(116.539364);
         lnglat.setLat(40.020069);
         arrivedData.setLngLat(lnglat);
-        arrivedData.setArrivedRate(100);
-        observerPointList.add(arrivedData);
+        arrivedData.setArrivedRate(100D);
+        observerArrivedDataList.add(arrivedData);
 
         lnglat = new LngLat();
         arrivedData = new ArrivedData();
         lnglat.setLng(116.533873);
         lnglat.setLat(40.02013);
         arrivedData.setLngLat(lnglat);
-        arrivedData.setArrivedRate(100);
-        observerPointList.add(arrivedData);
+        arrivedData.setArrivedRate(100D);
+        observerArrivedDataList.add(arrivedData);
 
         new ArrivedData();
         arrivedData = new ArrivedData();
@@ -296,19 +296,16 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         lnglat.setLng(116.532049);
         lnglat.setLat(40.024517);
         arrivedData.setLngLat(lnglat);
-        arrivedData.setArrivedRate(100);
-        observerPointList.add(arrivedData);
+        arrivedData.setArrivedRate(100D);
+        observerArrivedDataList.add(arrivedData);
 
-        opd.setArrivedPoints(observerPointList);
-
-        Mockito.when(observePointService.getObserveData(any(),any())).thenReturn(opd);
+        Mockito.when(observePointService.getObserveArrivedData (any(),any())).thenReturn(observerArrivedDataList);
         estimateTaskService.execCalculateFence(estimateTask);
 
         EstimateTask estimateTask1 = estimateTaskService.getById(estimateTask.getId());
         Assert.assertEquals(EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE , EstimateTaskService.EXEC_STATUS_CALCULATED_FENCE&estimateTask1.getExecState());
 
         EstimateDataResult edr = estimateTaskService.getEstimateDataResult(estimateTask1.getId());
-        System.out.println(edr.getFence());
         Assert.assertNotNull(null , edr.getFence());
 
 
@@ -322,7 +319,6 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
 
         //estimateTask1 = estimateTaskService.getById(estimateTask1.getId());
 
-        System.out.println(estimateTask1.getExecState());
         Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_DATA&estimateTask1.getExecState().intValue());
         Assert.assertEquals(EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA , EstimateTaskService.EXEC_STATUS_REQUESTED_FENCE_HOT_DATA&estimateTask1.getExecState().intValue());
         Assert.assertEquals(EstimateTaskService.EXEC_STATUS_FINISH_CODE , estimateTask1.getExecState().intValue());

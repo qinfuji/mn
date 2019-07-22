@@ -147,7 +147,6 @@ public class PointerAddressController {
         if (qo.getPageSize() == null) {
             qo.setPageSize(40);
         }
-        System.out.println(qo);
         IPage<PointerAddress> ret = service.getPointerAddressList(qo, userInfo);
         return RestResult.build(ret);
     }

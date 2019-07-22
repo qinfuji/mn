@@ -14,5 +14,5 @@ public class ArrivedData {
     /**
      * 到访比例
      */
-    Integer arrivedRate;
+    Double arrivedRate;
 }

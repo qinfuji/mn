@@ -2,6 +2,7 @@ package com.mn.modules.api.utils;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -102,12 +103,18 @@ public class Melkman {
         LngLat[] resultPoints = new LngLat[top - bot - 1];
         int index = 0;
         for (i = bot + 1; i < top - 1; i++) {
-            System.out.println(pointArray[D[i]].getLng() + ","
-                    + pointArray[D[i]].getLat());
             resultPoints[index++] = pointArray[D[i]];
         }
-        System.out.println("------->>>>>"+resultPoints.length);
-        return resultPoints;
+
+        //有可能传递的头尾不相等，会导致最后一个点是Null,需要去掉
+        List<LngLat> ret = new ArrayList<>();
+        for (int k = 0; k < resultPoints.length; k++) {
+            if (resultPoints[k] != null) {
+                ret.add(resultPoints[k]);
+            }
+        }
+
+        return ret.toArray(new LngLat[ret.size()] );
     }
 
     /**
@@ -147,6 +154,7 @@ public class Melkman {
 
     /**
      * 快速排序
+     *
      * @param top
      * @param bot
      */
@@ -161,6 +169,7 @@ public class Melkman {
 
     /**
      * 移动起点，左侧为小，右侧为大
+     *
      * @param top
      * @param bot
      * @return 移动后的位置

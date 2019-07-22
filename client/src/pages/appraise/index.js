@@ -574,6 +574,7 @@ class Appraise extends React.Component {
       filterLabels: params.filterLabels ? params.filterLabels.join(',') : '',
       competitorIds: params.competitorIds ? params.competitorIds.join(',') : '',
       showPersonCount: params.showPersonCount ? 1 : 0,
+      arriveScale: params.arriveScale ? params.arriveScale * 10 : 1,
     };
     if (userHotFencePolygons && userHotFencePolygons.length && (!params.fencesHotDate || !params.fenaceHotCondition)) {
       Modal.error({
