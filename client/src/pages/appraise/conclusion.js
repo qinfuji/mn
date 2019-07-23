@@ -1,21 +1,5 @@
 import React from 'react';
-import {
-  Layout,
-  Form,
-  Modal,
-  Select,
-  Button,
-  Input,
-  DatePicker,
-  Tooltip,
-  Switch,
-  Slider,
-  Icon,
-  Card,
-  Row,
-  Col,
-  Table,
-} from 'antd';
+import {Form, Select, Button, Card, Row, Col, Table} from 'antd';
 import moment from 'moment';
 import {Constant as AppraiseConstant} from '../../models/appraise';
 const {Option} = Select;
@@ -117,17 +101,19 @@ class Conclusion extends React.Component {
                   )}
                 </Form.Item>
                 <Form.Item>
-                  <div>
+                  {/*<div>
                     辐射距离:
                     {appraiseDataResult && appraiseDataResult.radiationDistance
                       ? appraiseDataResult.radiationDistance
                       : '0'}
-                  </div>
+                  </div>*/}
                 </Form.Item>
                 <Form.Item>
                   <label>
                     辐射面积:
-                    {appraiseDataResult && appraiseDataResult.radiationArea ? appraiseDataResult.radiationArea : '0'}
+                    {appraiseDataResult && appraiseDataResult.radiationArea
+                      ? parseFloat(appraiseDataResult.radiationArea).toFixed(3) + '平方公里'
+                      : '0'}
                   </label>
                 </Form.Item>
               </Form>

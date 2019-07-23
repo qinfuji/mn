@@ -234,7 +234,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         //将转换后的
         List<List<LngLat>> ret = new ArrayList<>();
         Map<String, List<LngLat>> fenceMap = new HashMap<>(100);
-        Map<String, Integer> fenceArrivedRateMap = new HashMap<>(100);
+        Map<String, Double> fenceArrivedRateMap = new HashMap<>(100);
 
         observerArrivedDatas.forEach((arrivedData) -> {
             LngLat arrivedLnglat = arrivedData.getLngLat();
@@ -266,18 +266,19 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
                 //判断到访点是否在围栏中
                 boolean isIn = GeometryUtil.isPtInPoly(lnglat, fencePoints);
                 if (isIn) {
-                    Integer rate = fenceArrivedRateMap.get(id);
+                    Double rate = fenceArrivedRateMap.get(id);
                     if (rate == null) {
-                        rate = 0;
+                        rate = 0d;
                     }
-                    rate += arrivedData.getArrivedRate().intValue();
+                    rate += arrivedData.getArrivedRate().doubleValue();
                     fenceArrivedRateMap.put(id, rate);
                 }
             });
         });
         fenceArrivedRateMap.forEach((key, value) -> {
             //数据库里存储的是千分比，需要转换成数值
-            if (value >= task.getArriveScale() / 1000) {
+            //System.out.println("key:"+key+",value:"+value+", taskScale:"+ task.getArriveScale().doubleValue() / 1000);
+            if (value >= task.getArriveScale().doubleValue() / 1000) {
                 List<LngLat> fencePoints = fenceMap.get(key);
                 if (fencePoints != null && fencePoints.size() >= MIN_POINT_COUNT) {
                     ret.add(fencePoints);

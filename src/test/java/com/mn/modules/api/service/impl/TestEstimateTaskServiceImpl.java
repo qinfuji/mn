@@ -327,4 +327,7 @@ public class TestEstimateTaskServiceImpl extends BaseTest {
         Assert.assertEquals(PointerAddressService.STATUS_ESTIMATE_FINISH , pointerAddress.getState());
     }
 
+
+
+
 }

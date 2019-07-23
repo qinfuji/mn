@@ -4,7 +4,6 @@ import {Form, Input, Button, Icon, Tooltip, Select, Modal, TreeSelect} from 'ant
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 import {fatchAll} from '../../services/categroyLabels';
 
-const FormItem = Form.Item;
 const Option = Select.Option;
 const {confirm} = Modal;
 

@@ -1,20 +1,5 @@
 import React from 'react';
-import {
-  Layout,
-  Form,
-  Modal,
-  Select,
-  Button,
-  Input,
-  DatePicker,
-  Tooltip,
-  Switch,
-  Slider,
-  Icon,
-  Card,
-  Row,
-  Col,
-} from 'antd';
+import {Layout, Form, Modal} from 'antd';
 import Marker from '@/components/AMap/Marker';
 import moment from 'moment';
 import Polygon from '@/components/AMap/Polygon';
@@ -29,7 +14,14 @@ import {
   saveConclusion,
 } from '../../services/appraise';
 import {fetch as fetchPointerAddress, fetchSharePointerAddress} from '../../services/pointer';
-import {PolygonOptions, CircleOptions} from '../../utils/mapShapeOptions';
+import {
+  PolygonOptions,
+  CircleOptions,
+  ArrivePolygonOptions,
+  HotPolygonOptions,
+  PointerPolygonOptions,
+  CompetitorPolygonOptions,
+} from '../../utils/mapShapeOptions';
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 import {Constant as AppraiseConstant} from '../../models/appraise';
 import CreateAppraise from './create';
@@ -123,7 +115,9 @@ class Appraise extends React.Component {
       //如果有围栏信息，需要画出围栏信息
       const pointers = getPath(pointerAddress.fence);
       if (pointers.length >= 3) {
-        pointerAddressPolygon = this.createPolygon(pointers, false, 'pointerAddressPolygon', pointerAddress);
+        pointerAddressPolygon = this.createPolygon(pointers, false, 'pointerAddressPolygon', pointerAddress, {
+          ...PointerPolygonOptions,
+        });
       }
     }
 
@@ -141,26 +135,6 @@ class Appraise extends React.Component {
     };
     circles.push(_circle);
 
-    // const _polygon111 = this.createPolygon(
-    //   getPath(
-    //     '116.42213008672002,39.803256372351036;116.42288110524413,39.8033552810516;116.42288110524413,39.80277831162603;116.42321369916203,39.80263818974916;116.42317078381774,39.80165732861616;116.42410419255498,39.801566660073924;116.4240720060468,39.79917626447464;116.41883633404973,39.799192750246064;116.41821406155822,39.80278655408048;116.42000577718022,39.80300085754942;116.42024181157353,39.80159138787002;116.42220518857243,39.80160787306247',
-    //   ),
-    //   false,
-    //   'mapMarkers',
-    //   {name: '热力围栏', address: ''},
-    // );
-    // polygons.push(_polygon111);
-
-    // const pointerAddressMarker111 = {
-    //   id: '77e0e7ff6e086f509750022c4e054346',
-    //   options: {
-    //     position: [116.421185, 39.800845],
-    //     offset: new window.AMap.Pixel(-13, -30),
-    //   },
-    // };
-
-    //markers.push(pointerAddressMarker111);
-
     //热力围栏
     const userHotFencePolygons = [];
     if (appraise && appraise.hotFences) {
@@ -173,6 +147,7 @@ class Appraise extends React.Component {
             appraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT,
             'userHotFencePolygons',
             {name: '热力围栏', address: ''},
+            {...HotPolygonOptions},
           );
           userHotFencePolygons.push(_polygon);
         }
@@ -181,18 +156,28 @@ class Appraise extends React.Component {
 
     let appraiseFencePolygon = null;
     let appraiseDataResult = null;
-    if (appraise && appraise.execState === AppraiseConstant.execState.EXEC_STATUS_FINISH_CODE) {
-      //获取评估
-      const appraiseDataResultResponse = await getEsmtimateDataResult({id: appraise.id});
-      if (appraiseDataResultResponse) {
-        appraiseDataResult = appraiseDataResultResponse.data;
-        const fence = appraiseDataResult.fence;
-        if (fence) {
-          const path = getPath(fence);
-          appraiseFencePolygon = this.createPolygon(path, false, 'appraiseFencePolygon', {
-            name: `点址：${pointerAddress.name}<br/>到访围栏`,
-            address: '',
-          });
+
+    const vtype = params.vtype;
+    if (vtype === 'conclusion') {
+      if (appraise && appraise.execState === AppraiseConstant.execState.EXEC_STATUS_FINISH_CODE) {
+        //获取评估
+        const appraiseDataResultResponse = await getEsmtimateDataResult({id: appraise.id});
+        if (appraiseDataResultResponse) {
+          appraiseDataResult = appraiseDataResultResponse.data;
+          const fence = appraiseDataResult.fence;
+          if (fence) {
+            const path = getPath(fence);
+            appraiseFencePolygon = this.createPolygon(
+              path,
+              false,
+              'appraiseFencePolygon',
+              {
+                name: `点址：${pointerAddress.name}<br/>到访围栏`,
+                address: '',
+              },
+              {...ArrivePolygonOptions},
+            );
+          }
         }
       }
     }
@@ -205,10 +190,16 @@ class Appraise extends React.Component {
           if (competitorId === competitor.id) {
             const pointers = getPath(competitor.fence);
             if (pointers.length >= 3) {
-              const _polygon = this.createPolygon(pointers, false, 'competitorPolygons', {
-                name: competitor.name + '(竞品店)',
-                address: competitor.address,
-              });
+              const _polygon = this.createPolygon(
+                pointers,
+                false,
+                'competitorPolygons',
+                {
+                  name: competitor.name + '(竞品店)',
+                  address: competitor.address,
+                },
+                {...CompetitorPolygonOptions},
+              );
               competitorPolygons.push(_polygon);
             }
           }
@@ -508,12 +499,13 @@ class Appraise extends React.Component {
     });
   };
 
-  createPolygon = (paths, canEdit, stateProps, windowInfo) => {
+  createPolygon = (paths, canEdit, stateProps, windowInfo, extraPolygonOptions = {}) => {
     const id = generateUUID();
     const _polygon = {
       id,
       options: {
         ...PolygonOptions,
+        ...extraPolygonOptions,
         id,
         path: paths,
         editable: canEdit

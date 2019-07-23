@@ -1,23 +1,6 @@
 import React from 'react';
-import {
-  Layout,
-  Form,
-  Modal,
-  Select,
-  Button,
-  Input,
-  DatePicker,
-  Tooltip,
-  Switch,
-  Slider,
-  Icon,
-  Card,
-  Row,
-  Col,
-  TreeSelect,
-} from 'antd';
+import {Form, Select, Button, Input, DatePicker, Tooltip, Switch, Slider, Icon, Card, Row, Col, TreeSelect} from 'antd';
 import moment from 'moment';
-import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 import {Constant as AppraiseConstant} from '../../models/appraise';
 import {fatchAll} from '../../services/categroyLabels';
 

@@ -28,7 +28,7 @@ public class ObserverPointServiceImpl implements ObservePointService {
     //测控点客流量
     private static final String GETFLOW_PATH = "/getflow";
     //测控点到访数据
-    private static final String ARRIVED_PATH = "/arrive";
+    private static final String ARRIVED_PATH = "http://www.topprismdata.com/thrid/address/arrive";
 
     @Autowired
     RestTemplate restTemplate;
@@ -75,18 +75,19 @@ public class ObserverPointServiceImpl implements ObservePointService {
         List<ArrivedData> arrivedDataList = new ArrayList<>();
 
         MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<String, String>();
-        ResponseEntity<String> responseBody = restTemplate.getForEntity(HOST + ARRIVED_PATH, String.class, requestMap);
+        ResponseEntity<String> responseBody = restTemplate.postForEntity("http://www.topprismdata.com/third/address/arrive", requestMap ,String.class);
         String responseString = responseBody.getBody();
 
         JSONObject jsonObject = JSON.parseObject(responseString);
         Integer code = jsonObject.getInteger("code");
-        if (code != 0) {
-            JSONArray arrivedArray = jsonObject.getJSONArray("data");
+        if (code.intValue() == 0) {
+            JSONArray arrivedArray = jsonObject.getJSONArray("res");
             if (arrivedArray != null && arrivedArray.size() > 0) {
                 for (int i = 0; i < arrivedArray.size(); i++) {
                     JSONObject jo = arrivedArray.getJSONObject(i);
-                    double lng = jo.getDouble("lng");
-                    double lat = jo.getDouble("lat");
+                    //TODO 当前接口返回的数据是反的，以后改了这里在调整
+                    double lng = jo.getDouble("lat");
+                    double lat = jo.getDouble("lng");
                     double count = jo.getDouble("count");
 
                     ArrivedData ad = new ArrivedData();

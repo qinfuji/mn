@@ -1,7 +1,7 @@
 import React from 'react';
-import {Table, Modal, Tree, Layout, Form, Input, Button} from 'antd';
+import {Table, Modal, Layout, Form, Input, Button} from 'antd';
 import {fatch, create as createLabel, invalid, queryRootByLabel} from '../../services/categroyLabels';
-const {Header, Content, Footer, Sider} = Layout;
+const {Header, Content} = Layout;
 const data = [];
 
 @Form.create()
