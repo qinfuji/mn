@@ -41,7 +41,7 @@ public class QuartzConfig {
         // 设置jobDetail
         cronTriggerFactoryBean.setJobDetail(estimateTaskJobDetail);
         //秒 分 小时 日 月 星期 年  每10分钟
-        cronTriggerFactoryBean.setCronExpression("0 0/2 * * * ?");
+        cronTriggerFactoryBean.setCronExpression("0 0/5 * * * ?");
         //trigger超时处理策略 默认1：总是会执行头一次 2:不处理
         cronTriggerFactoryBean.setMisfireInstruction(2);
         return cronTriggerFactoryBean;
