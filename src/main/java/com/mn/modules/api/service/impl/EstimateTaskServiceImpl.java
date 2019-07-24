@@ -264,6 +264,10 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
                 lnglat.setLat(arrivedLnglat.getLat());
                 lnglat.setLng(arrivedLnglat.getLng());
                 //判断到访点是否在围栏中
+                if(fencePoints == null || fencePoints.size()<3){
+                     logger.error("点址围栏数据错误 ， id :{} , name: {} " , pointerAddress.getId() , pointerAddress.getName());
+                     return;
+                }
                 boolean isIn = GeometryUtil.isPtInPoly(lnglat, fencePoints);
                 if (isIn) {
                     Double rate = fenceArrivedRateMap.get(id);
