@@ -3,6 +3,7 @@ import {Form, Input, Button, Icon, Tooltip, Select, Modal, TreeSelect} from 'ant
 
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
 import {fatchAll} from '../../services/categroyLabels';
+import Authorized from '../../utils/Authorized';
 
 const Option = Select.Option;
 const {confirm} = Modal;
@@ -213,19 +214,21 @@ class CreatePointer extends React.Component {
           )}
           &nbsp;
           {(!pointer.id || pointer.state === PointerAddressConstant.status.STATUS_WAIT_SUBMIT) && (
-            <React.Fragment>
+            <Authorized authority="/createPointAddress/save">
               <Button size="small" type="primary" onClick={this.save}>
                 保存
               </Button>
               <Button size="small" type="primary" onClick={this.submit}>
                 保存并提交
               </Button>
-            </React.Fragment>
+            </Authorized>
           )}
           {pointer && pointer.id && (
-            <Button size="small" type="primary" onClick={this.onDelete}>
-              删除
-            </Button>
+            <Authorized authority="/createPointAddress/delete">
+              <Button size="small" type="primary" onClick={this.onDelete}>
+                删除
+              </Button>
+            </Authorized>
           )}
           <Button size="small" type="primary" onClick={onBack}>
             返回列表

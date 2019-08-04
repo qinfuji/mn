@@ -6,6 +6,7 @@ import History from '../../core/history';
 import localData from '../../utils/adcode.json';
 import StandardTable from '@/components/StandardTable';
 import {Constant as PointerAddressConstant} from '../../models/pointerAddress';
+import Authorized from '../../utils/Authorized';
 const {Header, Content, Footer, Sider} = Layout;
 const Option = Select.Option;
 
@@ -17,7 +18,7 @@ class PointerList extends React.Component {
   state = {};
 
   entryCreatePointer = () => {
-    History.push('/createPointAddress');
+    History.push({pathname: '/createPointAddress', search: this.props.location.search});
   };
 
   renderSearch() {
@@ -92,24 +93,29 @@ class PointerList extends React.Component {
             查询
           </Button>
           &nbsp;&nbsp;
-          <Button type="primary" onClick={this.entryCreatePointer} size="small">
-            新建点址
-          </Button>
+          <Authorized authority="/pointAddressManager/save">
+            <Button type="primary" onClick={this.entryCreatePointer} size="small">
+              新建点址
+            </Button>
+          </Authorized>
         </Form.Item>
       </Form>
     );
   }
 
   enterCreatePointer = (id) => {
-    History.push('/createPointAddress/' + id);
+    //History.push('/createPointAddress/' + id);
+    History.push({pathname: '/createPointAddress/' + id, search: this.props.location.search});
   };
 
   enterCreateConclusion = (id) => {
-    History.push(`/createAppraise/pointerAddressId/${id}/conclusion`);
+    //History.push(`/createAppraise/pointerAddressId/${id}/conclusion`);
+    History.push({pathname: `/createAppraise/pointerAddressId/${id}/conclusion`, search: this.props.location.search});
   };
 
   enterCreateAppraise = (id) => {
-    History.push(`/createAppraise/pointerAddressId/${id}/appraise`);
+    //History.push(`/createAppraise/pointerAddressId/${id}/appraise`);
+    History.push({pathname: `/createAppraise/pointerAddressId/${id}/appraise`, search: this.props.location.search});
   };
 
   columns = [
@@ -173,29 +179,34 @@ class PointerList extends React.Component {
       render: (text, record) => (
         <React.Fragment>
           {record.state !== PointerAddressConstant.status.STATUS_DELETE && (
-            <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
-              点址管理
-            </Button>
+            <Authorized authority="/pointAddressManager">
+              <Button className="operationBtn" size="small" onClick={() => this.enterCreatePointer(record.id)}>
+                点址管理
+              </Button>
+            </Authorized>
           )}
-
-          {record.state === PointerAddressConstant.status.STATUS_NOT_ESTIMATE &&
-            record.state !== PointerAddressConstant.status.STATUS_DELETE && (
-              <Button type="primary" size="small" onClick={() => this.enterCreateAppraise(record.id)}>
-                请求评估
-              </Button>
-            )}
-          {record.state !== PointerAddressConstant.status.STATUS_NOT_ESTIMATE &&
-            record.state !== PointerAddressConstant.status.STATUS_WAIT_SUBMIT &&
-            record.state !== PointerAddressConstant.status.STATUS_DELETE && (
-              <Button type="primary" size="small" onClick={() => this.enterCreateAppraise(record.id)}>
-                评估管理
-              </Button>
-            )}
+          <Authorized authority="/appraiseManager">
+            {record.state === PointerAddressConstant.status.STATUS_NOT_ESTIMATE &&
+              record.state !== PointerAddressConstant.status.STATUS_DELETE && (
+                <Button type="primary" size="small" onClick={() => this.enterCreateAppraise(record.id)}>
+                  请求评估
+                </Button>
+              )}
+            {record.state !== PointerAddressConstant.status.STATUS_NOT_ESTIMATE &&
+              record.state !== PointerAddressConstant.status.STATUS_WAIT_SUBMIT &&
+              record.state !== PointerAddressConstant.status.STATUS_DELETE && (
+                <Button type="primary" size="small" onClick={() => this.enterCreateAppraise(record.id)}>
+                  评估管理
+                </Button>
+              )}
+          </Authorized>
           {(record.state === PointerAddressConstant.status.STATUS_ESTIMATE_FINISH ||
             record.state === PointerAddressConstant.status.STATUS_ALL_FINISH) && (
-            <Button className="operationBtn" size="small" onClick={() => this.enterCreateConclusion(record.id)}>
-              任务结论
-            </Button>
+            <Authorized authority="/conclusionManager">
+              <Button className="operationBtn" size="small" onClick={() => this.enterCreateConclusion(record.id)}>
+                任务结论
+              </Button>
+            </Authorized>
           )}
         </React.Fragment>
       ),
@@ -266,6 +277,8 @@ class PointerList extends React.Component {
         sortField = 'created_time';
       }
       params.orderby = `${sortField} ${order}`;
+    } else {
+      params.orderby = `created_time desc`;
     }
     dispatch({
       type: 'pointerAddress/fetch',

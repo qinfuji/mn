@@ -2,7 +2,6 @@ import React from 'react';
 import {Router} from 'react-router-dom';
 import renderRoutes from './core/renderRoutes';
 import routes from './routers';
-import Layout from './layouts/Layout';
 import history from './core/history';
 import dvaContainerProvider from './DvaContainer';
 import {loadMap, loadPlugin, loadAmpLocaApi, loadAmpUIApi, loadUI} from '@/components/AMap/api';
@@ -11,6 +10,8 @@ import {LocaleProvider} from 'antd';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 import 'moment/locale/zh-cn';
 import dvaApp from './initDva';
+import {fetchUserPermissions} from './services/user';
+import {setAuthority} from './utils/authority';
 import './App.css';
 const DvaConainer = dvaContainerProvider(dvaApp);
 
@@ -22,10 +23,6 @@ class App extends React.Component {
   componentDidMount() {
     setTimeout(async () => {
       await loadMap(); //加载地图API
-      console.log(window.AMap.Scale);
-      // this.scale = new window.AMap.Scale({
-      //   visible: true,
-      // });
       await loadAmpUIApi(); //加载UI api
       await loadPlugin([
         'AMap.PlaceSearch',
@@ -38,7 +35,13 @@ class App extends React.Component {
         'AMap.PolyEditor',
       ]);
       await loadAmpLocaApi(); //加载loca api
-      this.setState({initedMap: true});
+      const response = await fetchUserPermissions();
+      if (response) {
+        setAuthority(response.data);
+      } else {
+        setAuthority(null);
+      }
+      await this.setState({initedMap: true});
     });
   }
 
@@ -47,9 +50,7 @@ class App extends React.Component {
     return initedMap ? (
       <DvaConainer>
         <LocaleProvider locale={zh_CN}>
-          <Layout>
-            <Router history={history}>{renderRoutes(routes, {})}</Router>
-          </Layout>
+          <Router history={history}>{renderRoutes(routes, {})}</Router>
         </LocaleProvider>
       </DvaConainer>
     ) : null;

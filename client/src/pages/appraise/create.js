@@ -3,6 +3,8 @@ import {Form, Select, Button, Input, DatePicker, Tooltip, Switch, Slider, Icon, 
 import moment from 'moment';
 import {Constant as AppraiseConstant} from '../../models/appraise';
 import {fatchAll} from '../../services/categroyLabels';
+import {getObserveList} from '../../services/appraise';
+import Authorized from '../../utils/Authorized';
 
 const FormItem = Form.Item;
 const {Option} = Select;
@@ -30,8 +32,10 @@ class CreateAppraise extends React.Component {
   componentDidMount() {
     setTimeout(async () => {
       const data = await fatchAll();
+      const response = await getObserveList();
       this.setState({
         treeData: data,
+        observeList: response ? response.data : [],
       });
     }, 100);
   }
@@ -73,6 +77,8 @@ class CreateAppraise extends React.Component {
       goBackList,
       onCreateUserFenceHandle,
     } = this.props;
+
+    const {observeList = []} = this.state;
 
     const fenceHotDate = [];
     if (appraise && appraise.fencesHotDate) {
@@ -220,22 +226,26 @@ class CreateAppraise extends React.Component {
                 rules: [{required: true, message: '请选择'}],
               })(
                 <Select>
-                  <Option value={'1221212'}>测控点1</Option>
+                  {observeList.map((observe) => {
+                    return <Option value={observe.id}>{observe.pointename}</Option>;
+                  })}
                 </Select>,
               )}
             </Form.Item>
           </Form>
           <div id="btnbar" style={{marginTop: '20px'}}>
-            {(!appraise || (appraise && appraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
-              <Button size="small" type="primary" onClick={this.onSave}>
-                保存
-              </Button>
-            )}
-            {(!appraise || (appraise && appraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
-              <Button size="small" type="primary" onClick={this.onSubmit}>
-                保存并提交
-              </Button>
-            )}
+            <Authorized authority="/appraiseManager/save">
+              {(!appraise || (appraise && appraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
+                <Button size="small" type="primary" onClick={this.onSave}>
+                  保存
+                </Button>
+              )}
+              {(!appraise || (appraise && appraise.state === AppraiseConstant.status.STATUS_WAIT_COMMIT)) && (
+                <Button size="small" type="primary" onClick={this.onSubmit}>
+                  保存并提交
+                </Button>
+              )}
+            </Authorized>
             <Button size="small" type="primary" onClick={goBackList}>
               返回列表
             </Button>

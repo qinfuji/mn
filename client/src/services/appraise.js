@@ -35,3 +35,10 @@ export async function saveConclusion(id, params) {
     body: params,
   });
 }
+
+//获取测控点列表
+export async function getObserveList() {
+  return request(`${HOST}/api/estimateTask/getObserveList`, {
+    method: 'GET',
+  });
+}

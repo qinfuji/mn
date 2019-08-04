@@ -2,6 +2,7 @@ import React from 'react';
 import {Form, Select, Button, Card, Row, Col, Table} from 'antd';
 import moment from 'moment';
 import {Constant as AppraiseConstant} from '../../models/appraise';
+import Authorized from '../../utils/Authorized';
 const {Option} = Select;
 
 @Form.create()
@@ -123,9 +124,11 @@ class Conclusion extends React.Component {
         <div id="btnbar" style={{textAlign: 'end'}}>
           {(!appraiseDataResult ||
             appraiseDataResult.state !== AppraiseConstant.dateReaultState.RESULT_DATE_STATUS_SUBMITED) && (
-            <Button type="primary" onClick={this.onSave}>
-              保存
-            </Button>
+            <Authorized authority="/conclusionManager/save">
+              <Button type="primary" onClick={this.onSave}>
+                保存
+              </Button>
+            </Authorized>
           )}
           <Button type="primary" onClick={goBackList}>
             返回列表

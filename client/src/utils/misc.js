@@ -10,3 +10,16 @@ export function generateUUID() {
   });
   return uuid;
 }
+
+export function getQueryString(name) {
+  var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+  var href = window.location.href;
+  var idx = window.location.href.indexOf('?');
+  if (idx === -1) {
+    return;
+  }
+
+  var r = href.substring(idx + 1).match(reg);
+  if (r != null) return unescape(r[2]);
+  return null;
+}

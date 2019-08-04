@@ -155,7 +155,7 @@ public class EstimateTaskController {
         return RestResult.build(ret);
     }
 
-    @PutMapping("/getObserveList")
+    @GetMapping("/getObserveList")
     @ApiOperation("获取有效的测控点id")
     @CheckToken
     public RestResult<List<ObserverPoint>> getObserveList(@RequestHeader String token) {

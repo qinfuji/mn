@@ -590,10 +590,11 @@ class Appraise extends React.Component {
       params.fencesHotDate = '';
     }
     params.pointerAddressId = currentPointerAddress.id;
-    console.log(params);
+
     const response = await createEsmtimate(params, type);
     if (response) {
-      History.push('/listPointAddress');
+      //History.push('/listPointAddress');
+      History.push({pathname: '/listPointAddress', search: this.props.location.search});
     }
   };
 
@@ -607,13 +608,15 @@ class Appraise extends React.Component {
 
   goBackList = () => {
     History.push('/listPointAddress');
+    History.push({pathname: '/listPointAddress', search: this.props.location.search});
   };
 
   onSaveConclusion = async (conclusion) => {
     const {currentAppraise} = this.state;
     const response = await saveConclusion(currentAppraise.id, conclusion);
     if (response.data) {
-      History.push('/listPointAddress');
+      //History.push('/listPointAddress');
+      History.push({pathname: '/listPointAddress', search: this.props.location.search});
     }
   };
 
@@ -678,9 +681,10 @@ class Appraise extends React.Component {
     } = this.state;
 
     const {
-      match: {params},
+      location: {pathname},
     } = this.props;
-    const vtype = params.vtype;
+    console.log(this.props);
+    const vtype = pathname.substring(pathname.lastIndexOf('/') + 1);
 
     const fenceHotDate = [];
     if (currentAppraise && currentAppraise.fencesHotDate) {

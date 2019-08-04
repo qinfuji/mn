@@ -11,7 +11,7 @@ const Exception403 = () => <Exception type="403" />;
 // AuthorizedRoute is already instantiated
 // Authorized  render is already instantiated, children is no instantiated
 // Secured is not instantiated
-const checkIsInstantiation = target => {
+const checkIsInstantiation = (target) => {
   if (!React.isValidElement(target)) {
     return target;
   }
@@ -47,11 +47,7 @@ const authorize = (authority, error) => {
     throw new Error('authority is required');
   }
   return function decideAuthority(target) {
-    const component = CheckPermissions(
-      authority,
-      target,
-      classError || Exception403
-    );
+    const component = CheckPermissions(authority, target, classError || Exception403);
     return checkIsInstantiation(component);
   };
 };

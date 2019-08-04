@@ -356,7 +356,8 @@ class PointManager extends React.Component {
     pointer.labels = pointer.labels.join(',');
     const response = await create(pointer);
     if (response) {
-      History.push('/listPointAddress');
+      //History.push('/listPointAddress');
+      History.push({pathname: '/listPointAddress', search: this.props.location.search});
     }
   };
 
@@ -367,18 +368,21 @@ class PointManager extends React.Component {
     pointer.labels = pointer.labels.join(',');
     const response = await submit(pointer);
     if (response) {
-      History.push('/listPointAddress');
+      //History.push('/listPointAddress');
+      History.push({pathname: '/listPointAddress', search: this.props.location.search});
     }
   };
 
   onBackList = () => {
-    History.push('/listPointAddress');
+    //History.push('/listPointAddress');
+    History.push({pathname: '/listPointAddress', search: this.props.location.search});
   };
 
   onDeletePointer = async (pointer) => {
     const response = await remove(pointer);
     if (response) {
-      History.push('/listPointAddress');
+      //History.push('/listPointAddress');
+      History.push({pathname: '/listPointAddress', search: this.props.location.search});
     }
   };
 

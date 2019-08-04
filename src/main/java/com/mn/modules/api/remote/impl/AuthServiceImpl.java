@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class AuthServiceImpl  implements AuthService {
+public class AuthServiceImpl implements AuthService {
 
 
     private static Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
@@ -46,23 +46,23 @@ public class AuthServiceImpl  implements AuthService {
           ui.setOrganizationId("organizationId");
           return ui;
 
-//        MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<String, String>();
+//        MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<>();
 //        requestMap.add("token", token);
-//        ResponseEntity<String> responseBody = restTemplate.getForEntity(HOST+USERINFO_PATH , String.class  , requestMap  );
+//        ResponseEntity<String> responseBody = restTemplate.getForEntity(HOST + USERINFO_PATH, String.class, requestMap);
 //        String responseString = responseBody.getBody();
 //
-//        if(logger.isInfoEnabled()){
-//             logger.info("用户请求： {}", responseString);
+//        if (logger.isInfoEnabled()) {
+//            logger.info("用户请求： {}", responseString);
 //        }
 //        JSONObject jsonObject = JSON.parseObject(responseString);
 //        Integer code = jsonObject.getInteger("code");
 //
-//        if(code !=0){
+//        if (code != 0) {
 //            return null;
 //        }
 //
 //        JSONObject user = jsonObject.getJSONObject("user");
-//        if(user != null){
+//        if (user != null) {
 //            JSONArray permissions = jsonObject.getJSONArray("permissions");
 //            List<String> permissionList = new ArrayList<>();
 //            for (int i = 0; i < permissions.size(); i++) {
