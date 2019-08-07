@@ -47,7 +47,7 @@
   "scripts": {
     "start:mock": "REACT_APP_MOCK=mock PORT=3100  react-app-rewired start --mode development",
     "start": "react-app-rewired start PORT=3100 --mode development",
-    "build": "PUBLIC_URL='.' react-app-rewired build --mode development",
+    "build": "PUBLIC_URL='.' react-app-rewired build --mode production",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject"
   },

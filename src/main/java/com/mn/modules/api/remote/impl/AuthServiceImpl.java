@@ -40,41 +40,52 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserInfo getUserInfo(String token) {
 
+//
+//        UserInfo ui = new UserInfo();
+//        ui.setId("xxx");
+//        ui.setOrganizationId("organizationId");
+//        List<String> permissions = new ArrayList<>();
+//        permissions.add("/listPointAddress");
+//        permissions.add("/pointAddressManager");
+//        permissions.add("/pointAddressManager/save");
+//        permissions.add("/pointAddressManager/delete");
+//        permissions.add("/appraiseManager");
+//        permissions.add("/appraiseManager/save");
+//        permissions.add("/conclusionManager");
+//        permissions.add("/conclusionManager/save");
+//        permissions.add("/categroyLabel");
+//        ui.setPermissions(permissions);
+//        return ui;
 
-          UserInfo ui = new UserInfo();
-          ui.setId("xxx");
-          ui.setOrganizationId("organizationId");
-          return ui;
+        MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<>();
+        requestMap.add("token", token);
+        ResponseEntity<String> responseBody = restTemplate.getForEntity(HOST + USERINFO_PATH, String.class, requestMap);
+        String responseString = responseBody.getBody();
 
-//        MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<>();
-//        requestMap.add("token", token);
-//        ResponseEntity<String> responseBody = restTemplate.getForEntity(HOST + USERINFO_PATH, String.class, requestMap);
-//        String responseString = responseBody.getBody();
-//
-//        if (logger.isInfoEnabled()) {
-//            logger.info("用户请求： {}", responseString);
-//        }
-//        JSONObject jsonObject = JSON.parseObject(responseString);
-//        Integer code = jsonObject.getInteger("code");
-//
-//        if (code != 0) {
-//            return null;
-//        }
-//
-//        JSONObject user = jsonObject.getJSONObject("user");
-//        if (user != null) {
-//            JSONArray permissions = jsonObject.getJSONArray("permissions");
-//            List<String> permissionList = new ArrayList<>();
-//            for (int i = 0; i < permissions.size(); i++) {
-//                permissionList.add(permissions.getString(i));
-//            }
-//            UserInfo u = new UserInfo();
-//            u.setId(user.getString("userId"));
-//            u.setUserName(user.getString("username"));
-//            u.setOrganizationId(user.getString("orgId"));
-//            u.setPermissions(permissionList);
-//            return u;
-//        }
-//        return null;
+        if (logger.isInfoEnabled()) {
+            logger.info("用户请求： {}", responseString);
+        }
+        JSONObject jsonObject = JSON.parseObject(responseString);
+        Integer code = jsonObject.getInteger("code");
+
+        if (code != 0) {
+            return null;
+        }
+
+        JSONObject user = jsonObject.getJSONObject("user");
+        if (user != null) {
+            JSONArray permissions = jsonObject.getJSONArray("permissions");
+            List<String> permissionList = new ArrayList<>();
+            for (int i = 0; i < permissions.size(); i++) {
+                permissionList.add(permissions.getString(i));
+            }
+            UserInfo u = new UserInfo();
+            u.setId(user.getString("userId"));
+            u.setUserName(user.getString("username"));
+            u.setOrganizationId(user.getString("orgId"));
+            u.setPermissions(permissionList);
+            return u;
+        }
+        return null;
     }
 }
