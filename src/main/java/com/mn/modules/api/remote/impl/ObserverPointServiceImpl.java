@@ -22,13 +22,13 @@ import java.util.List;
 public class ObserverPointServiceImpl implements ObservePointService {
 
 
-    private static final String HOST = "http://www.topprismdata.com/_thrid/address";
+    private static final String HOST = "http://data.topprismdata.com/thrid/address";
     //测控点列表
     private static final String GETPOINT_PATH = "/getpoint";
     //测控点客流量
     private static final String GETFLOW_PATH = "/getflow";
     //测控点到访数据
-    private static final String ARRIVED_PATH = "http://www.topprismdata.com/thrid/address/arrive";
+    private static final String ARRIVED_PATH = "http://data.topprismdata.com/thrid/address/arrive";
 
     @Autowired
     RestTemplate restTemplate;
@@ -42,7 +42,7 @@ public class ObserverPointServiceImpl implements ObservePointService {
 
     @Override
     public List<ObserverPoint> getObserverPointList(String token) {
-
+        List<ObserverPoint> rets = new ArrayList<>();
 
         MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<String, String>();
         requestMap.add("token", token);
@@ -57,7 +57,7 @@ public class ObserverPointServiceImpl implements ObservePointService {
         }
 
         JSONArray points = jsonObject.getJSONArray("points");
-        List<ObserverPoint> rets = new ArrayList<>();
+
 
         for (int i = 0; i < points.size(); i++) {
             ObserverPoint op = new ObserverPoint();
@@ -66,6 +66,14 @@ public class ObserverPointServiceImpl implements ObservePointService {
             op.setPointename(jo.getString("pointname"));
             rets.add(op);
         }
+
+
+//        ObserverPoint op = new ObserverPoint();
+//
+//            op.setId("1111");
+//            op.setPointename("sssss");
+//            rets.add(op);
+
         return rets;
     }
 
@@ -75,7 +83,7 @@ public class ObserverPointServiceImpl implements ObservePointService {
         List<ArrivedData> arrivedDataList = new ArrayList<>();
 
         MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<String, String>();
-        ResponseEntity<String> responseBody = restTemplate.postForEntity("http://www.topprismdata.com/third/address/arrive", requestMap ,String.class);
+        ResponseEntity<String> responseBody = restTemplate.postForEntity("http://data.topprismdata.com/third/address/arrive", requestMap ,String.class);
         String responseString = responseBody.getBody();
 
         JSONObject jsonObject = JSON.parseObject(responseString);

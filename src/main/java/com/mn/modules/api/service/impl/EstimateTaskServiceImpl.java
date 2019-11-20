@@ -18,9 +18,12 @@ import com.mn.modules.api.service.PointerAddressService;
 import com.mn.modules.api.utils.GeometryUtil;
 import com.mn.modules.api.utils.LngLat;
 import com.mn.modules.api.utils.MapHelper;
-import com.mn.modules.api.utils.Melkman;
+import com.mn.modules.api.utils.melkman.Melkman;
+import com.mn.modules.api.utils.melkman.Point;
+import com.mn.modules.api.utils.melkman.Polygon;
 import com.mn.modules.api.vo.ArrivedData;
 import com.mn.modules.api.vo.ObserverPointData;
+import de.lmu.ifi.dbs.elki.math.geometry.AlphaShape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,6 +152,8 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         EstimateDataResult edr = new EstimateDataResult();
 
 
+        logger.info("1111111");
+
         String fenceString = "";
         if (fence != null && fence.size() >= MIN_POINT_COUNT) {
             for (Iterator<LngLat> iterator = fence.iterator(); iterator.hasNext(); ) {
@@ -164,7 +169,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
             }
 
         }
-
+        logger.info("222");
         //获取围栏面积， 计算围栏辐射距离
         double fenceArea = MapHelper.calculatePolygonArea(fence);
         //下面的面积计算与上面的计算值基本相同
@@ -172,6 +177,7 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
 
         //获取测控点的客流量数据
         Integer observerFlow = observePointService.getObserveFlow(task.getObserveId(), "");
+        logger.info("333");
         //商圈围栏
         edr.setFence(fenceString);
         //测控点客流量
@@ -181,8 +187,10 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
         edr.setRadiationArea(fenceArea+"");
         estimateDataResultDao.updateById(edr);
         task.setExecState(task.getExecState() | EXEC_STATUS_CALCULATED_FENCE);
+        logger.info("444");
         this.baseMapper.updateById(task);
         updatePointerAddressStateIfNeed(task);
+        logger.info("555");
     }
 
 
@@ -311,9 +319,62 @@ public class EstimateTaskServiceImpl extends ServiceImpl<EstimateTaskDao, Estima
                 ret.add(lnglat);
             });
         });
-        Melkman melkman = new Melkman(ret);
+        com.mn.modules.api.utils.Melkman melkman = new com.mn.modules.api.utils.Melkman(ret);
         LngLat[] finallyFence = melkman.getTubaoPoint();
         return Arrays.asList(finallyFence);
+
+//        List<double[]> t = new ArrayList<>();
+//        fences.forEach((fence) -> {
+//            if (fence == null || fence.size() == 0) {
+//                return;
+//            }
+//            fence.forEach((lnglat) -> {
+//                t.add(new double[]{lnglat.getLng().doubleValue(), lnglat.getLat().doubleValue()});
+//            });
+//        });
+//
+//        /**
+//         * AlphaShape的第二个参数是范围值， 防止凸包的点连接过长，
+//         * 这个算法当前结合中的点不能相同，在否则会会出现错误。
+//         * 这个值占时没有想好设置多大，当前设置100基本就与Melkman算法一样了
+//         */
+//
+//        List<Polygon> polys = new AlphaShape(t, 100).compute();
+//
+//        List<LngLat> alphaShapeRet = new ArrayList<>();
+//        if (polys != null && polys.size() > 0) {
+//            Polygon poly = polys.get(0);
+//            for (int i = 0; i < poly.size(); i++) {
+//                double[] ll = poly.get(i);
+//                LngLat lngLat = new LngLat(Double.valueOf(ll[0]), Double.valueOf(ll[1]));
+//                alphaShapeRet.add(lngLat);
+//            }
+//        }
+//        return alphaShapeRet;
+
+//
+//        List<Point> ret = new ArrayList<>();
+//        fences.forEach((fence) -> {
+//            if (fence == null || fence.size() == 0) {
+//                return;
+//            }
+//            fence.forEach((lnglat) -> {
+//                ret.add(new Point(lnglat.getLng().doubleValue(),lnglat.getLat().doubleValue()));
+//            });
+//        });
+//
+//        Melkman m =   new Melkman();
+//        Polygon  p= m.getConvexHullWithMelkman(ret);
+//        List<Point>  ps = p.getPointList();
+//        if(ps == null){
+//             return new ArrayList<>();
+//        }
+//
+//        List<LngLat> realRet = new ArrayList<>();
+//        ps.forEach((point)->{
+//            realRet.add(new LngLat(point.getLng(),point.getLat()));
+//        });
+//        return realRet;
     }
 
     @Override

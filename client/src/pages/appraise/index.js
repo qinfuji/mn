@@ -157,8 +157,7 @@ class Appraise extends React.Component {
     let appraiseFencePolygon = null;
     let appraiseDataResult = null;
 
-    const vtype = params.vtype;
-    if (vtype === 'conclusion') {
+    if (this.props.location.pathname.indexOf('conclusion') > -1) {
       if (appraise && appraise.execState === AppraiseConstant.execState.EXEC_STATUS_FINISH_CODE) {
         //获取评估
         const appraiseDataResultResponse = await getEsmtimateDataResult({id: appraise.id});
@@ -764,7 +763,7 @@ class Appraise extends React.Component {
           </Map>
         </Content>
         <Sider theme="light" width={'25%'} style={{height: '100%', overflow: 'auto'}}>
-          {vtype === 'appraise' && (
+          {this.props.location.pathname.indexOf('appraise') > -1 && (
             <CreateAppraise
               pointerAddress={currentPointerAddress}
               appraise={currentAppraise}
@@ -779,7 +778,7 @@ class Appraise extends React.Component {
             />
           )}
 
-          {vtype === 'conclusion' && (
+          {this.props.location.pathname.indexOf('conclusion') > -1 && (
             <Conclusion
               pointerAddress={currentPointerAddress}
               appraiseDataResult={appraiseDataResult}
